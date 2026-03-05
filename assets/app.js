@@ -280,11 +280,20 @@ async function loadSystem(){
 }
 
 function bindTabs(){
-  document.querySelectorAll("[data-tab]").forEach(a=>{
-    a.addEventListener("click", (ev)=>{
-      ev.preventDefault();
-      setActiveTab(a.getAttribute("data-tab"));
-    });
+  const tabsBar = document.querySelector(".tabs");
+  if(!tabsBar){
+    console.error("SimIA: .tabs non trovato (admin.html non aggiornato?)");
+    return;
+  }
+
+  // Event delegation: funziona sempre, anche se i tab vengono ricreati
+  tabsBar.addEventListener("click", (ev) => {
+    const a = ev.target.closest("[data-tab]");
+    if(!a) return;
+    ev.preventDefault();
+    const tab = a.getAttribute("data-tab");
+    console.log("SimIA: click tab =", tab);
+    setActiveTab(tab);
   });
 
   let saved = "setup";
@@ -339,6 +348,7 @@ function bindInvites(){
 
 document.addEventListener("DOMContentLoaded", () => {
   (async function main(){
+    console.log("SimIA: admin init start");
     bindTabs();
     bindSetup();
     bindParticipants();
@@ -346,6 +356,7 @@ document.addEventListener("DOMContentLoaded", () => {
     await loadTeams();
     await loadParticipants();
     await loadSystem();
+    console.log("SimIA: admin init done");
   })().catch(e => {
     console.error("SimIA admin init error:", e);
     alert("Errore init Admin: " + e);
