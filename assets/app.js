@@ -415,19 +415,93 @@ async function loadScenarioLog(){
     box.innerHTML = `<div class="item"><div class="h">Errore</div><div class="small mono">${esc(String(e))}</div></div>`;
   }
 }
+async function loadScenarioLog(){
+  const box = document.getElementById("scLog");
+  const count = document.getElementById("scCount");
+  if(!box) return;
+
+  try{
+    const j = await jget("/api/scenario/events");
+    const events = Array.isArray(j.events) ? j.events : [];
+    if(count) count.textContent = `${events.length} events`;
+
+    if(!events.length){
+      box.innerHTML = `<div class="item"><div class="h">Nessun evento</div><div class="small">Invia un Broadcast o Inject.</div></div>`;
+      return;
+    }
+
+    box.innerHTML = "";
+    for(const ev of events){
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `
+        <div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">
+          <div style="flex:1;min-width:260px">
+            <div class="h">${esc(ev.title || "(no title)")}</div>
+            <div class="small" style="margin-top:6px">
+              <span class="pill mono">${esc(ev.kind)}</span>
+              <span class="pill mono">${esc(ev.severity)}</span>
+              <span class="pill mono">${esc(ev.audience)}</span>
+              ${ev.phase ? `<span class="pill mono">${esc(ev.phase)}</span>` : ``}
+              <span class="pill mono">${esc(ev.ts)}</span>
+            </div>
+            <div style="margin-top:10px;white-space:pre-wrap">${esc(ev.body || "")}</div>
+          </div>
+          <button class="btn" data-copy>Copy</button>
+        </div>
+      `;
+      div.querySelector("[data-copy]")?.addEventListener("click", async ()=>{
+        const txt = `[${ev.ts}] ${ev.kind}/${ev.severity} ${ev.audience}${ev.phase?(" "+ev.phase):""}\n${ev.title||""}\n${ev.body||""}`.trim();
+        try{ await navigator.clipboard.writeText(txt); alert("Copiato."); } catch { alert(txt); }
+      });
+      box.appendChild(div);
+    }
+  }catch(e){
+    if(count) count.textContent = "ERR";
+    box.innerHTML = `<div class="item"><div class="h">Errore</div><div class="small mono">${esc(String(e))}</div></div>`;
+  }
+}
+
+function bindScenario(){
+  const send = document.getElementById("scSendBtn");
+  const reload = document.getElementById("scReloadBtn");
+
+  if(reload) reload.addEventListener("click", loadScenarioLog);
+
+  if(send) send.addEventListener("click", async ()=>{
+    const kind = (document.getElementById("scKind")?.value || "BROADCAST").toUpperCase();
+    const severity = (document.getElementById("scSeverity")?.value || "INFO").toUpperCase();
+    const audience = (document.getElementById("scAudience")?.value || "ALL").trim() || "ALL";
+    const phase = (document.getElementById("scPhase")?.value || "").trim() || null;
+    const title = (document.getElementById("scTitle")?.value || "").trim();
+    const body = (document.getElementById("scBody")?.value || "").toString();
+
+    if(!body.trim()){
+      alert("Inserisci Body.");
+      return;
+    }
+
+    await jpost("/api/scenario/events", { kind, severity, audience, phase, title, body });
+
+    document.getElementById("scTitle").value = "";
+    document.getElementById("scBody").value = "";
+
+    await loadScenarioLog();
+    alert("Evento inviato.");
+  });
+}
 document.addEventListener("DOMContentLoaded", () => {
   (async function main(){
-    console.log("SimIA: admin init start");
     bindTabs();
     bindSetup();
     bindParticipants();
     bindInvites();
-	bindScenario();
+    bindScenario();          // ✅ aggiungi qui
+
     await loadTeams();
     await loadParticipants();
     await loadSystem();
-	await loadScenarioLog();
-    console.log("SimIA: admin init done");
+    await loadScenarioLog(); // ✅ aggiungi qui
   })().catch(e => {
     console.error("SimIA admin init error:", e);
     alert("Errore init Admin: " + e);
