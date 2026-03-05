@@ -59,7 +59,9 @@ function setActiveTab(tab){
 }
 
 function entryLink(p){
-  const u = new URL("/index.html", location.origin);
+  const r = String(p.role||"PLAYER").toUpperCase();
+  const base = (r==="ADMIN" || r==="INSTRUCTOR") ? "/admin.html" : "/player.html";
+  const u = new URL(base, location.origin);
   u.searchParams.set("role", String(p.role||"PLAYER").toUpperCase());
   u.searchParams.set("team", String(p.team_id||"ALL").toUpperCase());
   u.searchParams.set("pid", String(p.id||""));

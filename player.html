@@ -11,6 +11,7 @@
     .sev.AMBER{border-color:rgba(245,158,11,.8)}
     .sev.RED{border-color:rgba(239,68,68,.85)}
     .kind{opacity:.9}
+    .ackdone{opacity:.7}
   </style>
 </head>
 <body>
@@ -22,11 +23,11 @@
         <div class="brand-sub" id="subline">Player</div>
       </div>
     </div>
-<div class="session">
-  <span class="pill mono" id="who">—</span>
-  <span class="pill mono" id="phaseBadge">PHASE-—</span>
-  <button class="btn ghost" id="refreshBtn">Refresh</button>
-</div>
+    <div class="session">
+      <span class="pill mono" id="who">—</span>
+      <span class="pill mono" id="phaseBadge">PHASE-—</span>
+      <button class="btn ghost" id="refreshBtn" type="button">Refresh</button>
+    </div>
   </header>
 
   <main class="layout layout-wide">
@@ -36,15 +37,18 @@
           <div class="card-title">Live Feed</div>
           <div class="card-body">
             <div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-              <div class="small">Mostra eventi per audience: <span class="mono">ALL</span>, <span class="mono" id="audTeam">TEAM:—</span>, <span class="mono" id="audRole">ROLE:—</span></div>
+              <div class="small">Audience: <span class="mono">ALL</span>, <span class="mono" id="audTeam">TEAM:—</span>, <span class="mono" id="audRole">ROLE:—</span></div>
               <span class="pill mono" id="count">—</span>
             </div>
+
             <div class="sep"></div>
+
             <div id="pidWarn" class="notice" style="display:none;margin-bottom:12px">
               <div class="h">Link non personalizzato</div>
-              <div class="small">Manca <span class="mono">pid</span>. Il tasto “LETTO” non sarà disponibile. Usa il link generato dalla Console Admin.</div>
-            </div>            
-			<div id="feed" class="stack"></div>
+              <div class="small">Manca <span class="mono">pid</span>. Il tasto “LETTO” registrerà un errore. Usa il link generato dalla Console Admin (Participants → Copia link).</div>
+            </div>
+
+            <div id="feed" class="stack"></div>
           </div>
         </div>
       </div>
@@ -85,24 +89,35 @@ async function jpost(url, body){
 const TEAM = (getParam("team","ALL") || "ALL").trim().toUpperCase();
 const ROLE = (getParam("role","PLAYER") || "PLAYER").trim().toUpperCase();
 const PID  = (getParam("pid","") || "").trim();
-const warn = document.getElementById("pidWarn");
-if(warn) warn.style.display = PID ? "none" : "";
 
 document.getElementById("who").textContent = `${ROLE} / TEAM:${TEAM}${PID ? " / "+PID : ""}`;
 document.getElementById("subline").textContent = `Player — ${ROLE} — Team ${TEAM}`;
 document.getElementById("audTeam").textContent = `TEAM:${TEAM}`;
 document.getElementById("audRole").textContent = `ROLE:${ROLE}`;
 
-let lastSig = "";
+const warn = document.getElementById("pidWarn");
+if(warn) warn.style.display = PID ? "none" : "";
 
+let lastSig = "";
 function signature(events){
-  // firma per evitare rerender inutili
   return (events || []).slice(0,20).map(e=>e.id).join("|");
+}
+
+function ackKey(){ return `simia.ack.${PID || "NOPID"}`; }
+function getAcked(){
+  try{ return JSON.parse(localStorage.getItem(ackKey()) || "{}"); }catch(e){ return {}; }
+}
+function setAcked(eventId){
+  const a = getAcked();
+  a[eventId] = new Date().toISOString();
+  try{ localStorage.setItem(ackKey(), JSON.stringify(a)); }catch(e){}
 }
 
 function render(events){
   const box = document.getElementById("feed");
   const count = document.getElementById("count");
+  const acked = getAcked();
+
   count.textContent = `${events.length} events`;
 
   if(!events.length){
@@ -115,9 +130,10 @@ function render(events){
     const sev = String(ev.severity||"INFO").toUpperCase();
     const kind = String(ev.kind||"BROADCAST").toUpperCase();
     const aud = String(ev.audience||"ALL").toUpperCase();
+    const isAck = !!acked[ev.id];
 
     const div = document.createElement("div");
-    div.className = "item";
+    div.className = "item" + (isAck ? " ackdone" : "");
     div.innerHTML = `
       <div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">
         <div style="flex:1;min-width:260px">
@@ -128,34 +144,44 @@ function render(events){
             <span class="pill mono">${esc(aud)}</span>
             ${ev.phase ? `<span class="pill mono">${esc(ev.phase)}</span>` : ``}
             <span class="pill mono">${esc(ev.ts)}</span>
+            ${isAck ? `<span class="pill mono">✓ LETTO</span>` : ``}
           </div>
           <div style="margin-top:10px;white-space:pre-wrap">${esc(ev.body || "")}</div>
         </div>
         <div class="row" style="gap:8px;flex-wrap:wrap;justify-content:flex-end">
-          <button class="btn ghost" data-copy>Copy</button>
-          <button class="btn primary" data-ack ${PID ? "" : "disabled"}>LETTO</button>
+          <button class="btn ghost" type="button" data-copy>Copy</button>
+          <button class="btn primary" type="button" data-ack ${isAck ? "disabled" : ""}>LETTO</button>
         </div>
       </div>
     `;
+
     div.querySelector("[data-copy]")?.addEventListener("click", async ()=>{
       const txt = `[${ev.ts}] ${kind}/${sev} ${aud}${ev.phase?(" "+ev.phase):""}\n${ev.title||""}\n${ev.body||""}`.trim();
       try{ await navigator.clipboard.writeText(txt); } catch {}
       alert("Copiato.");
-	  div.querySelector("[data-ack]")?.addEventListener("click", async ()=>{
-  if(!PID){ alert("Manca pid nel link: impossibile registrare LETTO."); return; }
-  try{
-    await jpost("/api/scenario/ack", {
-      event_id: ev.id,
-      participant_id: PID,
-      team: TEAM,
-      role: ROLE
     });
-    alert("Registrato: LETTO.");
-  }catch(e){
-    alert("Errore ACK: " + e);
-  }
-});
+
+    div.querySelector("[data-ack]")?.addEventListener("click", async ()=>{
+      if(isAck) return;
+      if(!PID){
+        alert("Manca pid nel link. Usa Participants → Copia link per avere un link personalizzato.");
+        return;
+      }
+      try{
+        await jpost("/api/scenario/ack", {
+          event_id: ev.id,
+          participant_id: PID,
+          team: TEAM,
+          role: ROLE
+        });
+        setAcked(ev.id);
+        alert("Registrato: LETTO.");
+        render(events);
+      }catch(e){
+        alert("Errore ACK: " + e);
+      }
     });
+
     box.appendChild(div);
   }
 }
@@ -164,7 +190,9 @@ async function refresh(){
   try{
     const j = await jget(`/api/scenario/feed?team=${encodeURIComponent(TEAM)}&role=${encodeURIComponent(ROLE)}`);
     const pb = document.getElementById("phaseBadge");
-    if(pb && j.current_phase) pb.textContent = j.current_phase;    const events = Array.isArray(j.events) ? j.events : [];
+    if(pb && j.current_phase) pb.textContent = j.current_phase;
+
+    const events = Array.isArray(j.events) ? j.events : [];
     const sig = signature(events);
     if(sig !== lastSig){
       lastSig = sig;
@@ -180,7 +208,6 @@ async function refresh(){
 
 document.getElementById("refreshBtn").addEventListener("click", refresh);
 
-// polling leggero
 refresh();
 setInterval(refresh, 10000);
 </script>
