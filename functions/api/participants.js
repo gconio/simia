@@ -47,8 +47,7 @@ export async function onRequest({ request, env }) {
       const now = new Date().toISOString();
       // Upsert
       await env.DB.prepare(
-        "INSERT INTO participants (id,name,email,role,team_id,created_at) VALUES (?1,?2,?3,?4,?5,?6)
-" +
+        "INSERT INTO participants (id,name,email,role,team_id,created_at) VALUES (?1,?2,?3,?4,?5,?6)\n" +
         "ON CONFLICT(id) DO UPDATE SET name=excluded.name, email=excluded.email, role=excluded.role, team_id=excluded.team_id"
       ).bind(id,name,email,role,team_id,now).run();
 
