@@ -197,3 +197,7 @@ textarea{resize:vertical}
 
 /* (opzionale) più respiro sopra la grid quando ci sono tabs */
 .layout-wide .grid{ margin-top:12px; }
+/* Admin tabs: panels must span full grid width */
+.panel{
+  grid-column: 1 / -1;   /* prende tutte le 12 colonne */
+}
