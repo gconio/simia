@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <base href="/"/>
+  <title>SimIA v2 — AI Sources</title>
+  <link rel="stylesheet" href="/assets/styles.css"/>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <img src="/assets/logo.png" class="logo-img"/>
+    <div>
+      <div class="brand-title" id="hdrTitle">SimIA - Analytical Simulation Platform</div>
+      <div class="brand-sub" id="hdrSub">AI Sources</div>
+    </div>
+  </div>
+  <div class="session">
+    <div class="session-line"><span class="badge" id="sessionBadge">—</span><span class="teamicon-mini"><img id="teamIcon" alt="team icon" /></span><select class="input" id="teamSelect"><option>ALL</option></select><span class="pill mono" id="phasePill">PHASE: —</span>
+</div>
+    <div class="small">Timer: <span class="mono" id="timerSmall">—</span></div>
+  </div>
+</header>
+
+<main class="layout">
+  <nav class="sidebar"><a class="navitem" href="/">Dashboard<span class="navhint">SA</span></a><a class="navitem" href="/feed">Live Feed<span class="navhint">INT</span></a>
+    <a class="navitem" href="/timeline">Timeline<span class="navhint">TL</span></a><a class="navitem" href="/documents">Documents<span class="navhint">DOC</span></a><a class="navitem" href="/workspace">Workspace<span class="navhint">WS</span></a><a class="navitem" href="/tasking">Tasking<span class="navhint">REQ</span></a><a class="navitem active" href="/ai">AI Sources<span class="navhint">AI</span></a><a class="navitem" href="/submit">Submit<span class="navhint">OUT</span></a><a class="navitem" href="/instructor">Instructor<span class="navhint">CTL</span></a><a class="navitem" href="/admin">Admin<span class="navhint">CFG</span></a></nav>
+  <section class="content">
+    
+    
+<div id="aiRoot" class="grid">
+  <div class="card span12">
+    <div class="card-title">AI Sources</div>
+    <div class="card-body">
+      <div class="small">Copia prompt → incolla in ChatGPT (o altra IA).</div>
+      <div class="sep"></div>
+      <div class="list" id="aiBox"></div>
+    </div>
+  </div>
+</div>
+
+  </section>
+</main>
+
+<script src="/assets/app.js" defer></script>
+</body>
+</html>

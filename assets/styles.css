@@ -1,0 +1,187 @@
+
+:root{
+  --bg:#0b0f17;--bg2:#070a10;
+  --card:#111827;--muted:#94a3b8;--text:#e5e7eb;
+  --accent:#38bdf8;--accent2:#22c55e;--warn:#fbbf24;--danger:#fb7185;
+  --border:#243244;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Helvetica Neue",Arial;
+  background:linear-gradient(180deg,var(--bg2),var(--bg));color:var(--text)}
+a{color:inherit}
+code{background:rgba(148,163,184,.10);border:1px solid var(--border);padding:.08rem .3rem;border-radius:.5rem}
+
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--border);
+  position:sticky;top:0;background:rgba(11,15,23,.92);backdrop-filter:blur(8px);z-index:10}
+.brand{display:flex;gap:12px;align-items:center}
+.logo{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;
+  background:rgba(56,189,248,.15);border:1px solid rgba(56,189,248,.35);font-weight:800}
+.brand-title{font-weight:800;letter-spacing:.2px}
+.brand-sub{color:var(--muted);font-size:12px;margin-top:2px}
+
+.session{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.session-line{display:flex;gap:10px;align-items:center}
+.badge{font-size:12px;padding:5px 10px;border-radius:999px;background:rgba(148,163,184,.10);
+  border:1px solid var(--border);color:var(--muted)}
+.badge.ok{border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.12);color:#bbf7d0}
+.badge.warn{border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.12);color:#fde68a}
+.small{font-size:12px;color:var(--muted)}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+
+.layout{display:grid;grid-template-columns:250px 1fr;min-height:calc(100vh - 69px)}
+.sidebar{padding:16px;border-right:1px solid var(--border)}
+.navitem{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;
+  color:var(--muted);text-decoration:none;margin-bottom:6px;border:1px solid transparent}
+.navitem:hover{border-color:var(--border);color:var(--text)}
+.navitem.active{background:rgba(56,189,248,.10);border-color:rgba(56,189,248,.25);color:var(--text)}
+.navhint{font-size:11px;color:var(--muted);margin-left:auto}
+hr{border:none;border-top:1px solid var(--border);margin:12px 0}
+.content{padding:18px}
+
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px}
+.card{background:rgba(17,24,39,.9);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+.card-title{padding:12px 14px;border-bottom:1px solid var(--border);font-weight:750;display:flex;align-items:center;justify-content:space-between}
+.card-body{padding:14px}
+.span12{grid-column:span 12}
+.span8{grid-column:span 8}
+.span7{grid-column:span 7}
+.span6{grid-column:span 6}
+.span5{grid-column:span 5}
+.span4{grid-column:span 4}
+.span3{grid-column:span 3}
+
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.stack{display:flex;flex-direction:column;gap:10px}
+.list{display:flex;flex-direction:column;gap:10px}
+
+.btn{appearance:none;border:1px solid var(--border);background:rgba(148,163,184,.08);color:var(--text);
+  padding:8px 12px;border-radius:12px;text-decoration:none;cursor:pointer;font-weight:700}
+.btn:hover{border-color:rgba(56,189,248,.35)}
+.btn.primary{background:rgba(56,189,248,.16);border-color:rgba(56,189,248,.35)}
+.btn.good{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.35)}
+.btn.warn{background:rgba(251,191,36,.12);border-color:rgba(251,191,36,.35)}
+.btn.danger{background:rgba(251,113,133,.12);border-color:rgba(251,113,133,.35)}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+.input, textarea, select{
+  width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--border);
+  background:rgba(2,6,23,.35);color:var(--text)
+}
+textarea{resize:vertical}
+.lbl{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
+
+.pill{font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid var(--border);color:var(--muted);
+  background:rgba(148,163,184,.06);white-space:nowrap}
+.pill.osint{border-color:rgba(56,189,248,.35);background:rgba(56,189,248,.10);color:#bae6fd}
+.pill.humint{border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.10);color:#bbf7d0}
+.pill.sigint{border-color:rgba(167,139,250,.40);background:rgba(167,139,250,.12);color:#ddd6fe}
+.pill.imint{border-color:rgba(251,191,36,.40);background:rgba(251,191,36,.12);color:#fde68a}
+.pill.tasking{border-color:rgba(251,113,133,.40);background:rgba(251,113,133,.12);color:#fecdd3}
+.pill.deception{border-color:rgba(148,163,184,.55);background:rgba(148,163,184,.10);color:#e2e8f0}
+
+.item{padding:12px;border:1px solid var(--border);border-radius:14px;background:rgba(2,6,23,.20)}
+.item .meta{display:flex;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin-top:6px}
+.h{font-weight:800}
+.kv{display:grid;grid-template-columns:170px 1fr;gap:10px;font-size:14px}
+.kv div:nth-child(odd){color:var(--muted)}
+.notice{border-left:3px solid rgba(56,189,248,.5);padding:10px 12px;border-radius:12px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.20)}
+.notice.warn{border-left-color:rgba(251,191,36,.6);background:rgba(251,191,36,.08);border-color:rgba(251,191,36,.20)}
+.notice.danger{border-left-color:rgba(251,113,133,.6);background:rgba(251,113,133,.08);border-color:rgba(251,113,133,.20)}
+.sep{height:1px;background:var(--border);margin:10px 0}
+@media (max-width:1000px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{border-right:none;border-bottom:1px solid var(--border)}
+  .span8,.span7,.span6,.span5,.span4,.span3{grid-column:span 12}
+}
+
+
+/* Team selector */
+#teamSelect{width:170px}
+
+
+/* Logo header */
+.brand {
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.brand img.logo-img{
+  height:40px;
+  width:auto;
+}
+
+
+/* Phase pill */
+#phasePill { opacity: .95; }
+
+/* Timeline items */
+.stack { display:flex; flex-direction:column; gap:12px; }
+.tl-item .tl-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+.tl-item .tl-tags{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+
+
+/* --- v3.2.1: Sticky sidebar (fixed navigation while scrolling) --- */
+.sidebar{
+  position: sticky;
+  top: 72px; /* keep below topbar */
+  height: calc(100vh - 72px);
+  overflow-y: auto;
+}
+
+
+
+@media (max-width: 900px){
+  .sidebar{
+    position: static;
+    height: auto;
+    overflow: visible;
+    top: auto;
+  }
+}
+
+
+
+/* --- v3.2.4: Team icons (admin) --- */
+.teamicon{
+  width:44px;
+  height:44px;
+  border-radius:10px;
+  border:1px solid rgba(148,163,184,.35);
+  background:rgba(15,23,42,.55);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+.teamicon img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
+
+/* --- v3.2.5: Team icon in header --- */
+.teamicon-mini{
+  width:28px;
+  height:28px;
+  border-radius:8px;
+  border:1px solid rgba(148,163,184,.35);
+  background:rgba(15,23,42,.55);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  margin-left:10px;
+  margin-right:6px;
+  vertical-align:middle;
+}
+.teamicon-mini img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  display:none;
+}
+
+/* --- SimIA: Admin console panels --- */
+.admin-panel{ display: contents; }

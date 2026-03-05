@@ -1,0 +1,11 @@
+# Se vuoi URL pulite (/admin) rinomina questo file in _redirects.
+# ATTENZIONE: se hai altre regole Cloudflare potresti creare loop.
+# /admin      /admin.html      200
+# /feed       /feed.html       200
+# /documents  /documents.html  200
+# /workspace  /workspace.html  200
+# /tasking    /tasking.html    200
+# /ai         /ai.html         200
+# /submit     /submit.html     200
+# /instructor /instructor.html 200
+# /           /index.html      200
