@@ -337,12 +337,17 @@ function bindInvites(){
   document.getElementById("exportJsonBtn")?.addEventListener("click", exportJson);
 }
 
-(async function main(){
-  bindTabs();
-  bindSetup();
-  bindParticipants();
-  bindInvites();
-  await loadTeams();
-  await loadParticipants();
-  await loadSystem();
-})();
+document.addEventListener("DOMContentLoaded", () => {
+  (async function main(){
+    bindTabs();
+    bindSetup();
+    bindParticipants();
+    bindInvites();
+    await loadTeams();
+    await loadParticipants();
+    await loadSystem();
+  })().catch(e => {
+    console.error("SimIA admin init error:", e);
+    alert("Errore init Admin: " + e);
+  });
+});
