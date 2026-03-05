@@ -11,7 +11,7 @@
     .sev.AMBER{border-color:rgba(245,158,11,.8)}
     .sev.RED{border-color:rgba(239,68,68,.85)}
     .kind{opacity:.9}
-    .ackdone{opacity:.7}
+    .btn[disabled]{opacity:.6;cursor:not-allowed}
   </style>
 </head>
 <body>
@@ -26,18 +26,23 @@
     <div class="session">
       <span class="pill mono" id="who">—</span>
       <span class="pill mono" id="phaseBadge">PHASE-—</span>
-      <button class="btn ghost" id="refreshBtn" type="button">Refresh</button>
+      <button class="btn ghost" id="refreshBtn">Refresh</button>
     </div>
   </header>
 
   <main class="layout layout-wide">
     <section class="content">
       <div class="grid">
+
         <div class="card span12">
           <div class="card-title">Live Feed</div>
           <div class="card-body">
             <div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-              <div class="small">Audience: <span class="mono">ALL</span>, <span class="mono" id="audTeam">TEAM:—</span>, <span class="mono" id="audRole">ROLE:—</span></div>
+              <div class="small">
+                Audience: <span class="mono">ALL</span>,
+                <span class="mono" id="audTeam">TEAM:—</span>,
+                <span class="mono" id="audRole">ROLE:—</span>
+              </div>
               <span class="pill mono" id="count">—</span>
             </div>
 
@@ -45,12 +50,65 @@
 
             <div id="pidWarn" class="notice" style="display:none;margin-bottom:12px">
               <div class="h">Link non personalizzato</div>
-              <div class="small">Manca <span class="mono">pid</span>. Il tasto “LETTO” registrerà un errore. Usa il link generato dalla Console Admin (Participants → Copia link).</div>
+              <div class="small">Manca <span class="mono">pid</span>. Il tasto “LETTO” non sarà disponibile. Usa il link generato dalla Console Admin.</div>
             </div>
 
             <div id="feed" class="stack"></div>
           </div>
         </div>
+
+        <div class="card span12">
+          <div class="card-title">Workspace (Output analitici)</div>
+          <div class="card-body">
+
+            <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end">
+              <div style="min-width:220px;flex:1">
+                <label class="lbl">Output type</label>
+                <select class="input" id="outType">
+                  <option>NOTE</option>
+                  <option>INDICATORS</option>
+                  <option>ACH</option>
+                  <option>SUMMARY</option>
+                  <option>CP1</option>
+                  <option>CP2</option>
+                  <option>CP3</option>
+                  <option>CP4</option>
+                </select>
+              </div>
+
+              <div style="min-width:220px;flex:2">
+                <label class="lbl">Title (opzionale)</label>
+                <input class="input" id="outTitle" placeholder="Titolo..." />
+              </div>
+
+              <div class="row" style="gap:8px;flex-wrap:wrap">
+                <button class="btn primary" id="outSaveBtn">Salva</button>
+                <button class="btn ghost" id="outReloadBtn">Ricarica storico</button>
+              </div>
+
+              <span class="pill mono" id="outPhase">PHASE-—</span>
+            </div>
+
+            <div class="sep"></div>
+
+            <label class="lbl">Content</label>
+            <textarea class="input" id="outContent" rows="8" placeholder="Scrivi qui il tuo output analitico..."></textarea>
+
+            <div class="sep"></div>
+
+            <div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+              <div>
+                <div class="h">Storico (team + fase corrente)</div>
+                <div class="small">Mostra gli ultimi output salvati per questo team e questa fase.</div>
+              </div>
+              <span class="pill mono" id="outCount">—</span>
+            </div>
+
+            <div class="sep"></div>
+            <div id="outList" class="stack"></div>
+          </div>
+        </div>
+
       </div>
     </section>
   </main>
@@ -98,59 +156,79 @@ document.getElementById("audRole").textContent = `ROLE:${ROLE}`;
 const warn = document.getElementById("pidWarn");
 if(warn) warn.style.display = PID ? "none" : "";
 
+let CURRENT_PHASE = null;
 let lastSig = "";
+
+// ACK local state (UX)
+function ackKey(){ return PID ? `simia.ack.${PID}` : "simia.ack.anonymous"; }
+function loadAcked(){
+  try{
+    const raw = localStorage.getItem(ackKey());
+    const arr = raw ? JSON.parse(raw) : [];
+    return new Set(Array.isArray(arr) ? arr : []);
+  }catch(e){ return new Set(); }
+}
+function saveAcked(set){
+  try{ localStorage.setItem(ackKey(), JSON.stringify(Array.from(set))); }catch(e){}
+}
+let ACKED = loadAcked();
+
 function signature(events){
-  return (events || []).slice(0,20).map(e=>e.id).join("|");
+  return (events || []).slice(0,30).map(e=>e.id).join("|");
 }
 
-function ackKey(){ return `simia.ack.${PID || "NOPID"}`; }
-function getAcked(){
-  try{ return JSON.parse(localStorage.getItem(ackKey()) || "{}"); }catch(e){ return {}; }
-}
-function setAcked(eventId){
-  const a = getAcked();
-  a[eventId] = new Date().toISOString();
-  try{ localStorage.setItem(ackKey(), JSON.stringify(a)); }catch(e){}
+async function refreshPhaseAndFeed(){
+  const j = await jget(`/api/scenario/feed?team=${encodeURIComponent(TEAM)}&role=${encodeURIComponent(ROLE)}`);
+  if(j.current_phase) CURRENT_PHASE = String(j.current_phase).toUpperCase();
+
+  const pb = document.getElementById("phaseBadge");
+  if(pb && CURRENT_PHASE) pb.textContent = CURRENT_PHASE;
+
+  const op = document.getElementById("outPhase");
+  if(op && CURRENT_PHASE) op.textContent = CURRENT_PHASE;
+
+  return j;
 }
 
-function render(events){
+function renderFeed(events){
   const box = document.getElementById("feed");
   const count = document.getElementById("count");
-  const acked = getAcked();
+  const arr = Array.isArray(events) ? events : [];
+  count.textContent = `${arr.length} events`;
 
-  count.textContent = `${events.length} events`;
-
-  if(!events.length){
+  if(!arr.length){
     box.innerHTML = `<div class="item"><div class="h">Nessun evento</div><div class="small">In attesa di Broadcast/Inject…</div></div>`;
     return;
   }
 
   box.innerHTML = "";
-  for(const ev of events){
+  for(const ev of arr){
     const sev = String(ev.severity||"INFO").toUpperCase();
     const kind = String(ev.kind||"BROADCAST").toUpperCase();
     const aud = String(ev.audience||"ALL").toUpperCase();
-    const isAck = !!acked[ev.id];
+    const isAcked = ACKED.has(ev.id);
 
     const div = document.createElement("div");
-    div.className = "item" + (isAck ? " ackdone" : "");
+    div.className = "item";
     div.innerHTML = `
       <div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">
         <div style="flex:1;min-width:260px">
-          <div class="h">${esc(ev.title || (kind==="INJECT" ? "Inject" : "Broadcast"))}</div>
+          <div class="h">${esc(ev.title || (kind==="INJECT" ? "Inject" : "Broadcast"))}
+            ${isAcked ? `<span class="pill mono">✓ LETTO</span>` : ``}
+          </div>
           <div class="small" style="margin-top:6px">
             <span class="pill mono kind">${esc(kind)}</span>
             <span class="pill mono sev ${esc(sev)}">${esc(sev)}</span>
             <span class="pill mono">${esc(aud)}</span>
             ${ev.phase ? `<span class="pill mono">${esc(ev.phase)}</span>` : ``}
             <span class="pill mono">${esc(ev.ts)}</span>
-            ${isAck ? `<span class="pill mono">✓ LETTO</span>` : ``}
           </div>
           <div style="margin-top:10px;white-space:pre-wrap">${esc(ev.body || "")}</div>
         </div>
+
         <div class="row" style="gap:8px;flex-wrap:wrap;justify-content:flex-end">
-          <button class="btn ghost" type="button" data-copy>Copy</button>
-          <button class="btn primary" type="button" data-ack ${isAck ? "disabled" : ""}>LETTO</button>
+          <button class="btn ghost" data-copy>Copy</button>
+          <button class="btn primary" data-ack ${PID ? "" : "disabled"} ${isAcked ? "disabled" : ""}>LETTO</button>
         </div>
       </div>
     `;
@@ -162,11 +240,8 @@ function render(events){
     });
 
     div.querySelector("[data-ack]")?.addEventListener("click", async ()=>{
-      if(isAck) return;
-      if(!PID){
-        alert("Manca pid nel link. Usa Participants → Copia link per avere un link personalizzato.");
-        return;
-      }
+      if(!PID){ alert("Manca pid nel link: impossibile registrare LETTO."); return; }
+      if(ACKED.has(ev.id)){ alert("Già marcato come LETTO."); return; }
       try{
         await jpost("/api/scenario/ack", {
           event_id: ev.id,
@@ -174,9 +249,10 @@ function render(events){
           team: TEAM,
           role: ROLE
         });
-        setAcked(ev.id);
+        ACKED.add(ev.id);
+        saveAcked(ACKED);
         alert("Registrato: LETTO.");
-        render(events);
+        refresh().catch(()=>{});
       }catch(e){
         alert("Errore ACK: " + e);
       }
@@ -186,21 +262,108 @@ function render(events){
   }
 }
 
+// Outputs (workspace)
+function renderOutputs(items){
+  const box = document.getElementById("outList");
+  const cnt = document.getElementById("outCount");
+  const arr = Array.isArray(items) ? items : [];
+  if(cnt) cnt.textContent = `${arr.length} items`;
+
+  if(!arr.length){
+    box.innerHTML = `<div class="item"><div class="h">Nessun output</div><div class="small">Salva il primo output dal workspace.</div></div>`;
+    return;
+  }
+
+  box.innerHTML = "";
+  for(const it of arr){
+    const div = document.createElement("div");
+    div.className = "item";
+    div.innerHTML = `
+      <div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">
+        <div style="flex:1;min-width:280px">
+          <div class="h">${esc(it.title || it.output_type || "Output")}</div>
+          <div class="small" style="margin-top:6px">
+            <span class="pill mono">${esc(it.output_type || "")}</span>
+            <span class="pill mono">${esc(it.team || "")}</span>
+            ${it.phase ? `<span class="pill mono">${esc(it.phase)}</span>` : ``}
+            <span class="pill mono">${esc(it.ts || "")}</span>
+          </div>
+          <div style="margin-top:10px;white-space:pre-wrap">${esc(it.content || "")}</div>
+        </div>
+        <div class="row" style="gap:8px;flex-wrap:wrap;justify-content:flex-end">
+          <button class="btn ghost" data-copy>Copy</button>
+        </div>
+      </div>
+    `;
+    div.querySelector("[data-copy]")?.addEventListener("click", async ()=>{
+      const txt = `[${it.ts}] ${it.output_type} ${it.team} ${it.phase||""}\n${it.title||""}\n${it.content||""}`.trim();
+      try{ await navigator.clipboard.writeText(txt); } catch {}
+      alert("Copiato.");
+    });
+    box.appendChild(div);
+  }
+}
+
+async function loadOutputs(){
+  const type = (document.getElementById("outType")?.value || "NOTE").toUpperCase();
+  const phase = CURRENT_PHASE || "";
+  const url = `/api/outputs?team=${encodeURIComponent(TEAM)}&phase=${encodeURIComponent(phase)}&type=${encodeURIComponent(type)}&limit=50`;
+
+  const box = document.getElementById("outList");
+  if(box) box.innerHTML = `<div class="item"><div class="h">Loading…</div><div class="small">Caricamento storico.</div></div>`;
+
+  const j = await jget(url);
+  renderOutputs(j.items || []);
+}
+
+async function saveOutput(){
+  const type = (document.getElementById("outType")?.value || "NOTE").toUpperCase();
+  const title = (document.getElementById("outTitle")?.value || "").trim();
+  const content = (document.getElementById("outContent")?.value || "").toString();
+
+  if(!content.trim()){
+    alert("Inserisci Content.");
+    return;
+  }
+
+  const payload = {
+    team: TEAM,
+    role: ROLE,
+    participant_id: PID || null,
+    phase: CURRENT_PHASE || null,
+    output_type: type,
+    title,
+    content
+  };
+
+  await jpost("/api/outputs", payload);
+
+  document.getElementById("outTitle").value = "";
+  document.getElementById("outContent").value = "";
+
+  await loadOutputs();
+  alert("Output salvato.");
+}
+
+function bindWorkspace(){
+  document.getElementById("outSaveBtn")?.addEventListener("click", () => saveOutput().catch(e => alert("Errore save: " + e)));
+  document.getElementById("outReloadBtn")?.addEventListener("click", () => loadOutputs().catch(e => alert("Errore load: " + e)));
+  document.getElementById("outType")?.addEventListener("change", () => loadOutputs().catch(()=>{}));
+}
+
+// main refresh loop
 async function refresh(){
   try{
-    const j = await jget(`/api/scenario/feed?team=${encodeURIComponent(TEAM)}&role=${encodeURIComponent(ROLE)}`);
-    const pb = document.getElementById("phaseBadge");
-    if(pb && j.current_phase) pb.textContent = j.current_phase;
-
+    const j = await refreshPhaseAndFeed();
     const events = Array.isArray(j.events) ? j.events : [];
     const sig = signature(events);
     if(sig !== lastSig){
       lastSig = sig;
-      render(events);
+      renderFeed(events);
     } else {
       document.getElementById("count").textContent = `${events.length} events`;
     }
-  } catch(e){
+  }catch(e){
     document.getElementById("feed").innerHTML =
       `<div class="item"><div class="h">Errore</div><div class="small mono">${esc(String(e))}</div></div>`;
   }
@@ -208,7 +371,8 @@ async function refresh(){
 
 document.getElementById("refreshBtn").addEventListener("click", refresh);
 
-refresh();
+bindWorkspace();
+refresh().then(loadOutputs).catch(()=>{});
 setInterval(refresh, 10000);
 </script>
 </body>
