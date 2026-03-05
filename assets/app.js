@@ -371,6 +371,85 @@ function bindInvites(){
   document.getElementById("exportCsvBtn")?.addEventListener("click", exportCsv);
   document.getElementById("exportJsonBtn")?.addEventListener("click", exportJson);
 }
+function pctBadge(pct){
+  // piccolo helper: ritorna label percentuale
+  return `${Math.max(0, Math.min(100, pct|0))}%`;
+}
+
+async function loadAckMonitor(){
+  const box = document.getElementById("ackTable");
+  const limitSel = document.getElementById("ackLimit");
+  if(!box) return;
+
+  const limit = parseInt(limitSel?.value || "30", 10) || 30;
+
+  box.innerHTML = `<div class="item"><div class="h">Loading…</div><div class="small">Sto leggendo lo stato ACK.</div></div>`;
+
+  try{
+    const j = await jget(`/api/scenario/ack_status?limit=${encodeURIComponent(limit)}`);
+    const items = Array.isArray(j.items) ? j.items : [];
+
+    if(!items.length){
+      box.innerHTML = `<div class="item"><div class="h">Nessun dato</div><div class="small">Non ci sono eventi oppure non ci sono partecipanti attesi.</div></div>`;
+      return;
+    }
+
+    box.innerHTML = "";
+
+    for(const it of items){
+      const ev = it.event || {};
+      const title = ev.title || (String(ev.kind||"").toUpperCase()==="INJECT" ? "Inject" : "Broadcast");
+      const expected = it.expectedCount || 0;
+      const acked = it.ackedCount || 0;
+      const pct = it.pct || 0;
+
+      const expectedByTeam = it.expectedByTeam || {};
+      const ackByTeam = it.ackByTeam || {};
+
+      // breakdown compatto
+      const teams = Array.from(new Set([...Object.keys(expectedByTeam), ...Object.keys(ackByTeam)])).sort();
+      const breakdown = teams.length ? teams.map(t=>{
+        const e = expectedByTeam[t] || 0;
+        const a = ackByTeam[t] || 0;
+        return `<span class="pill mono">${esc(t)} ${a}/${e}</span>`;
+      }).join(" ") : `<span class="pill mono">—</span>`;
+
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `
+        <div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+          <div style="flex:1;min-width:320px">
+            <div class="h">${esc(title)} <span class="small mono">(${esc(ev.id||"")})</span></div>
+            <div class="small" style="margin-top:6px">
+              <span class="pill mono">${esc(ev.kind||"")}</span>
+              <span class="pill mono">${esc(ev.severity||"")}</span>
+              <span class="pill mono">${esc(ev.audience||"")}</span>
+              ${ev.phase ? `<span class="pill mono">${esc(ev.phase)}</span>` : ``}
+              <span class="pill mono">${esc(ev.ts||"")}</span>
+            </div>
+
+            <div class="small" style="margin-top:10px">Breakdown:</div>
+            <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">${breakdown}</div>
+          </div>
+
+          <div style="min-width:220px;text-align:right">
+            <div class="h">${acked}/${expected} <span class="pill mono">${pctBadge(pct)}</span></div>
+            <div class="small" style="margin-top:6px">Attesi: ${expected} — Letti: ${acked}</div>
+          </div>
+        </div>
+      `;
+      box.appendChild(div);
+    }
+
+  }catch(e){
+    box.innerHTML = `<div class="item"><div class="h">Errore ACK Monitor</div><div class="small mono">${esc(String(e))}</div></div>`;
+  }
+}
+
+function bindAckMonitor(){
+  document.getElementById("ackReloadBtn")?.addEventListener("click", loadAckMonitor);
+  document.getElementById("ackLimit")?.addEventListener("change", loadAckMonitor);
+}
 async function loadScenarioLog(){
   const box = document.getElementById("scLog");
   const count = document.getElementById("scCount");
@@ -499,11 +578,13 @@ document.addEventListener("DOMContentLoaded", () => {
     bindParticipants();
     bindInvites();
     bindScenario();          // ✅ aggiungi qui
+    bindAckMonitor();
 
     await loadTeams();
     await loadParticipants();
     await loadSystem();
-    await loadScenarioLog(); // ✅ aggiungi qui
+    await loadScenarioLog();  // ✅ aggiungi qui
+    await loadAckMonitor();	
   })().catch(e => {
     console.error("SimIA admin init error:", e);
     alert("Errore init Admin: " + e);

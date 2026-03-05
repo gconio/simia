@@ -219,7 +219,27 @@ SimIA Control</textarea>
 
       <div class="sep"></div>
       <div id="scLog" class="stack"></div>
-    </div>
+    <div class="sep"></div>
+
+<div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+  <div>
+    <div class="h">ACK Monitor</div>
+    <div class="small">Stato letture per evento (attesi vs letture registrate).</div>
+  </div>
+  <div class="row" style="gap:8px;flex-wrap:wrap">
+    <select class="input" id="ackLimit" style="min-width:160px">
+      <option value="10">Ultimi 10</option>
+      <option value="20">Ultimi 20</option>
+      <option value="30" selected>Ultimi 30</option>
+      <option value="50">Ultimi 50</option>
+    </select>
+    <button class="btn ghost" id="ackReloadBtn">Ricarica ACK</button>
+  </div>
+</div>
+
+<div class="sep"></div>
+<div id="ackTable" class="stack"></div>
+	</div>
   </div>
 </div>
         <!-- SYSTEM -->
