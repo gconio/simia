@@ -159,3 +159,41 @@ textarea{resize:vertical}
   .layout{grid-template-columns: 1fr}
   .sidebar{position:relative; top:0; height:auto}
 }
+/* --- Admin: layout wide + tabs horizontal --- */
+.layout.layout-wide{
+  display:block;
+  min-height: calc(100vh - 64px);
+}
+
+.tabs{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  padding:12px 12px 0 12px;
+}
+
+.tab{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 12px;
+  border-radius:12px;
+  color:var(--muted);
+  border:1px solid rgba(34,49,77,.8);
+  background:rgba(8,12,20,.35);
+}
+
+.tab:hover{
+  color:var(--text);
+  border-color:rgba(59,130,246,.5);
+  background:rgba(18,28,45,.7);
+}
+
+.tab.active{
+  color:var(--text);
+  border-color:rgba(59,130,246,.8);
+  background:rgba(18,28,45,.95);
+}
+
+/* (opzionale) più respiro sopra la grid quando ci sono tabs */
+.layout-wide .grid{ margin-top:12px; }
