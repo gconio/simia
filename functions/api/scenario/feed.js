@@ -1,10 +1,10 @@
 function norm(s){ return String(s || "").trim().toUpperCase(); }
 
 function phaseNum(phase){
-  // PHASE-1 -> 1, PHASE-2 -> 2, null/empty -> 0
-  const p = norm(phase);
-  const m = /^PHASE-(\d+)$/.exec(p);
-  return m ? parseInt(m[1], 10) : 0;
+  // accetta: PHASE-2, phase 2, "2", "PHASE-2 (x)" ecc.
+  const p = String(phase || "").trim().toUpperCase();
+  const m = p.match(/(\d+)/);
+  return m ? parseInt(m[1], 10) : 0; // 0 = sempre visibile
 }
 
 export async function onRequest({ request, env }) {
