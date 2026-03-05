@@ -16,12 +16,17 @@ export async function onRequestGet({ request, env }) {
   }
 
   const url = new URL(request.url);
-  const team = norm(url.searchParams.get("team") || "ALL");
+
+  // team OPTIONAL: se assente o vuoto => nessun filtro team (utile per Instructor/Admin)
+  const teamRaw = url.searchParams.get("team");
+  const team = teamRaw && teamRaw.trim() ? norm(teamRaw) : null;
+
   const phase = normalizePhase(url.searchParams.get("phase")) || null;
-  const type = norm(url.searchParams.get("type") || "");
+  const typeRaw = url.searchParams.get("type") || "";
+  const type = typeRaw.trim() ? norm(typeRaw) : null;
+
   const limit = Math.min(parseInt(url.searchParams.get("limit") || "50", 10) || 50, 200);
 
-  // filtri dinamici
   let sql = `SELECT id, ts, session, phase, team, role, participant_id, output_type, title, content
              FROM analysis_outputs WHERE 1=1`;
   const args = [];

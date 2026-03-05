@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SimIA — Outputs Monitor</title>
+  <link rel="stylesheet" href="/assets/styles.css" />
+  <style>
+    .tbl { width:100%; border-collapse: collapse; }
+    .tbl th, .tbl td { padding:10px 8px; border-bottom:1px solid rgba(34,49,77,.7); vertical-align: top; }
+    .tbl th { text-align:left; color: var(--muted); font-weight:700; }
+    .tbl tr:hover td { background: rgba(18,28,45,.35); }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    details summary{ cursor:pointer; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">S</div>
+      <div>
+        <div class="brand-title">SimIA</div>
+        <div class="brand-sub">Outputs Monitor (Instructor/Admin)</div>
+      </div>
+    </div>
+    <div class="session">
+      <a class="btn ghost" href="/admin.html">Admin</a>
+    </div>
+  </header>
+
+  <main class="layout layout-wide">
+    <section class="content">
+      <div class="grid">
+        <div class="card span12">
+          <div class="card-title">Analytical Outputs</div>
+          <div class="card-body">
+
+            <div class="notice">
+              <div class="h">Vista istruttore</div>
+              <div class="small">Filtra e valuta gli output prodotti dai team (NOTE / INDICATORS / ACH / SUMMARY / CP1–CP4). Export CSV incluso.</div>
+            </div>
+
+            <div class="sep"></div>
+
+            <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end">
+              <div style="min-width:180px;flex:1">
+                <label class="lbl">Team</label>
+                <input class="input" id="fTeam" placeholder="(vuoto = tutti) es. A" />
+              </div>
+
+              <div style="min-width:180px;flex:1">
+                <label class="lbl">Phase</label>
+                <input class="input" id="fPhase" placeholder="(vuoto = tutte) es. PHASE-2" />
+              </div>
+
+              <div style="min-width:220px;flex:1">
+                <label class="lbl">Type</label>
+                <select class="input" id="fType">
+                  <option value="">(tutti)</option>
+                  <option>NOTE</option>
+                  <option>INDICATORS</option>
+                  <option>ACH</option>
+                  <option>SUMMARY</option>
+                  <option>CP1</option>
+                  <option>CP2</option>
+                  <option>CP3</option>
+                  <option>CP4</option>
+                </select>
+              </div>
+
+              <div style="min-width:180px;flex:1">
+                <label class="lbl">Limit</label>
+                <select class="input" id="fLimit">
+                  <option>25</option>
+                  <option selected>50</option>
+                  <option>100</option>
+                  <option>200</option>
+                </select>
+              </div>
+
+              <div class="row" style="gap:8px;flex-wrap:wrap">
+                <button class="btn primary" id="runBtn">Cerca</button>
+                <button class="btn ghost" id="csvBtn">Export CSV</button>
+              </div>
+
+              <span class="pill mono" id="count">—</span>
+            </div>
+
+            <div class="sep"></div>
+
+            <div id="box">
+              <div class="item">
+                <div class="h">Loading…</div>
+                <div class="small">Caricamento output.</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<script>
+function esc(s){
+  return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;").replaceAll("'","&#39;");
+}
+
+async function jget(url){
+  const r = await fetch(url, { headers: { "Accept":"application/json" } });
+  const t = await r.text();
+  let j; try{ j = JSON.parse(t); } catch { j = { raw: t }; }
+  if(!r.ok) throw new Error(j?.error || ("HTTP "+r.status));
+  return j;
+}
+
+let lastItems = [];
+
+function toCSV(items){
+  const cols = ["ts","team","phase","output_type","title","role","participant_id","content"];
+  const lines = [cols.join(",")];
+  for(const it of items){
+    const row = cols.map(c => {
+      const v = (it[c] ?? "");
+      const s = String(v).replaceAll('"','""');
+      return '"' + s + '"';
+    }).join(",");
+    lines.push(row);
+  }
+  return lines.join("\n");
+}
+
+function download(filename, text){
+  const blob = new Blob([text], { type:"text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function render(items){
+  lastItems = items || [];
+  const box = document.getElementById("box");
+  const count = document.getElementById("count");
+  count.textContent = `${lastItems.length} items`;
+
+  if(!lastItems.length){
+    box.innerHTML = `<div class="item"><div class="h">Nessun risultato</div><div class="small">Prova ad allargare i filtri.</div></div>`;
+    return;
+  }
+
+  const rows = lastItems.map(it => {
+    const title = it.title || it.output_type || "Output";
+    const content = it.content || "";
+    return `
+      <tr>
+        <td class="mono">${esc(it.ts || "")}</td>
+        <td><span class="pill mono">${esc(it.team || "")}</span></td>
+        <td>${it.phase ? `<span class="pill mono">${esc(it.phase)}</span>` : `<span class="pill mono">—</span>`}</td>
+        <td><span class="pill mono">${esc(it.output_type || "")}</span></td>
+        <td>
+          <details>
+            <summary><span class="h" style="display:inline">${esc(title)}</span> <span class="small mono">(${esc(it.id||"")})</span></summary>
+            <div style="margin-top:10px;white-space:pre-wrap">${esc(content)}</div>
+          </details>
+          <div class="small" style="margin-top:8px">
+            <span class="pill mono">${esc(it.role || "")}</span>
+            ${it.participant_id ? `<span class="pill mono">pid:${esc(it.participant_id)}</span>` : ``}
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  box.innerHTML = `
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Team</th>
+          <th>Phase</th>
+          <th>Type</th>
+          <th>Output</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+function buildUrl(){
+  const team = document.getElementById("fTeam").value.trim();
+  const phase = document.getElementById("fPhase").value.trim();
+  const type = document.getElementById("fType").value.trim();
+  const limit = document.getElementById("fLimit").value.trim() || "50";
+
+  const u = new URL("/api/outputs", location.origin);
+  if(team) u.searchParams.set("team", team);
+  if(phase) u.searchParams.set("phase", phase);
+  if(type) u.searchParams.set("type", type);
+  u.searchParams.set("limit", limit);
+  return u.toString();
+}
+
+async function run(){
+  const box = document.getElementById("box");
+  box.innerHTML = `<div class="item"><div class="h">Loading…</div><div class="small">Query in corso.</div></div>`;
+  const url = buildUrl();
+  const j = await jget(url);
+  render(j.items || []);
+}
+
+document.getElementById("runBtn").addEventListener("click", () => run().catch(e=>{
+  document.getElementById("box").innerHTML = `<div class="item"><div class="h">Errore</div><div class="small mono">${esc(String(e))}</div></div>`;
+}));
+
+document.getElementById("csvBtn").addEventListener("click", ()=>{
+  const ts = new Date().toISOString().slice(0,19).replaceAll(":","-");
+  download(`simia_outputs_${ts}.csv`, toCSV(lastItems));
+});
+
+run();
+</script>
+</body>
+</html>
