@@ -13,6 +13,13 @@ export async function onRequestGet(context) {
   });
 }
 
+function normalizePhase(input){
+  const p = String(input || "").trim().toUpperCase();
+  if(!p) return null;
+  const m = p.match(/(\d+)/);
+  if(!m) return null;
+  return `PHASE-${parseInt(m[1], 10)}`;
+}
 
 export async function onRequestPost(context) {
 
@@ -24,7 +31,7 @@ export async function onRequestPost(context) {
   const ts = new Date().toISOString();
 
   const kind = body.kind || "BROADCAST";
-  const phase = body.phase || null;
+  const phase = normalizePhase(body.phase);
   const audience = body.audience || "ALL";
   const title = body.title || "";
   const text = body.body || "";
