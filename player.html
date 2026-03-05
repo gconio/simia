@@ -40,7 +40,11 @@
               <span class="pill mono" id="count">—</span>
             </div>
             <div class="sep"></div>
-            <div id="feed" class="stack"></div>
+            <div id="pidWarn" class="notice" style="display:none;margin-bottom:12px">
+              <div class="h">Link non personalizzato</div>
+              <div class="small">Manca <span class="mono">pid</span>. Il tasto “LETTO” non sarà disponibile. Usa il link generato dalla Console Admin.</div>
+            </div>            
+			<div id="feed" class="stack"></div>
           </div>
         </div>
       </div>
@@ -66,9 +70,23 @@ async function jget(url){
   return j;
 }
 
+async function jpost(url, body){
+  const r = await fetch(url, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json", "Accept":"application/json" },
+    body: JSON.stringify(body)
+  });
+  const t = await r.text();
+  let j; try{ j = JSON.parse(t); } catch { j = { raw: t }; }
+  if(!r.ok) throw new Error(j?.error || ("HTTP "+r.status));
+  return j;
+}
+
 const TEAM = (getParam("team","ALL") || "ALL").trim().toUpperCase();
 const ROLE = (getParam("role","PLAYER") || "PLAYER").trim().toUpperCase();
 const PID  = (getParam("pid","") || "").trim();
+const warn = document.getElementById("pidWarn");
+if(warn) warn.style.display = PID ? "none" : "";
 
 document.getElementById("who").textContent = `${ROLE} / TEAM:${TEAM}${PID ? " / "+PID : ""}`;
 document.getElementById("subline").textContent = `Player — ${ROLE} — Team ${TEAM}`;
@@ -113,13 +131,30 @@ function render(events){
           </div>
           <div style="margin-top:10px;white-space:pre-wrap">${esc(ev.body || "")}</div>
         </div>
-        <button class="btn ghost" data-copy>Copy</button>
+        <div class="row" style="gap:8px;flex-wrap:wrap;justify-content:flex-end">
+          <button class="btn ghost" data-copy>Copy</button>
+          <button class="btn primary" data-ack ${PID ? "" : "disabled"}>LETTO</button>
+        </div>
       </div>
     `;
     div.querySelector("[data-copy]")?.addEventListener("click", async ()=>{
       const txt = `[${ev.ts}] ${kind}/${sev} ${aud}${ev.phase?(" "+ev.phase):""}\n${ev.title||""}\n${ev.body||""}`.trim();
       try{ await navigator.clipboard.writeText(txt); } catch {}
       alert("Copiato.");
+	  div.querySelector("[data-ack]")?.addEventListener("click", async ()=>{
+  if(!PID){ alert("Manca pid nel link: impossibile registrare LETTO."); return; }
+  try{
+    await jpost("/api/scenario/ack", {
+      event_id: ev.id,
+      participant_id: PID,
+      team: TEAM,
+      role: ROLE
+    });
+    alert("Registrato: LETTO.");
+  }catch(e){
+    alert("Errore ACK: " + e);
+  }
+});
     });
     box.appendChild(div);
   }
