@@ -22,10 +22,11 @@
         <div class="brand-sub" id="subline">Player</div>
       </div>
     </div>
-    <div class="session">
-      <span class="pill mono" id="who">—</span>
-      <button class="btn ghost" id="refreshBtn">Refresh</button>
-    </div>
+<div class="session">
+  <span class="pill mono" id="who">—</span>
+  <span class="pill mono" id="phaseBadge">PHASE-—</span>
+  <button class="btn ghost" id="refreshBtn">Refresh</button>
+</div>
   </header>
 
   <main class="layout layout-wide">
@@ -127,7 +128,8 @@ function render(events){
 async function refresh(){
   try{
     const j = await jget(`/api/scenario/feed?team=${encodeURIComponent(TEAM)}&role=${encodeURIComponent(ROLE)}`);
-    const events = Array.isArray(j.events) ? j.events : [];
+    const pb = document.getElementById("phaseBadge");
+    if(pb && j.current_phase) pb.textContent = j.current_phase;    const events = Array.isArray(j.events) ? j.events : [];
     const sig = signature(events);
     if(sig !== lastSig){
       lastSig = sig;
