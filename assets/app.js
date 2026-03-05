@@ -46,13 +46,15 @@ function downloadText(text, filename, mime){
 }
 
 function setActiveTab(tab){
-  document.querySelectorAll(".navitem").forEach(a=>{
+  document.querySelectorAll(".tab").forEach(a=>{
     const on = a.getAttribute("data-tab") === tab;
     a.classList.toggle("active", on);
   });
+
   document.querySelectorAll(".panel").forEach(p=>{
     p.style.display = (p.getAttribute("data-panel") === tab) ? "" : "none";
   });
+
   try{ localStorage.setItem("simia.admin.tab", tab); }catch(e){}
 }
 
@@ -284,6 +286,7 @@ function bindTabs(){
       setActiveTab(a.getAttribute("data-tab"));
     });
   });
+
   let saved = "setup";
   try{ saved = localStorage.getItem("simia.admin.tab") || "setup"; }catch(e){}
   setActiveTab(saved);
