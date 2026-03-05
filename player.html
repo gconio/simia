@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SimIA — Player</title>
+  <link rel="stylesheet" href="/assets/styles.css" />
+  <style>
+    .sev{font-weight:800}
+    .sev.INFO{border-color:rgba(59,130,246,.7)}
+    .sev.AMBER{border-color:rgba(245,158,11,.8)}
+    .sev.RED{border-color:rgba(239,68,68,.85)}
+    .kind{opacity:.9}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">S</div>
+      <div>
+        <div class="brand-title">SimIA</div>
+        <div class="brand-sub" id="subline">Player</div>
+      </div>
+    </div>
+    <div class="session">
+      <span class="pill mono" id="who">—</span>
+      <button class="btn ghost" id="refreshBtn">Refresh</button>
+    </div>
+  </header>
+
+  <main class="layout layout-wide">
+    <section class="content">
+      <div class="grid">
+        <div class="card span12">
+          <div class="card-title">Live Feed</div>
+          <div class="card-body">
+            <div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+              <div class="small">Mostra eventi per audience: <span class="mono">ALL</span>, <span class="mono" id="audTeam">TEAM:—</span>, <span class="mono" id="audRole">ROLE:—</span></div>
+              <span class="pill mono" id="count">—</span>
+            </div>
+            <div class="sep"></div>
+            <div id="feed" class="stack"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<script>
+function esc(s){
+  return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;").replaceAll("'","&#39;");
+}
+
+function getParam(name, def){
+  const u = new URL(location.href);
+  return (u.searchParams.get(name) || def || "").toString();
+}
+
+async function jget(url){
+  const r = await fetch(url, { headers: { "Accept":"application/json" } });
+  const t = await r.text();
+  let j; try{ j = JSON.parse(t); } catch { j = { raw: t }; }
+  if(!r.ok) throw new Error(j?.error || ("HTTP "+r.status));
+  return j;
+}
+
+const TEAM = (getParam("team","ALL") || "ALL").trim().toUpperCase();
+const ROLE = (getParam("role","PLAYER") || "PLAYER").trim().toUpperCase();
+const PID  = (getParam("pid","") || "").trim();
+
+document.getElementById("who").textContent = `${ROLE} / TEAM:${TEAM}${PID ? " / "+PID : ""}`;
+document.getElementById("subline").textContent = `Player — ${ROLE} — Team ${TEAM}`;
+document.getElementById("audTeam").textContent = `TEAM:${TEAM}`;
+document.getElementById("audRole").textContent = `ROLE:${ROLE}`;
+
+let lastSig = "";
+
+function signature(events){
+  // firma per evitare rerender inutili
+  return (events || []).slice(0,20).map(e=>e.id).join("|");
+}
+
+function render(events){
+  const box = document.getElementById("feed");
+  const count = document.getElementById("count");
+  count.textContent = `${events.length} events`;
+
+  if(!events.length){
+    box.innerHTML = `<div class="item"><div class="h">Nessun evento</div><div class="small">In attesa di Broadcast/Inject…</div></div>`;
+    return;
+  }
+
+  box.innerHTML = "";
+  for(const ev of events){
+    const sev = String(ev.severity||"INFO").toUpperCase();
+    const kind = String(ev.kind||"BROADCAST").toUpperCase();
+    const aud = String(ev.audience||"ALL").toUpperCase();
+
+    const div = document.createElement("div");
+    div.className = "item";
+    div.innerHTML = `
+      <div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">
+        <div style="flex:1;min-width:260px">
+          <div class="h">${esc(ev.title || (kind==="INJECT" ? "Inject" : "Broadcast"))}</div>
+          <div class="small" style="margin-top:6px">
+            <span class="pill mono kind">${esc(kind)}</span>
+            <span class="pill mono sev ${esc(sev)}">${esc(sev)}</span>
+            <span class="pill mono">${esc(aud)}</span>
+            ${ev.phase ? `<span class="pill mono">${esc(ev.phase)}</span>` : ``}
+            <span class="pill mono">${esc(ev.ts)}</span>
+          </div>
+          <div style="margin-top:10px;white-space:pre-wrap">${esc(ev.body || "")}</div>
+        </div>
+        <button class="btn ghost" data-copy>Copy</button>
+      </div>
+    `;
+    div.querySelector("[data-copy]")?.addEventListener("click", async ()=>{
+      const txt = `[${ev.ts}] ${kind}/${sev} ${aud}${ev.phase?(" "+ev.phase):""}\n${ev.title||""}\n${ev.body||""}`.trim();
+      try{ await navigator.clipboard.writeText(txt); } catch {}
+      alert("Copiato.");
+    });
+    box.appendChild(div);
+  }
+}
+
+async function refresh(){
+  try{
+    const j = await jget(`/api/scenario/feed?team=${encodeURIComponent(TEAM)}&role=${encodeURIComponent(ROLE)}`);
+    const events = Array.isArray(j.events) ? j.events : [];
+    const sig = signature(events);
+    if(sig !== lastSig){
+      lastSig = sig;
+      render(events);
+    } else {
+      document.getElementById("count").textContent = `${events.length} events`;
+    }
+  } catch(e){
+    document.getElementById("feed").innerHTML =
+      `<div class="item"><div class="h">Errore</div><div class="small mono">${esc(String(e))}</div></div>`;
+  }
+}
+
+document.getElementById("refreshBtn").addEventListener("click", refresh);
+
+// polling leggero
+refresh();
+setInterval(refresh, 10000);
+</script>
+</body>
+</html>
