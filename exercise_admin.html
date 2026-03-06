@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>SimIA — Exercise / Scenario</title>
+<link rel="stylesheet" href="/assets/styles.css"/>
+</head>
+<body>
+
+<header class="topbar">
+<div class="brand">
+<div class="logo">SI</div>
+<div>
+<div class="brand-title">SimIA</div>
+<div class="brand-sub">Exercise / Scenario Management</div>
+</div>
+</div>
+
+<div class="session">
+<a class="btn ghost" href="/admin.html">Admin</a>
+<a class="btn ghost" href="/activations_admin.html">Activations</a>
+<a class="btn ghost" href="/outputs_admin.html">Outputs</a>
+</div>
+</header>
+
+<main class="layout layout-wide">
+<section class="content">
+
+<div class="grid">
+
+<div class="card span12">
+<div class="card-title">Exercise / Scenario</div>
+
+<div class="card-body">
+
+<div class="row" style="gap:10px;flex-wrap:wrap">
+
+<div style="flex:2;min-width:220px">
+<label class="lbl">Exercise Name</label>
+<input class="input" id="exName">
+</div>
+
+<div style="flex:2;min-width:220px">
+<label class="lbl">Scenario Title</label>
+<input class="input" id="scTitle">
+</div>
+
+<div style="flex:1;min-width:150px">
+<label class="lbl">Status</label>
+<select class="input" id="exStatus">
+<option>draft</option>
+<option>ready</option>
+<option>live</option>
+<option>completed</option>
+</select>
+</div>
+
+</div>
+
+<div style="margin-top:12px">
+<label class="lbl">Scenario Background</label>
+<textarea class="input" style="min-height:120px"></textarea>
+</div>
+
+<div style="margin-top:12px">
+<label class="lbl">Exercise Objectives</label>
+<textarea class="input" style="min-height:100px"></textarea>
+</div>
+
+<div class="row" style="margin-top:14px;gap:8px">
+<button class="btn primary">Save</button>
+<button class="btn ghost">Reload</button>
+</div>
+
+</div>
+</div>
+
+<div class="card span12">
+<div class="card-title">Scenario Phases</div>
+<div class="card-body">
+
+<div class="row" style="gap:10px;flex-wrap:wrap">
+
+<div style="flex:1;min-width:160px">
+<label class="lbl">Phase Code</label>
+<input class="input mono">
+</div>
+
+<div style="flex:2;min-width:200px">
+<label class="lbl">Title</label>
+<input class="input">
+</div>
+
+<div style="flex:2;min-width:200px">
+<label class="lbl">Description</label>
+<input class="input">
+</div>
+
+<div style="flex:1;min-width:120px">
+<label class="lbl">Order</label>
+<input class="input mono">
+</div>
+
+</div>
+
+<div class="row" style="margin-top:12px">
+<button class="btn primary">Save Phase</button>
+</div>
+
+</div>
+</div>
+
+<div class="card span12">
+<div class="card-title">Structure</div>
+<div class="card-body">
+<div class="notice">
+<div class="h">SimIA Model</div>
+<div class="small">
+Exercise / Scenario → narrative container<br>
+Phases → synchronization layer<br>
+Activations → injections (T+ events)<br>
+White Cell → instructor control
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</section>
+</main>
+
+</body>
+</html>
