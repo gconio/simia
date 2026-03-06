@@ -1,36 +1,18 @@
-SimIA v2.5 — White Cell controls inside Activations
+SimIA v2.5.1 — White Cell Log refinement
 
-What this update adds
-- New API:
-  - /api/scenario/control
-- White Cell actions now available inside Activations:
-  - Release now
-  - Delay +5 min
-  - Cancel
-  - Retarget
-- Actions available:
-  - in activation list
-  - in timeline board cards
+What this update changes
+- White Cell Log now shows only the latest 5 logs by default
+- Added toggle button:
+  - Show all
+  - Show last 5
+- Added mode indicator pill:
+  - LAST 5
+  - ALL LOGS
 
 Files included
-- functions/api/scenario/control.js
 - activations_admin.html
 - README.txt
 
-Prerequisites
-- /api/scenario/phases installed
-- /api/scenario/injects installed
-- /api/scenario/actions installed
-- branding.js installed
-
 Install
-1) Copy files preserving folders
+1) Replace activations_admin.html
 2) Commit + Push
-
-Checks
-A) Open /activations_admin.html
-B) Use Release now on an activation
-C) Use Delay +5
-D) Use Cancel
-E) Use Retarget
-F) Verify White Cell Log updates

@@ -87,6 +87,8 @@
   <div class="card-body">
     <div class="row" style="gap:8px;flex-wrap:wrap">
       <button class="btn ghost" id="reloadActionsBtn">Reload log</button>
+      <button class="btn" id="toggleActionsBtn">Show all</button>
+      <span class="pill mono" id="actionsModePill">LAST 5</span>
     </div>
     <div class="sep"></div>
     <div id="actionsList" class="stack"></div>
@@ -129,6 +131,7 @@ async function jdel(url){
 let CURRENT_ACTIVATION_ID = "";
 let PHASES = [];
 let ACTIVATIONS = [];
+let ACTIONS_SHOW_ALL = false;
 
 function phaseLabel(p){
   return (p.phase_code || "") + (p.title ? " — " + p.title : "");
@@ -350,9 +353,12 @@ async function loadInjects(){
 }
 
 async function loadActions(){
-  const j = await jget("/api/scenario/actions?limit=50");
+  const limit = ACTIONS_SHOW_ALL ? 100 : 5;
+  const j = await jget("/api/scenario/actions?limit=" + limit);
   const box = document.getElementById("actionsList");
   box.innerHTML = "";
+  document.getElementById("actionsModePill").textContent = ACTIONS_SHOW_ALL ? "ALL LOGS" : "LAST 5";
+  document.getElementById("toggleActionsBtn").textContent = ACTIONS_SHOW_ALL ? "Show last 5" : "Show all";
   const rows = j.actions || [];
   if(!rows.length){
     box.innerHTML = '<div class="item"><div class="small">Nessuna azione registrata.</div></div>';
@@ -396,6 +402,10 @@ document.getElementById("saveInjectBtn").addEventListener("click", async ()=>{
 });
 document.getElementById("reloadInjectsBtn").addEventListener("click", reloadAll);
 document.getElementById("reloadActionsBtn").addEventListener("click", loadActions);
+document.getElementById("toggleActionsBtn").addEventListener("click", async ()=>{
+  ACTIONS_SHOW_ALL = !ACTIONS_SHOW_ALL;
+  await loadActions();
+});
 
 (async function init(){
   await reloadAll();
