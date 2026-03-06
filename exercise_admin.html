@@ -9,126 +9,133 @@
 <body>
 
 <header class="topbar">
-<div class="brand">
-<div class="logo">SI</div>
-<div>
-<div class="brand-title">SimIA</div>
-<div class="brand-sub">Exercise / Scenario Management</div>
-</div>
-</div>
+  <div class="brand">
+    <div class="logo" id="brandLogo">SI</div>
+    <div>
+      <div class="brand-title" id="brandTitle">SimIA</div>
+      <div class="brand-sub" id="brandSub">Exercise / Scenario Management</div>
+    </div>
+  </div>
 
-<div class="session">
-<a class="btn ghost" href="/admin.html">Admin</a>
-<a class="btn ghost" href="/activations_admin.html">Activations</a>
-<a class="btn ghost" href="/outputs_admin.html">Outputs</a>
-</div>
+  <div class="session">
+    <a class="btn ghost" href="/admin.html">Admin</a>
+    <a class="btn ghost" href="/activations_admin.html">Activations</a>
+    <a class="btn ghost" href="/outputs_admin.html">Outputs</a>
+  </div>
 </header>
 
 <main class="layout layout-wide">
-<section class="content">
+  <section class="content">
+    <div class="grid">
 
-<div class="grid">
+      <div class="card span12">
+        <div class="card-title">Exercise / Scenario</div>
+        <div class="card-body">
+          <div class="notice">
+            <div class="h">Narrative container</div>
+            <div class="small">Questa sezione definisce il contenitore narrativo dell'esercitazione. Le Activations sono gestite separatamente.</div>
+          </div>
 
-<div class="card span12">
-<div class="card-title">Exercise / Scenario</div>
+          <div class="sep"></div>
 
-<div class="card-body">
+          <div class="row" style="gap:10px;flex-wrap:wrap">
+            <div style="flex:2;min-width:220px">
+              <label class="lbl">Exercise Name</label>
+              <input class="input" id="exName" placeholder="Es. Crisis Intelligence Exercise"/>
+            </div>
 
-<div class="row" style="gap:10px;flex-wrap:wrap">
+            <div style="flex:2;min-width:220px">
+              <label class="lbl">Scenario Title</label>
+              <input class="input" id="scTitle" placeholder="Es. Maritime Escalation in the Spratly Islands"/>
+            </div>
 
-<div style="flex:2;min-width:220px">
-<label class="lbl">Exercise Name</label>
-<input class="input" id="exName">
-</div>
+            <div style="flex:1;min-width:150px">
+              <label class="lbl">Status</label>
+              <select class="input" id="exStatus">
+                <option>draft</option>
+                <option>ready</option>
+                <option>live</option>
+                <option>completed</option>
+              </select>
+            </div>
+          </div>
 
-<div style="flex:2;min-width:220px">
-<label class="lbl">Scenario Title</label>
-<input class="input" id="scTitle">
-</div>
+          <div style="margin-top:12px">
+            <label class="lbl">Scenario Background</label>
+            <textarea class="input" id="scBackground" style="min-height:120px" placeholder="Contesto geopolitico, baseline iniziale, attori principali..."></textarea>
+          </div>
 
-<div style="flex:1;min-width:150px">
-<label class="lbl">Status</label>
-<select class="input" id="exStatus">
-<option>draft</option>
-<option>ready</option>
-<option>live</option>
-<option>completed</option>
-</select>
-</div>
+          <div style="margin-top:12px">
+            <label class="lbl">Exercise Objectives</label>
+            <textarea class="input" id="exObjectives" style="min-height:100px" placeholder="Obiettivi didattici, finalità dell'esercitazione..."></textarea>
+          </div>
 
-</div>
+          <div class="row" style="margin-top:14px;gap:8px;flex-wrap:wrap">
+            <button class="btn primary" id="saveExercise">Save</button>
+            <button class="btn ghost" id="reloadExercise">Reload</button>
+            <a class="btn" href="/activations_admin.html">Open Activations</a>
+          </div>
+        </div>
+      </div>
 
-<div style="margin-top:12px">
-<label class="lbl">Scenario Background</label>
-<textarea class="input" style="min-height:120px"></textarea>
-</div>
+      <div class="card span12">
+        <div class="card-title">Scenario Phases</div>
+        <div class="card-body">
+          <div class="notice">
+            <div class="h">Synchronization layer</div>
+            <div class="small">Le fasi servono a sincronizzare l'evoluzione dello scenario con le activations.</div>
+          </div>
 
-<div style="margin-top:12px">
-<label class="lbl">Exercise Objectives</label>
-<textarea class="input" style="min-height:100px"></textarea>
-</div>
+          <div class="sep"></div>
 
-<div class="row" style="margin-top:14px;gap:8px">
-<button class="btn primary">Save</button>
-<button class="btn ghost">Reload</button>
-</div>
+          <div class="row" style="gap:10px;flex-wrap:wrap">
+            <div style="flex:1;min-width:160px">
+              <label class="lbl">Phase Code</label>
+              <input class="input mono" id="phaseCode" placeholder="PHASE-1"/>
+            </div>
 
-</div>
-</div>
+            <div style="flex:2;min-width:200px">
+              <label class="lbl">Title</label>
+              <input class="input" id="phaseTitle" placeholder="Initial Warning"/>
+            </div>
 
-<div class="card span12">
-<div class="card-title">Scenario Phases</div>
-<div class="card-body">
+            <div style="flex:2;min-width:200px">
+              <label class="lbl">Description</label>
+              <input class="input" id="phaseDesc" placeholder="Descrizione della fase"/>
+            </div>
 
-<div class="row" style="gap:10px;flex-wrap:wrap">
+            <div style="flex:1;min-width:120px">
+              <label class="lbl">Order</label>
+              <input class="input mono" id="phaseOrder" placeholder="1"/>
+            </div>
+          </div>
 
-<div style="flex:1;min-width:160px">
-<label class="lbl">Phase Code</label>
-<input class="input mono">
-</div>
+          <div class="row" style="margin-top:12px;gap:8px;flex-wrap:wrap">
+            <button class="btn primary">Save Phase</button>
+          </div>
+        </div>
+      </div>
 
-<div style="flex:2;min-width:200px">
-<label class="lbl">Title</label>
-<input class="input">
-</div>
+      <div class="card span12">
+        <div class="card-title">Structure</div>
+        <div class="card-body">
+          <div class="notice">
+            <div class="h">SimIA Model</div>
+            <div class="small">
+              Exercise / Scenario → narrative container<br>
+              Phases → synchronization layer<br>
+              Activations → injections (T+ events)<br>
+              White Cell → instructor control
+            </div>
+          </div>
+        </div>
+      </div>
 
-<div style="flex:2;min-width:200px">
-<label class="lbl">Description</label>
-<input class="input">
-</div>
-
-<div style="flex:1;min-width:120px">
-<label class="lbl">Order</label>
-<input class="input mono">
-</div>
-
-</div>
-
-<div class="row" style="margin-top:12px">
-<button class="btn primary">Save Phase</button>
-</div>
-
-</div>
-</div>
-
-<div class="card span12">
-<div class="card-title">Structure</div>
-<div class="card-body">
-<div class="notice">
-<div class="h">SimIA Model</div>
-<div class="small">
-Exercise / Scenario → narrative container<br>
-Phases → synchronization layer<br>
-Activations → injections (T+ events)<br>
-White Cell → instructor control
-</div>
-</div>
-</div>
-</div>
-
-</div>
-</section>
+    </div>
+  </section>
 </main>
 
+<script src="/assets/theme.js"></script>
+<script src="/assets/branding.js"></script>
 </body>
 </html>
