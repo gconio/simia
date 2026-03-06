@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SimIA — Simulation Timeline</title>
+  <link rel="stylesheet" href="/assets/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">SI</div>
+      <div>
+        <div class="brand-title">SimIA</div>
+        <div class="brand-sub">Simulation Timeline / Planning inject</div>
+      </div>
+    </div>
+    <div class="session">
+      <a class="btn ghost" href="/admin.html">Admin</a>
+      <a class="btn ghost" href="/outputs_admin.html">Outputs</a>
+    </div>
+  </header>
+
+  <main class="layout layout-wide">
+    <section class="content">
+      <div class="grid">
+
+        <div class="card span12">
+          <div class="card-title">Planned inject / broadcast</div>
+          <div class="card-body">
+
+            <div class="notice">
+              <div class="h">Planning</div>
+              <div class="small">Prepari gli inject in anticipo, li ordini per fase e sequenza, poi li rilasci con un click.</div>
+            </div>
+
+            <div class="sep"></div>
+
+            <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end">
+              <div style="min-width:180px;flex:1">
+                <label class="lbl">Kind</label>
+                <select class="input" id="plKind">
+                  <option>INJECT</option>
+                  <option>BROADCAST</option>
+                </select>
+              </div>
+
+              <div style="min-width:180px;flex:1">
+                <label class="lbl">Severity</label>
+                <select class="input" id="plSeverity">
+                  <option>INFO</option>
+                  <option>AMBER</option>
+                  <option>RED</option>
+                </select>
+              </div>
+
+              <div style="min-width:220px;flex:2">
+                <label class="lbl">Audience</label>
+                <input class="input" id="plAudience" value="ALL" placeholder="ALL / TEAM:A / ROLE:OBSERVER" />
+              </div>
+
+              <div style="min-width:180px;flex:1">
+                <label class="lbl">Planned phase</label>
+                <select class="input" id="plPhase">
+                  <option value="">(none)</option>
+                  <option>PHASE-1</option>
+                  <option>PHASE-2</option>
+                  <option>PHASE-3</option>
+                  <option>PHASE-4</option>
+                </select>
+              </div>
+
+              <div style="min-width:140px;flex:1">
+                <label class="lbl">Sequence</label>
+                <input class="input" id="plSeq" value="0" />
+              </div>
+            </div>
+
+            <div class="sep"></div>
+
+            <label class="lbl">Title</label>
+            <input class="input" id="plTitle" placeholder="Titolo (opzionale)" />
+
+            <label class="lbl" style="margin-top:10px">Body</label>
+            <textarea class="input" id="plBody" rows="7" placeholder="Testo dell'evento pianificato..."></textarea>
+
+            <div class="row" style="margin-top:12px;gap:8px;flex-wrap:wrap">
+              <button class="btn primary" id="plSaveBtn">Save planned item</button>
+              <button class="btn ghost" id="plReloadBtn">Reload timeline</button>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="card span12">
+          <div class="card-title">Timeline</div>
+          <div class="card-body">
+            <div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+              <div>
+                <div class="h">Scheduled items</div>
+                <div class="small">Gli item rilasciati restano tracciati nel piano e risultano marcati come released.</div>
+              </div>
+              <span class="pill mono" id="plCount">—</span>
+            </div>
+
+            <div class="sep"></div>
+            <div id="plList" class="stack"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+<script src="/assets/theme.js"></script>
+<script>
+function esc(s){
+  return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;").replaceAll("'","&#39;");
+}
+async function jget(url){
+  const r = await fetch(url, { headers:{ "Accept":"application/json" } });
+  const t = await r.text();
+  let j; try{ j = JSON.parse(t); }catch{ j = { raw:t }; }
+  if(!r.ok) throw new Error(j?.error || ("HTTP "+r.status));
+  return j;
+}
+async function jpost(url, body){
+  const r = await fetch(url, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json", "Accept":"application/json" },
+    body: JSON.stringify(body)
+  });
+  const t = await r.text();
+  let j; try{ j = JSON.parse(t); }catch{ j = { raw:t }; }
+  if(!r.ok) throw new Error(j?.error || ("HTTP "+r.status));
+  return j;
+}
+async function jdel(url){
+  const r = await fetch(url, { method:"DELETE" });
+  const t = await r.text();
+  let j; try{ j = JSON.parse(t); }catch{ j = { raw:t }; }
+  if(!r.ok) throw new Error(j?.error || ("HTTP "+r.status));
+  return j;
+}
+
+function phaseNum(p){
+  const m = String(p||"").toUpperCase().match(/(\d+)/);
+  return m ? parseInt(m[1],10) : 0;
+}
+
+function sortItems(items){
+  return [...items].sort((a,b)=>{
+    if(Number(a.is_released)!==Number(b.is_released)) return Number(a.is_released)-Number(b.is_released);
+    const pa = phaseNum(a.planned_phase), pb = phaseNum(b.planned_phase);
+    if(pa !== pb) return pa - pb;
+    const sa = parseInt(a.seq_no||0,10)||0, sb = parseInt(b.seq_no||0,10)||0;
+    if(sa !== sb) return sa - sb;
+    return String(a.created_ts||"").localeCompare(String(b.created_ts||""));
+  });
+}
+
+async function loadTimeline(){
+  const box = document.getElementById("plList");
+  const cnt = document.getElementById("plCount");
+
+  box.innerHTML = `<div class="item"><div class="h">Loading…</div></div>`;
+  try{
+    const j = await jget("/api/scenario/schedule");
+    const items = sortItems(Array.isArray(j.items) ? j.items : []);
+    cnt.textContent = `${items.length} items`;
+
+    if(!items.length){
+      box.innerHTML = `<div class="item"><div class="h">No planned items</div><div class="small">Aggiungi il primo inject/broadcast pianificato.</div></div>`;
+      return;
+    }
+
+    box.innerHTML = "";
+    for(const it of items){
+      const released = Number(it.is_released) === 1;
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `
+        <div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">
+          <div style="flex:1;min-width:320px">
+            <div class="h">${esc(it.title || "(no title)")}</div>
+            <div class="small" style="margin-top:6px">
+              <span class="pill mono">${esc(it.kind || "")}</span>
+              <span class="pill mono">${esc(it.severity || "")}</span>
+              <span class="pill mono">${esc(it.audience || "")}</span>
+              ${it.planned_phase ? `<span class="pill mono">${esc(it.planned_phase)}</span>` : ``}
+              <span class="pill mono">SEQ ${esc(it.seq_no)}</span>
+              ${released ? `<span class="pill mono">RELEASED</span>` : `<span class="pill mono">PLANNED</span>`}
+            </div>
+            <div style="margin-top:10px;white-space:pre-wrap">${esc(it.body || "")}</div>
+          </div>
+
+          <div class="row" style="gap:8px;flex-wrap:wrap;justify-content:flex-end">
+            <button class="btn" data-copy>Copy</button>
+            ${released ? `<button class="btn ghost" disabled>Released</button>` : `<button class="btn primary" data-release>Release now</button>`}
+            <button class="btn danger" data-del>Delete</button>
+          </div>
+        </div>
+      `;
+
+      div.querySelector("[data-copy]")?.addEventListener("click", async ()=>{
+        const txt = `[${it.planned_phase || "NO-PHASE"} #${it.seq_no}] ${it.kind}/${it.severity} ${it.audience}\n${it.title || ""}\n${it.body || ""}`.trim();
+        try{ await navigator.clipboard.writeText(txt); alert("Copiato."); }catch{ alert(txt); }
+      });
+
+      div.querySelector("[data-release]")?.addEventListener("click", async ()=>{
+        if(!confirm("Rilasciare questo item nello scenario live?")) return;
+        try{
+          await jpost("/api/scenario/release", { scheduled_id: it.id });
+          await loadTimeline();
+          alert("Item released.");
+        }catch(e){
+          alert("Errore release: " + e);
+        }
+      });
+
+      div.querySelector("[data-del]")?.addEventListener("click", async ()=>{
+        if(!confirm("Eliminare questo item pianificato?")) return;
+        try{
+          await jdel(`/api/scenario/schedule?id=${encodeURIComponent(it.id)}`);
+          await loadTimeline();
+        }catch(e){
+          alert("Errore delete: " + e);
+        }
+      });
+
+      box.appendChild(div);
+    }
+  }catch(e){
+    cnt.textContent = "ERR";
+    box.innerHTML = `<div class="item"><div class="h">Errore</div><div class="small mono">${esc(String(e))}</div></div>`;
+  }
+}
+
+function bindForm(){
+  document.getElementById("plSaveBtn")?.addEventListener("click", async ()=>{
+    const payload = {
+      kind: document.getElementById("plKind").value,
+      severity: document.getElementById("plSeverity").value,
+      audience: (document.getElementById("plAudience").value || "ALL").trim() || "ALL",
+      planned_phase: (document.getElementById("plPhase").value || "").trim() || null,
+      seq_no: parseInt(document.getElementById("plSeq").value || "0", 10) || 0,
+      title: (document.getElementById("plTitle").value || "").trim(),
+      body: (document.getElementById("plBody").value || "").toString()
+    };
+
+    if(!payload.body.trim()){
+      alert("Inserisci Body.");
+      return;
+    }
+
+    try{
+      await jpost("/api/scenario/schedule", payload);
+      document.getElementById("plTitle").value = "";
+      document.getElementById("plBody").value = "";
+      await loadTimeline();
+      alert("Planned item saved.");
+    }catch(e){
+      alert("Errore save: " + e);
+    }
+  });
+
+  document.getElementById("plReloadBtn")?.addEventListener("click", loadTimeline);
+}
+
+document.addEventListener("DOMContentLoaded", ()=>{
+  bindForm();
+  loadTimeline();
+});
+</script>
+</body>
+</html>
