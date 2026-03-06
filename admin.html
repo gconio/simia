@@ -1,33 +1,643 @@
-<!doctype html><html lang="it"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>SimIA — Console amministrativa</title><link rel="stylesheet" href="/assets/styles.css"/></head><body><header class="topbar"><div class="brand"><div class="logo" id="brandLogo">SI</div><div><div class="brand-title" id="brandTitle">SimIA</div><div class="brand-sub" id="brandSub">Console amministrativa</div></div></div><div class="session"><a class="btn ghost" href="/scenario_timeline.html">Timeline</a><a class="btn ghost" href="/outputs_admin.html">Outputs</a><a class="btn ghost" href="/index.html">Home</a></div></header><main class="layout layout-wide"><section class="content"><div class="tabs"><a class="tab active" data-tab="setup" href="#">Setup</a><a class="tab" data-tab="roles" href="#">Roles</a><a class="tab" data-tab="participants" href="#">Participants</a><a class="tab" data-tab="scenario" href="#">Scenario</a><a class="tab" data-tab="system" href="#">System</a></div><div class="grid"><div class="panel" data-panel="setup"><div class="card span12"><div class="card-title">Setup</div><div class="card-body"><div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end"><div style="min-width:220px;flex:2"><label class="lbl">Nome brand</label><input class="input" id="cfgBrandName"/></div><div style="min-width:220px;flex:2"><label class="lbl">Sottotitolo</label><input class="input" id="cfgExerciseSubtitle"/></div><div style="min-width:180px;flex:1"><label class="lbl">Platform Theme</label><select class="input" id="cfgTheme"><option value="intel-dark">Dark Intelligence</option><option value="nato-blue">NATO / Security Blue</option><option value="light-analyst">Light Analyst</option><option value="tactical-green">Tactical Green</option></select></div></div><div class="row" style="margin-top:10px;gap:10px;flex-wrap:wrap;align-items:flex-end"><div style="min-width:140px;flex:1"><label class="lbl">Logo source</label><select class="input" id="cfgLogoMode"><option value="url">URL</option><option value="upload">Upload locale</option></select></div><div style="min-width:260px;flex:2"><label class="lbl">Logo URL</label><input class="input" id="cfgLogoUrl"/></div><div style="min-width:260px;flex:2"><label class="lbl">Logo upload</label><input class="input" id="cfgLogoFile" type="file" accept="image/*"/></div><div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn primary" id="cfgSaveBtn">Save setup</button><span class="pill mono" id="cfgThemeStatus">—</span></div></div><div class="sep"></div><div id="cfgLogoPreview" class="item"><div class="small">Preview logo</div></div></div></div></div><div class="panel" data-panel="roles" style="display:none"><div class="card span12"><div class="card-title">Roles</div><div class="card-body"><div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end"><div style="min-width:140px;flex:1"><label class="lbl">Code</label><input class="input" id="rCode"/></div><div style="min-width:180px;flex:2"><label class="lbl">Name</label><input class="input" id="rName"/></div><div style="min-width:220px;flex:2"><label class="lbl">Description</label><input class="input" id="rDescription"/></div><div style="min-width:180px;flex:1"><label class="lbl">Destination page</label><input class="input mono" id="rDest" value="/player.html"/></div></div><div class="row" style="margin-top:10px;gap:10px;flex-wrap:wrap;align-items:flex-end"><div style="min-width:160px;flex:1"><label class="lbl">Can have team</label><select class="input" id="rCanTeam"><option value="1">YES</option><option value="0">NO</option></select></div><div style="min-width:160px;flex:1"><label class="lbl">Active</label><select class="input" id="rActive"><option value="1">YES</option><option value="0">NO</option></select></div><div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn primary" id="rSaveBtn">Save role</button><button class="btn ghost" id="rReloadBtn">Reload roles</button></div></div><div class="sep"></div><div id="rolesList" class="stack"></div></div></div></div><div class="panel" data-panel="participants" style="display:none"><div class="card span12"><div class="card-title">Participants</div><div class="card-body"><div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end"><div style="min-width:220px;flex:2"><label class="lbl">Name</label><input class="input" id="pName"/></div><div style="min-width:220px;flex:2"><label class="lbl">Email</label><input class="input" id="pEmail"/></div><div style="min-width:180px;flex:1"><label class="lbl">Role</label><select class="input" id="pRole"></select></div><div style="min-width:180px;flex:1"><label class="lbl">Team</label><select class="input" id="pTeam"></select></div></div><div class="row" style="margin-top:10px;gap:10px;flex-wrap:wrap;align-items:flex-end"><div style="min-width:220px;flex:2"><label class="lbl">Custom ID</label><input class="input mono" id="pId"/></div><div style="min-width:180px;flex:1"><label class="lbl">Access Code</label><input class="input mono" id="pAccessCode"/></div><div style="min-width:160px;flex:1"><label class="lbl">Active</label><select class="input" id="pActive"><option value="1">YES</option><option value="0">NO</option></select></div><div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn primary" id="pAddBtn">Save participant</button><button class="btn ghost" id="pReloadBtn">Reload</button><button class="btn" id="pExportCsvBtn">Export CSV</button></div></div><div class="sep"></div><div id="participantsList" class="stack"></div></div></div></div><div class="panel" data-panel="scenario" style="display:none"><div class="card span12"><div class="card-title">Scenario</div><div class="card-body"><div class="small">Modulo da definire successivamente.</div></div></div></div><div class="panel" data-panel="system" style="display:none"><div class="card span12"><div class="card-title">System Status</div><div class="card-body"><div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn" id="checkHealth">Check API health</button><button class="btn ghost" id="checkDb">Check DB</button></div><div class="sep"></div><pre class="pre" id="healthResult">—</pre><pre class="pre" id="dbResult">—</pre></div></div></div></div></section></main><script src="/assets/theme.js"></script><script>
-function esc(s){return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");}
-async function jget(url){const r=await fetch(url,{headers:{"Accept":"application/json"}});const t=await r.text();let j;try{j=JSON.parse(t)}catch{j={raw:t}}if(!r.ok)throw new Error(j?.error||("HTTP "+r.status));return j;}
-async function jpost(url,body){const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(body)});const t=await r.text();let j;try{j=JSON.parse(t)}catch{j={raw:t}}if(!r.ok)throw new Error(j?.error||("HTTP "+r.status));return j;}
-async function jdel(url){const r=await fetch(url,{method:"DELETE"});const t=await r.text();let j;try{j=JSON.parse(t)}catch{j={raw:t}}if(!r.ok)throw new Error(j?.error||("HTTP "+r.status));return j;}
-function randCode(){return String(Math.floor(100000 + Math.random()*900000));}
-function entryLink(p){const base=new URL("/access.html",location.origin);base.searchParams.set("pid",p.id);return base.toString();}
-function downloadText(text,filename,mime){const blob=new Blob([text],{type:mime||"text/plain"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=filename||"download.txt";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),500);}
-let TEAMS=[], PARTICIPANTS=[], ROLES=[], LOGO_DATA="";
-function setActiveTab(name){document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===name));document.querySelectorAll(".panel").forEach(p=>p.style.display=(p.dataset.panel===name)?"":"none");}
-document.querySelectorAll(".tab").forEach(tab=>tab.addEventListener("click",e=>{e.preventDefault();setActiveTab(tab.dataset.tab);}));
-function renderLogoPreview(){const box=document.getElementById("cfgLogoPreview");const mode=document.getElementById("cfgLogoMode").value;const url=document.getElementById("cfgLogoUrl").value.trim();const src=mode==="upload"?LOGO_DATA:url;box.innerHTML=src?`<img src="${src}" alt="logo" style="max-height:70px;max-width:220px;object-fit:contain"/>`:`<div class="small">Preview logo</div>`;}
-function applyBranding(config){document.getElementById("brandTitle").textContent=config.brandName||"SimIA";document.getElementById("brandSub").textContent=config.exerciseSubtitle||"Console amministrativa";const logoBox=document.getElementById("brandLogo");if(config.logoMode==="upload"&&config.logoData){logoBox.innerHTML=`<img src="${config.logoData}" alt="logo" style="width:40px;height:40px;object-fit:contain;border-radius:8px"/>`;}else if(config.logoMode==="url"&&config.logoUrl){logoBox.innerHTML=`<img src="${config.logoUrl}" alt="logo" style="width:40px;height:40px;object-fit:contain;border-radius:8px"/>`;}else{logoBox.textContent="SI";}}
-async function loadConfig(){const j=await jget("/api/config");const cfg=j.config||{};document.getElementById("cfgBrandName").value=cfg.brandName||"SimIA";document.getElementById("cfgExerciseSubtitle").value=cfg.exerciseSubtitle||"";document.getElementById("cfgTheme").value=cfg.defaultTheme||"intel-dark";document.getElementById("cfgLogoMode").value=cfg.logoMode||"url";document.getElementById("cfgLogoUrl").value=cfg.logoUrl||"";LOGO_DATA=cfg.logoData||"";renderLogoPreview();applyBranding(cfg);}
-async function saveConfig(){const payload={brandName:document.getElementById("cfgBrandName").value.trim(),exerciseSubtitle:document.getElementById("cfgExerciseSubtitle").value.trim(),defaultTheme:document.getElementById("cfgTheme").value,logoMode:document.getElementById("cfgLogoMode").value,logoUrl:document.getElementById("cfgLogoUrl").value.trim(),logoData:LOGO_DATA||""};await jpost("/api/config",payload);document.documentElement.setAttribute("data-theme",payload.defaultTheme);document.getElementById("cfgThemeStatus").textContent="OK";applyBranding(payload);}
-function renderRoles(){const box=document.getElementById("rolesList");box.innerHTML="";if(!ROLES.length){box.innerHTML=`<div class="item"><div class="h">No roles</div></div>`;return;}ROLES.forEach(r=>{const div=document.createElement("div");div.className="item";const sys=Number(r.is_system)===1;const active=Number(r.is_active)===1?"1":"0";div.innerHTML=`<div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap"><div style="flex:1;min-width:380px"><div class="small"><span class="pill mono">${esc(r.code)}</span> <span class="pill mono">${esc(r.destination_page||"/player.html")}</span> <span class="pill mono">TEAM ${Number(r.can_have_team)===1?"YES":"NO"}</span> <span class="pill mono">${active==="1"?"ACTIVE":"DISABLED"}</span> ${sys?`<span class="pill mono">SYSTEM</span>`:""}</div><div class="h" style="margin-top:8px">${esc(r.name||"")}</div><div class="small" style="margin-top:6px">${esc(r.description||"")}</div></div><div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn primary" data-save>Save</button>${sys?"":`<button class="btn danger" data-del>Delete</button>`}</div></div>`;div.querySelector("[data-save]").addEventListener("click",()=>{document.getElementById("rCode").value=r.code||"";document.getElementById("rName").value=r.name||"";document.getElementById("rDescription").value=r.description||"";document.getElementById("rDest").value=r.destination_page||"/player.html";document.getElementById("rCanTeam").value=Number(r.can_have_team)===1?"1":"0";document.getElementById("rActive").value=active;setActiveTab("roles");});div.querySelector("[data-del]")?.addEventListener("click",async()=>{if(!confirm("Eliminare questo ruolo?"))return;await jdel(`/api/roles?code=${encodeURIComponent(r.code)}`);await loadRoles();alert("Ruolo eliminato.");});box.appendChild(div);});}
-async function loadRoles(){const j=await jget("/api/roles");ROLES=Array.isArray(j.roles)?j.roles:[];renderRoles();fillRoleSelect();}
-function fillRoleSelect(){const sel=document.getElementById("pRole");const current=sel.value||"";sel.innerHTML="";ROLES.filter(r=>Number(r.is_active)===1).forEach(r=>{const o=document.createElement("option");o.value=String(r.code||"").toUpperCase();o.textContent=r.name||r.code;sel.appendChild(o);});if(current&&Array.from(sel.options).some(o=>o.value===current))sel.value=current;updateParticipantTeamVisibility();}
-function roleDef(code){return ROLES.find(r=>String(r.code||"").toUpperCase()===String(code||"").toUpperCase())||null;}
-function updateParticipantTeamVisibility(){const role=document.getElementById("pRole").value;const r=roleDef(role);const teamSel=document.getElementById("pTeam");const can=r?Number(r.can_have_team)===1:(String(role).toUpperCase()==="PLAYER");teamSel.disabled=!can;if(!can)teamSel.value="ALL";}
-function renderTeams(){const box=document.getElementById("teamList");box.innerHTML="";if(!TEAMS.length){box.innerHTML=`<div class="item"><div class="h">No teams</div></div>`;return;}TEAMS.forEach((t,idx)=>{const div=document.createElement("div");div.className="item";div.innerHTML=`<div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap"><div style="flex:1"><div class="h">${esc(t.label||t.id)} <span class="small mono">(${esc(t.id)})</span></div><div class="small" style="margin-top:6px">${esc(t.icon||"—")}</div></div><button class="btn danger" data-del>Delete</button></div>`;div.querySelector("[data-del]").addEventListener("click",()=>{TEAMS.splice(idx,1);renderTeams();fillTeamSelect();});box.appendChild(div);});}
-function fillTeamSelect(){const sel=document.getElementById("pTeam");sel.innerHTML="";const all=document.createElement("option");all.value="ALL";all.textContent="All Teams";sel.appendChild(all);TEAMS.forEach(t=>{const o=document.createElement("option");o.value=String(t.id||"ALL").toUpperCase();o.textContent=(t.icon?`${t.icon} `:"")+(t.label||t.id);sel.appendChild(o);});sel.value="ALL";updateParticipantTeamVisibility();}
-async function loadTeams(){const j=await jget("/api/teams");TEAMS=Array.isArray(j.teams)?j.teams:[];renderTeams();fillTeamSelect();}
-async function saveTeams(){const payload=TEAMS.filter(t=>String(t.id||"").trim()).map(t=>({id:String(t.id||"").trim().toUpperCase(),label:String(t.label||"").trim()||String(t.id||"").trim().toUpperCase(),icon:String(t.icon||"").trim()}));await jpost("/api/teams",{teams:payload});}
-function participantCsv(){const rows=[["name","email","role","team","id","access_code","is_active","link"]];PARTICIPANTS.forEach(p=>{rows.push([p.name||"",p.email||"",String(p.role||"").toUpperCase(),String(p.team_id||"ALL").toUpperCase(),p.id||"",p.access_code||"",Number(p.is_active)===1?"1":"0",entryLink(p)]);});return rows.map(r=>r.map(x=>`"${String(x).replaceAll('"','""')}"`).join(",")).join("\n");}
-function renderParticipants(){const box=document.getElementById("participantsList");box.innerHTML="";if(!PARTICIPANTS.length){box.innerHTML=`<div class="item"><div class="h">No participants</div></div>`;return;}PARTICIPANTS.forEach(p=>{const div=document.createElement("div");div.className="item";const link=entryLink(p);const activeVal=Number(p.is_active)===1?"1":"0";div.innerHTML=`<div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap"><div style="flex:1;min-width:420px"><div class="h">${esc(p.name||"")}</div><div class="small" style="margin-top:6px"><span class="pill mono">${esc(String(p.role||"").toUpperCase())}</span><span class="pill mono">${esc(String(p.team_id||"ALL").toUpperCase())}</span><span class="pill mono">${esc(p.id||"")}</span><span class="pill mono">${activeVal==="1"?"ACTIVE":"DISABLED"}</span></div><div class="row" style="margin-top:10px;gap:10px;flex-wrap:wrap;align-items:flex-end"><div style="min-width:180px;flex:2"><label class="lbl">Email</label><input class="input" data-email value="${esc(p.email||"")}"/></div><div style="min-width:180px;flex:2"><label class="lbl">Access Code</label><input class="input mono" data-code value="${esc(p.access_code||"")}"/></div><div style="min-width:140px;flex:1"><label class="lbl">Active</label><select class="input" data-active><option value="1" ${activeVal==="1"?"selected":""}>YES</option><option value="0" ${activeVal==="0"?"selected":""}>NO</option></select></div></div><div class="small mono" style="margin-top:10px;word-break:break-all">${esc(link)}</div></div><div class="row" style="gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="btn" data-link>Copy link</button><button class="btn ghost" data-emailmsg>Copy email</button><button class="btn" data-regencode>Regenerate code</button><button class="btn ghost" data-toggle>${activeVal==="1"?"Disable":"Enable"}</button><button class="btn primary" data-save>Save</button><button class="btn danger" data-del>Delete</button></div></div>`;div.querySelector("[data-link]").addEventListener("click",async()=>{try{await navigator.clipboard.writeText(link);alert("Link copiato.");}catch{alert(link);}});div.querySelector("[data-emailmsg]").addEventListener("click",async()=>{const code=div.querySelector("[data-code]").value||"";const msg=`Oggetto: Accesso SimIA\n\nCiao ${p.name||""},\n\nusa questo link per accedere a SimIA:\n${link}\n\nAccess code: ${code}\nRuolo: ${String(p.role||"").toUpperCase()}\nTeam: ${String(p.team_id||"ALL").toUpperCase()}\n`;try{await navigator.clipboard.writeText(msg);alert("Email copiata.");}catch{alert(msg);}});div.querySelector("[data-regencode]").addEventListener("click",()=>{div.querySelector("[data-code]").value=randCode();});div.querySelector("[data-toggle]").addEventListener("click",()=>{const sel=div.querySelector("[data-active]");sel.value=sel.value==="1"?"0":"1";div.querySelector("[data-toggle]").textContent=sel.value==="1"?"Disable":"Enable";});div.querySelector("[data-save]").addEventListener("click",async()=>{try{await jpost("/api/participants",{id:p.id,name:p.name,email:div.querySelector("[data-email]").value,role:p.role,team_id:p.team_id,access_code:div.querySelector("[data-code]").value,is_active:div.querySelector("[data-active]").value});await loadParticipants();alert("Partecipante aggiornato.");}catch(e){alert("Errore salvataggio: "+e);}});div.querySelector("[data-del]").addEventListener("click",async()=>{if(!confirm("Eliminare questo partecipante?"))return;await jdel(`/api/participants?id=${encodeURIComponent(p.id)}`);await loadParticipants();});box.appendChild(div);});}
-async function loadParticipants(){const j=await jget("/api/participants");PARTICIPANTS=Array.isArray(j.participants)?j.participants:[];renderParticipants();}
-function bindSetup(){document.getElementById("cfgSaveBtn").addEventListener("click",async()=>{document.getElementById("cfgThemeStatus").textContent="Saving...";try{await saveConfig();}catch(e){document.getElementById("cfgThemeStatus").textContent="ERR";alert("Errore salvataggio setup: "+e);}});document.getElementById("cfgLogoMode").addEventListener("change",renderLogoPreview);document.getElementById("cfgLogoUrl").addEventListener("input",renderLogoPreview);document.getElementById("cfgLogoFile").addEventListener("change",ev=>{const f=ev.target.files&&ev.target.files[0];if(!f)return;const reader=new FileReader();reader.onload=()=>{LOGO_DATA=String(reader.result||"");renderLogoPreview();};reader.readAsDataURL(f);});}
-function bindRoles(){document.getElementById("rSaveBtn").addEventListener("click",async()=>{const payload={code:(document.getElementById("rCode").value||"").trim().toUpperCase(),name:(document.getElementById("rName").value||"").trim(),description:(document.getElementById("rDescription").value||"").trim(),destination_page:(document.getElementById("rDest").value||"").trim()||"/player.html",can_have_team:document.getElementById("rCanTeam").value,is_active:document.getElementById("rActive").value,is_system:0};if(!payload.code||!payload.name){alert("Inserisci code e name.");return;}await jpost("/api/roles",payload);document.getElementById("rCode").value="";document.getElementById("rName").value="";document.getElementById("rDescription").value="";document.getElementById("rDest").value="/player.html";document.getElementById("rCanTeam").value="1";document.getElementById("rActive").value="1";await loadRoles();alert("Ruolo salvato.");});document.getElementById("rReloadBtn").addEventListener("click",()=>loadRoles().catch(e=>alert(e)));}
-function bindParticipants(){document.getElementById("pRole").addEventListener("change",updateParticipantTeamVisibility);document.getElementById("pAddBtn").addEventListener("click",async()=>{const payload={id:(document.getElementById("pId").value||"").trim()||undefined,name:(document.getElementById("pName").value||"").trim(),email:(document.getElementById("pEmail").value||"").trim(),role:(document.getElementById("pRole").value||"PLAYER").toUpperCase(),team_id:(document.getElementById("pTeam").value||"ALL").toUpperCase(),access_code:(document.getElementById("pAccessCode").value||"").trim()||undefined,is_active:Number(document.getElementById("pActive").value||"1")};if(!payload.name){alert("Inserisci Name.");return;}const res=await jpost("/api/participants",payload);document.getElementById("pName").value="";document.getElementById("pEmail").value="";document.getElementById("pId").value="";document.getElementById("pAccessCode").value="";document.getElementById("pActive").value="1";await loadParticipants();alert(`Partecipante salvato. ID: ${res.id} | Access Code: ${res.access_code}`);});document.getElementById("pReloadBtn").addEventListener("click",()=>loadParticipants().catch(e=>alert(e)));document.getElementById("pExportCsvBtn").addEventListener("click",()=>{downloadText(participantCsv(),"simia_participants_credentials.csv","text/csv");});}
-function bindSystem(){document.getElementById("checkHealth").addEventListener("click",async()=>{try{const j=await jget("/api/health");document.getElementById("healthResult").textContent=JSON.stringify(j,null,2);}catch(e){document.getElementById("healthResult").textContent=String(e);}});document.getElementById("checkDb").addEventListener("click",async()=>{try{const j=await jget("/api/dbcheck");document.getElementById("dbResult").textContent=JSON.stringify(j,null,2);}catch(e){document.getElementById("dbResult").textContent=String(e);}});}
-document.addEventListener("DOMContentLoaded",async()=>{setActiveTab("setup");bindSetup();bindRoles();bindParticipants();bindSystem();await loadConfig();await loadRoles();await loadTeams();await loadParticipants();});
-</script></body></html>
+<<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>SimIA — Console amministrativa</title>
+<link rel="stylesheet" href="/assets/styles.css"/>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="logo" id="brandLogo">SI</div>
+    <div>
+      <div class="brand-title" id="brandTitle">SimIA</div>
+      <div class="brand-sub" id="brandSub">Console amministrativa</div>
+    </div>
+  </div>
+  <div class="session">
+    <a class="btn ghost" href="/scenario_timeline.html">Timeline</a>
+    <a class="btn ghost" href="/outputs_admin.html">Outputs</a>
+    <a class="btn ghost" href="/index.html">Home</a>
+  </div>
+</header>
+
+<main class="layout layout-wide">
+  <section class="content">
+    <div class="tabs">
+      <a class="tab active" data-tab="setup" href="#">Setup</a>
+      <a class="tab" data-tab="roles_teams" href="#">Roles / Teams</a>
+      <a class="tab" data-tab="participants" href="#">Participants</a>
+      <a class="tab" data-tab="scenario" href="#">Scenario</a>
+      <a class="tab" data-tab="system" href="#">System</a>
+    </div>
+
+    <div class="grid">
+
+      <div class="panel" data-panel="setup">
+        <div class="card span12">
+          <div class="card-title">Setup — Branding & Platform</div>
+          <div class="card-body">
+            <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end">
+              <div style="min-width:220px;flex:2">
+                <label class="lbl">Nome brand</label>
+                <input class="input" id="cfgBrandName"/>
+              </div>
+              <div style="min-width:220px;flex:2">
+                <label class="lbl">Sottotitolo</label>
+                <input class="input" id="cfgExerciseSubtitle"/>
+              </div>
+              <div style="min-width:180px;flex:1">
+                <label class="lbl">Platform Theme</label>
+                <select class="input" id="cfgTheme">
+                  <option value="intel-dark">Dark Intelligence</option>
+                  <option value="nato-blue">NATO / Security Blue</option>
+                  <option value="light-analyst">Light Analyst</option>
+                  <option value="tactical-green">Tactical Green</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row" style="margin-top:10px;gap:10px;flex-wrap:wrap;align-items:flex-end">
+              <div style="min-width:160px;flex:1">
+                <label class="lbl">Logo source</label>
+                <select class="input" id="cfgLogoMode">
+                  <option value="url">URL</option>
+                  <option value="upload">Upload locale</option>
+                </select>
+              </div>
+              <div style="min-width:240px;flex:2">
+                <label class="lbl">Logo URL</label>
+                <input class="input" id="cfgLogoUrl"/>
+              </div>
+              <div style="min-width:240px;flex:2">
+                <label class="lbl">Logo upload</label>
+                <input class="input" id="cfgLogoFile" type="file" accept="image/*"/>
+              </div>
+              <div class="row" style="gap:8px;flex-wrap:wrap">
+                <button class="btn primary" id="cfgSaveBtn">Save setup</button>
+                <span class="pill mono" id="cfgThemeStatus">—</span>
+              </div>
+            </div>
+
+            <div class="sep"></div>
+            <div id="cfgLogoPreview" class="item"><div class="small">Preview logo</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" data-panel="roles_teams" style="display:none">
+        <div class="card span12">
+          <div class="card-title">Roles</div>
+          <div class="card-body">
+            <div class="notice">
+              <div class="h">Impostazione e gestione ruoli</div>
+              <div class="small">Definisci i ruoli, la pagina di destinazione e se il ruolo può essere associato a un team.</div>
+            </div>
+            <div class="sep"></div>
+
+            <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end">
+              <div style="min-width:160px;flex:1">
+                <label class="lbl">Code</label>
+                <input class="input" id="rCode" placeholder="REDTEAM"/>
+              </div>
+              <div style="min-width:200px;flex:2">
+                <label class="lbl">Name</label>
+                <input class="input" id="rName" placeholder="Red Team"/>
+              </div>
+              <div style="min-width:240px;flex:2">
+                <label class="lbl">Description</label>
+                <input class="input" id="rDescription" placeholder="Descrizione ruolo"/>
+              </div>
+              <div style="min-width:180px;flex:1">
+                <label class="lbl">Destination page</label>
+                <input class="input mono" id="rDest" value="/player.html"/>
+              </div>
+            </div>
+
+            <div class="row" style="margin-top:10px;gap:10px;flex-wrap:wrap;align-items:flex-end">
+              <div style="min-width:160px;flex:1">
+                <label class="lbl">Can have team</label>
+                <select class="input" id="rCanTeam">
+                  <option value="1">YES</option>
+                  <option value="0">NO</option>
+                </select>
+              </div>
+              <div style="min-width:160px;flex:1">
+                <label class="lbl">Active</label>
+                <select class="input" id="rActive">
+                  <option value="1">YES</option>
+                  <option value="0">NO</option>
+                </select>
+              </div>
+              <div class="row" style="gap:8px;flex-wrap:wrap">
+                <button class="btn primary" id="rSaveBtn">Save role</button>
+                <button class="btn ghost" id="rReloadBtn">Reload roles</button>
+              </div>
+            </div>
+
+            <div class="sep"></div>
+            <div id="rolesList" class="stack"></div>
+          </div>
+        </div>
+
+        <div class="card span12">
+          <div class="card-title">Teams</div>
+          <div class="card-body">
+            <div class="notice">
+              <div class="h">Creazione e gestione team</div>
+              <div class="small">I team vengono assegnati ai partecipanti solo se il ruolo consente l'associazione a team.</div>
+            </div>
+            <div class="sep"></div>
+
+            <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end">
+              <div style="min-width:180px;flex:1">
+                <label class="lbl">Team ID</label>
+                <input class="input" id="teamId" placeholder="A / B / RED / BLUE"/>
+              </div>
+              <div style="min-width:220px;flex:2">
+                <label class="lbl">Label</label>
+                <input class="input" id="teamLabel" placeholder="Team A"/>
+              </div>
+              <div style="min-width:160px;flex:1">
+                <label class="lbl">Icon</label>
+                <input class="input" id="teamIcon" placeholder="🛰️"/>
+              </div>
+              <div class="row" style="gap:8px;flex-wrap:wrap">
+                <button class="btn primary" id="addTeamBtn">Add Team</button>
+                <button class="btn ghost" id="reloadTeamsBtn">Reload</button>
+                <button class="btn" id="saveTeamsBtn">Save Teams</button>
+              </div>
+            </div>
+
+            <div class="sep"></div>
+            <div id="teamList" class="stack"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" data-panel="participants" style="display:none">
+        <div class="card span12">
+          <div class="card-title">Participants — Create user</div>
+          <div class="card-body">
+            <div class="notice">
+              <div class="h">Inserimento utenti</div>
+              <div class="small">Assegna un ruolo e, se il ruolo lo consente, anche un team. Puoi generare e gestire credenziali di accesso.</div>
+            </div>
+            <div class="sep"></div>
+
+            <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end">
+              <div style="min-width:220px;flex:2">
+                <label class="lbl">Name</label>
+                <input class="input" id="pName"/>
+              </div>
+              <div style="min-width:220px;flex:2">
+                <label class="lbl">Email</label>
+                <input class="input" id="pEmail"/>
+              </div>
+              <div style="min-width:180px;flex:1">
+                <label class="lbl">Role</label>
+                <select class="input" id="pRole"></select>
+              </div>
+              <div style="min-width:180px;flex:1">
+                <label class="lbl">Team</label>
+                <select class="input" id="pTeam"></select>
+              </div>
+            </div>
+
+            <div class="row" style="margin-top:10px;gap:10px;flex-wrap:wrap;align-items:flex-end">
+              <div style="min-width:220px;flex:2">
+                <label class="lbl">Custom ID</label>
+                <input class="input mono" id="pId"/>
+              </div>
+              <div style="min-width:180px;flex:1">
+                <label class="lbl">Access Code</label>
+                <input class="input mono" id="pAccessCode"/>
+              </div>
+              <div style="min-width:160px;flex:1">
+                <label class="lbl">Active</label>
+                <select class="input" id="pActive">
+                  <option value="1">YES</option>
+                  <option value="0">NO</option>
+                </select>
+              </div>
+              <div class="row" style="gap:8px;flex-wrap:wrap">
+                <button class="btn primary" id="pAddBtn">Save participant</button>
+                <button class="btn ghost" id="pReloadBtn">Reload</button>
+                <button class="btn" id="pExportCsvBtn">Export CSV</button>
+              </div>
+            </div>
+
+            <div class="sep"></div>
+            <div id="participantsList" class="stack"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" data-panel="scenario" style="display:none">
+        <div class="card span12">
+          <div class="card-title">Scenario</div>
+          <div class="card-body">
+            <div class="small">Ne parliamo successivamente.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" data-panel="system" style="display:none">
+        <div class="card span12">
+          <div class="card-title">System Status</div>
+          <div class="card-body">
+            <div class="row" style="gap:8px;flex-wrap:wrap">
+              <button class="btn" id="checkHealth">Check API health</button>
+              <button class="btn ghost" id="checkDb">Check DB</button>
+            </div>
+            <div class="sep"></div>
+            <pre class="pre" id="healthResult">—</pre>
+            <pre class="pre" id="dbResult">—</pre>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<script src="/assets/theme.js"></script>
+<script src="/assets/branding.js"></script>
+<script>
+function esc(s){
+  return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;").replaceAll("'","&#39;");
+}
+async function jget(url){
+  const r = await fetch(url, { headers:{ "Accept":"application/json" }});
+  const t = await r.text();
+  let j; try{ j = JSON.parse(t);}catch{ j={raw:t}; }
+  if(!r.ok) throw new Error(j?.error || ("HTTP "+r.status));
+  return j;
+}
+async function jpost(url, body){
+  const r = await fetch(url, { method:"POST", headers:{ "Content-Type":"application/json", "Accept":"application/json" }, body: JSON.stringify(body) });
+  const t = await r.text();
+  let j; try{ j = JSON.parse(t);}catch{ j={raw:t}; }
+  if(!r.ok) throw new Error(j?.error || ("HTTP "+r.status));
+  return j;
+}
+async function jdel(url){
+  const r = await fetch(url, { method:"DELETE" });
+  const t = await r.text();
+  let j; try{ j = JSON.parse(t);}catch{ j={raw:t}; }
+  if(!r.ok) throw new Error(j?.error || ("HTTP "+r.status));
+  return j;
+}
+function randCode(){ return String(Math.floor(100000 + Math.random()*900000)); }
+function entryLink(p){ const base = new URL("/access.html", location.origin); base.searchParams.set("pid", p.id); return base.toString(); }
+function downloadText(text, filename, mime){
+  const blob = new Blob([text], { type: mime || "text/plain" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename || "download.txt";
+  document.body.appendChild(a);
+  a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 500);
+}
+let TEAMS = [], PARTICIPANTS = [], ROLES = [], LOGO_DATA = "";
+
+function setActiveTab(name){
+  document.querySelectorAll(".tab").forEach(t=> t.classList.toggle("active", t.dataset.tab === name));
+  document.querySelectorAll(".panel").forEach(p=> p.style.display = (p.dataset.panel === name) ? "" : "none");
+}
+document.querySelectorAll(".tab").forEach(tab=> tab.addEventListener("click", e => { e.preventDefault(); setActiveTab(tab.dataset.tab); }));
+
+function renderLogoPreview(){
+  const box = document.getElementById("cfgLogoPreview");
+  const mode = document.getElementById("cfgLogoMode").value;
+  const url = document.getElementById("cfgLogoUrl").value.trim();
+  const src = mode === "upload" ? LOGO_DATA : url;
+  box.innerHTML = src ? `<img src="${src}" alt="logo" style="max-height:70px;max-width:220px;object-fit:contain"/>` : `<div class="small">Preview logo</div>`;
+}
+async function loadConfig(){
+  const j = await jget("/api/config");
+  const cfg = j.config || {};
+  document.getElementById("cfgBrandName").value = cfg.brandName || "SimIA";
+  document.getElementById("cfgExerciseSubtitle").value = cfg.exerciseSubtitle || "";
+  document.getElementById("cfgTheme").value = cfg.defaultTheme || "intel-dark";
+  document.getElementById("cfgLogoMode").value = cfg.logoMode || "url";
+  document.getElementById("cfgLogoUrl").value = cfg.logoUrl || "";
+  LOGO_DATA = cfg.logoData || "";
+  renderLogoPreview();
+}
+async function saveConfig(){
+  const payload = {
+    brandName: document.getElementById("cfgBrandName").value.trim(),
+    exerciseSubtitle: document.getElementById("cfgExerciseSubtitle").value.trim(),
+    defaultTheme: document.getElementById("cfgTheme").value,
+    logoMode: document.getElementById("cfgLogoMode").value,
+    logoUrl: document.getElementById("cfgLogoUrl").value.trim(),
+    logoData: LOGO_DATA || ""
+  };
+  await jpost("/api/config", payload);
+  document.documentElement.setAttribute("data-theme", payload.defaultTheme);
+  document.getElementById("cfgThemeStatus").textContent = "OK";
+}
+
+function renderRoles(){
+  const box = document.getElementById("rolesList");
+  box.innerHTML = "";
+  if(!ROLES.length){ box.innerHTML = `<div class="item"><div class="h">No roles</div></div>`; return; }
+  ROLES.forEach(r=>{
+    const div = document.createElement("div");
+    div.className = "item";
+    const sys = Number(r.is_system) === 1;
+    div.innerHTML = `
+      <div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+        <div style="flex:1">
+          <div class="h">${esc(r.name || r.code)} <span class="small mono">(${esc(r.code)})</span></div>
+          <div class="small" style="margin-top:6px">
+            <span class="pill mono">${esc(r.destination_page || "/player.html")}</span>
+            <span class="pill mono">TEAM ${Number(r.can_have_team)===1?"YES":"NO"}</span>
+            <span class="pill mono">${Number(r.is_active)===1?"ACTIVE":"DISABLED"}</span>
+            ${sys ? `<span class="pill mono">SYSTEM</span>` : ``}
+          </div>
+          <div class="small" style="margin-top:10px">${esc(r.description || "")}</div>
+        </div>
+        <div class="row" style="gap:8px;flex-wrap:wrap">
+          <button class="btn primary" data-edit>Edit</button>
+          ${sys ? `` : `<button class="btn danger" data-del>Delete</button>`}
+        </div>
+      </div>`;
+    div.querySelector("[data-edit]").addEventListener("click", ()=>{
+      document.getElementById("rCode").value = r.code || "";
+      document.getElementById("rName").value = r.name || "";
+      document.getElementById("rDescription").value = r.description || "";
+      document.getElementById("rDest").value = r.destination_page || "/player.html";
+      document.getElementById("rCanTeam").value = Number(r.can_have_team)===1 ? "1" : "0";
+      document.getElementById("rActive").value = Number(r.is_active)===1 ? "1" : "0";
+    });
+    div.querySelector("[data-del]")?.addEventListener("click", async ()=>{
+      if(!confirm("Eliminare questo ruolo?")) return;
+      await jdel(`/api/roles?code=${encodeURIComponent(r.code)}`);
+      await loadRoles();
+    });
+    box.appendChild(div);
+  });
+}
+async function loadRoles(){
+  const j = await jget("/api/roles");
+  ROLES = Array.isArray(j.roles) ? j.roles : [];
+  renderRoles();
+  fillRoleSelect();
+}
+function fillRoleSelect(){
+  const sel = document.getElementById("pRole");
+  const current = sel.value || "";
+  sel.innerHTML = "";
+  ROLES.filter(r=>Number(r.is_active)===1).forEach(r=>{
+    const o = document.createElement("option");
+    o.value = String(r.code || "").toUpperCase();
+    o.textContent = r.name || r.code;
+    sel.appendChild(o);
+  });
+  if(current && Array.from(sel.options).some(o=>o.value===current)) sel.value = current;
+  updateParticipantTeamVisibility();
+}
+function roleDef(code){ return ROLES.find(r => String(r.code||"").toUpperCase() === String(code||"").toUpperCase()) || null; }
+function updateParticipantTeamVisibility(){
+  const role = document.getElementById("pRole").value;
+  const r = roleDef(role);
+  const teamSel = document.getElementById("pTeam");
+  const canHaveTeam = r ? Number(r.can_have_team)===1 : false;
+  teamSel.disabled = !canHaveTeam;
+  if(!canHaveTeam) teamSel.value = "ALL";
+}
+
+function renderTeams(){
+  const box = document.getElementById("teamList");
+  box.innerHTML = "";
+  if(!TEAMS.length){ box.innerHTML = `<div class="item"><div class="h">No teams</div></div>`; return; }
+  TEAMS.forEach((t, idx)=>{
+    const div = document.createElement("div");
+    div.className = "item";
+    div.innerHTML = `
+      <div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+        <div style="flex:1">
+          <div class="h">${esc(t.label || t.id)} <span class="small mono">(${esc(t.id)})</span></div>
+          <div class="small" style="margin-top:6px">${esc(t.icon || "—")}</div>
+        </div>
+        <div class="row" style="gap:8px;flex-wrap:wrap">
+          <button class="btn danger" data-del>Delete</button>
+        </div>
+      </div>`;
+    div.querySelector("[data-del]").addEventListener("click", ()=>{
+      TEAMS.splice(idx,1);
+      renderTeams();
+      fillTeamSelect();
+    });
+    box.appendChild(div);
+  });
+}
+function fillTeamSelect(){
+  const sel = document.getElementById("pTeam");
+  sel.innerHTML = "";
+  const all = document.createElement("option");
+  all.value = "ALL";
+  all.textContent = "All Teams";
+  sel.appendChild(all);
+  TEAMS.forEach(t=>{
+    const o = document.createElement("option");
+    o.value = String(t.id || "ALL").toUpperCase();
+    o.textContent = (t.icon ? `${t.icon} ` : "") + (t.label || t.id);
+    sel.appendChild(o);
+  });
+  sel.value = "ALL";
+  updateParticipantTeamVisibility();
+}
+async function loadTeams(){
+  const j = await jget("/api/teams");
+  TEAMS = Array.isArray(j.teams) ? j.teams : [];
+  renderTeams();
+  fillTeamSelect();
+}
+async function saveTeams(){
+  const payload = TEAMS.filter(t=>String(t.id||"").trim()).map(t=>({
+    id: String(t.id||"").trim().toUpperCase(),
+    label: String(t.label||"").trim() || String(t.id||"").trim().toUpperCase(),
+    icon: String(t.icon||"").trim()
+  }));
+  await jpost("/api/teams", { teams: payload });
+}
+
+function participantCsv(){
+  const rows = [["name","email","role","team","id","access_code","is_active","link"]];
+  PARTICIPANTS.forEach(p=>{
+    rows.push([ p.name || "", p.email || "", String(p.role || "").toUpperCase(), String(p.team_id || "ALL").toUpperCase(), p.id || "", p.access_code || "", Number(p.is_active) === 1 ? "1" : "0", entryLink(p) ]);
+  });
+  return rows.map(r=>r.map(x=>`"${String(x).replaceAll('"','""')}"`).join(",")).join("\\n");
+}
+function renderParticipants(){
+  const box = document.getElementById("participantsList");
+  box.innerHTML = "";
+  if(!PARTICIPANTS.length){ box.innerHTML = `<div class="item"><div class="h">No participants</div></div>`; return; }
+  PARTICIPANTS.forEach(p=>{
+    const div = document.createElement("div");
+    div.className = "item";
+    const link = entryLink(p);
+    const activeVal = Number(p.is_active)===1 ? "1" : "0";
+    div.innerHTML = `
+      <div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+        <div style="flex:1">
+          <div class="h">${esc(p.name || "")}</div>
+          <div class="small" style="margin-top:6px">
+            <span class="pill mono">${esc(String(p.role||"").toUpperCase())}</span>
+            <span class="pill mono">${esc(String(p.team_id||"ALL").toUpperCase())}</span>
+            <span class="pill mono">${esc(p.id || "")}</span>
+            <span class="pill mono">${activeVal==="1"?"ACTIVE":"DISABLED"}</span>
+          </div>
+          <div class="row" style="margin-top:10px;gap:10px;flex-wrap:wrap;align-items:flex-end">
+            <div style="min-width:180px;flex:2"><label class="lbl">Email</label><input class="input" data-email value="${esc(p.email||"")}"/></div>
+            <div style="min-width:180px;flex:2"><label class="lbl">Access Code</label><input class="input mono" data-code value="${esc(p.access_code||"")}"/></div>
+            <div style="min-width:140px;flex:1"><label class="lbl">Active</label><select class="input" data-active><option value="1" ${activeVal==="1"?"selected":""}>YES</option><option value="0" ${activeVal==="0"?"selected":""}>NO</option></select></div>
+          </div>
+          <div class="small mono" style="margin-top:10px;word-break:break-all">${esc(link)}</div>
+        </div>
+        <div class="row" style="gap:8px;flex-wrap:wrap">
+          <button class="btn" data-link>Copy link</button>
+          <button class="btn ghost" data-emailmsg>Copy email</button>
+          <button class="btn" data-regencode>Regenerate code</button>
+          <button class="btn ghost" data-toggle>${activeVal==="1"?"Disable":"Enable"}</button>
+          <button class="btn primary" data-save>Save</button>
+          <button class="btn danger" data-del>Delete</button>
+        </div>
+      </div>`;
+    div.querySelector("[data-link]").addEventListener("click", async ()=>{ try{ await navigator.clipboard.writeText(link); alert("Link copiato."); }catch{ alert(link); } });
+    div.querySelector("[data-emailmsg]").addEventListener("click", async ()=>{
+      const code = div.querySelector("[data-code]").value || "";
+      const msg = `Oggetto: Accesso SimIA\n\nCiao ${p.name || ""},\n\nusa questo link per accedere a SimIA:\n${link}\n\nAccess code: ${code}\nRuolo: ${String(p.role||"").toUpperCase()}\nTeam: ${String(p.team_id||"ALL").toUpperCase()}\n`;
+      try{ await navigator.clipboard.writeText(msg); alert("Email copiata."); }catch{ alert(msg); }
+    });
+    div.querySelector("[data-regencode]").addEventListener("click", ()=>{ div.querySelector("[data-code]").value = randCode(); });
+    div.querySelector("[data-toggle]").addEventListener("click", ()=>{
+      const sel = div.querySelector("[data-active]");
+      sel.value = sel.value === "1" ? "0" : "1";
+      div.querySelector("[data-toggle]").textContent = sel.value === "1" ? "Disable" : "Enable";
+    });
+    div.querySelector("[data-save]").addEventListener("click", async ()=>{
+      await jpost("/api/participants", {
+        id: p.id, name: p.name, email: div.querySelector("[data-email]").value, role: p.role,
+        team_id: p.team_id, access_code: div.querySelector("[data-code]").value, is_active: div.querySelector("[data-active]").value
+      });
+      await loadParticipants();
+      alert("Partecipante aggiornato.");
+    });
+    div.querySelector("[data-del]").addEventListener("click", async ()=>{
+      if(!confirm("Eliminare questo partecipante?")) return;
+      await jdel(`/api/participants?id=${encodeURIComponent(p.id)}`);
+      await loadParticipants();
+    });
+    box.appendChild(div);
+  });
+}
+async function loadParticipants(){
+  const j = await jget("/api/participants");
+  PARTICIPANTS = Array.isArray(j.participants) ? j.participants : [];
+  renderParticipants();
+}
+
+function bindSetup(){
+  document.getElementById("cfgSaveBtn").addEventListener("click", async ()=>{
+    document.getElementById("cfgThemeStatus").textContent = "Saving...";
+    try{ await saveConfig(); }catch(e){ document.getElementById("cfgThemeStatus").textContent = "ERR"; alert("Errore salvataggio setup: " + e); }
+  });
+  document.getElementById("cfgLogoMode").addEventListener("change", renderLogoPreview);
+  document.getElementById("cfgLogoUrl").addEventListener("input", renderLogoPreview);
+  document.getElementById("cfgLogoFile").addEventListener("change", (ev)=>{
+    const f = ev.target.files && ev.target.files[0];
+    if(!f) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{ LOGO_DATA = String(reader.result || ""); renderLogoPreview(); };
+    reader.readAsDataURL(f);
+  });
+}
+function bindRolesTeams(){
+  document.getElementById("rSaveBtn").addEventListener("click", async ()=>{
+    const payload = {
+      code: (document.getElementById("rCode").value || "").trim().toUpperCase(),
+      name: (document.getElementById("rName").value || "").trim(),
+      description: (document.getElementById("rDescription").value || "").trim(),
+      destination_page: (document.getElementById("rDest").value || "").trim() || "/player.html",
+      can_have_team: document.getElementById("rCanTeam").value,
+      is_active: document.getElementById("rActive").value,
+      is_system: 0
+    };
+    if(!payload.code || !payload.name){ alert("Inserisci code e name."); return; }
+    await jpost("/api/roles", payload);
+    document.getElementById("rCode").value = "";
+    document.getElementById("rName").value = "";
+    document.getElementById("rDescription").value = "";
+    document.getElementById("rDest").value = "/player.html";
+    document.getElementById("rCanTeam").value = "1";
+    document.getElementById("rActive").value = "1";
+    await loadRoles();
+    alert("Ruolo salvato.");
+  });
+  document.getElementById("rReloadBtn").addEventListener("click", ()=>loadRoles().catch(e=>alert(e)));
+
+  document.getElementById("addTeamBtn").addEventListener("click", ()=>{
+    const id = (document.getElementById("teamId").value || "").trim().toUpperCase();
+    const label = (document.getElementById("teamLabel").value || "").trim();
+    const icon = (document.getElementById("teamIcon").value || "").trim();
+    if(!id){ alert("Inserisci Team ID."); return; }
+    if(TEAMS.find(t => String(t.id).toUpperCase() === id)){ alert("Team ID già presente."); return; }
+    TEAMS.push({ id, label: label || id, icon });
+    document.getElementById("teamId").value = "";
+    document.getElementById("teamLabel").value = "";
+    document.getElementById("teamIcon").value = "";
+    renderTeams();
+    fillTeamSelect();
+  });
+  document.getElementById("reloadTeamsBtn").addEventListener("click", ()=>loadTeams().catch(e=>alert(e)));
+  document.getElementById("saveTeamsBtn").addEventListener("click", async ()=>{ await saveTeams(); await loadTeams(); alert("Teams salvati."); });
+}
+function bindParticipants(){
+  document.getElementById("pRole").addEventListener("change", updateParticipantTeamVisibility);
+  document.getElementById("pAddBtn").addEventListener("click", async ()=>{
+    const payload = {
+      id: (document.getElementById("pId").value || "").trim() || undefined,
+      name: (document.getElementById("pName").value || "").trim(),
+      email: (document.getElementById("pEmail").value || "").trim(),
+      role: (document.getElementById("pRole").value || "PLAYER").toUpperCase(),
+      team_id: (document.getElementById("pTeam").value || "ALL").toUpperCase(),
+      access_code: (document.getElementById("pAccessCode").value || "").trim() || undefined,
+      is_active: Number(document.getElementById("pActive").value || "1")
+    };
+    if(!payload.name){ alert("Inserisci Name."); return; }
+    const res = await jpost("/api/participants", payload);
+    document.getElementById("pName").value = "";
+    document.getElementById("pEmail").value = "";
+    document.getElementById("pId").value = "";
+    document.getElementById("pAccessCode").value = "";
+    document.getElementById("pActive").value = "1";
+    await loadParticipants();
+    alert(`Partecipante salvato. ID: ${res.id} | Access Code: ${res.access_code}`);
+  });
+  document.getElementById("pReloadBtn").addEventListener("click", ()=>loadParticipants().catch(e=>alert(e)));
+  document.getElementById("pExportCsvBtn").addEventListener("click", ()=>{ downloadText(participantCsv(), "simia_participants_credentials.csv", "text/csv"); });
+}
+function bindSystem(){
+  document.getElementById("checkHealth").addEventListener("click", async ()=>{
+    try{ const j = await jget("/api/health"); document.getElementById("healthResult").textContent = JSON.stringify(j, null, 2); }
+    catch(e){ document.getElementById("healthResult").textContent = String(e); }
+  });
+  document.getElementById("checkDb").addEventListener("click", async ()=>{
+    try{ const j = await jget("/api/dbcheck"); document.getElementById("dbResult").textContent = JSON.stringify(j, null, 2); }
+    catch(e){ document.getElementById("dbResult").textContent = String(e); }
+  });
+}
+document.addEventListener("DOMContentLoaded", async ()=>{
+  setActiveTab("setup");
+  bindSetup(); bindRolesTeams(); bindParticipants(); bindSystem();
+  await loadConfig(); await loadRoles(); await loadTeams(); await loadParticipants();
+});
+</script>
+</body>
+</html>
