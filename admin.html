@@ -1,279 +1,202 @@
+
 <!doctype html>
 <html lang="it">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SimIA — Console amministrativa</title>
-  <link rel="stylesheet" href="/assets/styles.css" />
-  <link rel="stylesheet" href="/assets/theme.css"/>  
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>SimIA — Console amministrativa</title>
+<link rel="stylesheet" href="/assets/styles.css"/>
 </head>
+
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <div class="logo">S</div>
-      <div>
-        <div class="brand-title">SimIA</div>
-        <div class="brand-sub">Console amministrativa</div>
-      </div>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">SI</div>
+    <div>
+      <div class="brand-title">SimIA</div>
+      <div class="brand-sub">Console amministrativa</div>
     </div>
-<div class="session">
-  <a class="btn ghost" href="/outputs_admin.html">Outputs</a>
-  <a class="btn ghost" href="/index.html">Home</a>
+  </div>
+
+  <div class="session">
+    <a class="btn ghost" href="/outputs_admin.html">Outputs</a>
+    <a class="btn ghost" href="/index.html">Home</a>
+  </div>
+</header>
+
+<main class="layout layout-wide">
+<section class="content">
+
+<div class="tabs">
+<a class="tab active" data-tab="setup" href="#">Setup</a>
+<a class="tab" data-tab="participants" href="#">Participants</a>
+<a class="tab" data-tab="scenario" href="#">Scenario</a>
+<a class="tab" data-tab="system" href="#">System</a>
 </div>
-  </header>
 
-  <main class="layout layout-wide">
-    <section class="content">
+<div class="grid">
 
-      <div class="tabs">
-        <a class="tab active" data-tab="setup" href="#">Setup</a>
-        <a class="tab" data-tab="participants" href="#">Participants</a>
-        <a class="tab" data-tab="invites" href="#">Invites</a>
-		<a class="tab" data-tab="scenario" href="#">Scenario</a>
-        <a class="tab" data-tab="system" href="#">System</a>
-      </div>
+<!-- PLATFORM -->
+<div class="panel" data-panel="setup">
+<div class="card span12">
+<div class="card-title">Platform</div>
+<div class="card-body">
 
-      <div class="grid">
+<label class="lbl">Platform Name</label>
+<input class="input" id="platformName"/>
 
-        <!-- SETUP -->
-        <div class="panel" data-panel="setup">
-          <div class="card span12">
-            <div class="card-title">Setup — Teams</div>
-            <div class="card-body">
-              <div class="notice">
-                <div class="h">Gestione Teams (D1)</div>
-                <div class="small">Crea/modifica team e icone. Salvataggio su DB.</div>
-              </div>
+<label class="lbl">Subtitle</label>
+<input class="input" id="platformSubtitle"/>
 
-              <div class="sep"></div>
+<button class="btn primary" id="savePlatform">Save</button>
 
-              <div class="row" style="gap:10px;flex-wrap:wrap">
-                <div style="flex:2;min-width:260px">
-                  <label class="lbl">Elenco teams</label>
-                  <div id="teamsList" class="stack"></div>
-                </div>
+</div>
+</div>
 
-                <div style="flex:1;min-width:260px">
-                  <label class="lbl">Aggiungi team</label>
-                  <input class="input" id="teamId" placeholder="ID (es. A, B, RED, BLUE)" />
-                  <input class="input" id="teamLabel" style="margin-top:8px" placeholder="Label (es. Team A)" />
-                  <input class="input" id="teamIcon" style="margin-top:8px" placeholder="Icona (emoji o testo, es. 🛰️)" />
-                  <div class="row" style="margin-top:10px;flex-wrap:wrap">
-                    <button class="btn primary" id="addTeamBtn">Aggiungi</button>
-                    <button class="btn ghost" id="reloadTeamsBtn">Ricarica</button>
-                    <button class="btn" id="saveTeamsBtn">Salva su DB</button>
-                  </div>
-                  <div class="small" style="margin-top:8px">Suggerimento: usa emoji semplici come icone.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+<div class="card span12">
+<div class="card-title">Branding</div>
+<div class="card-body">
 
-        <!-- PARTICIPANTS -->
-        <div class="panel" data-panel="participants" style="display:none">
-          <div class="card span12">
-            <div class="card-title">Participants</div>
-            <div class="card-body">
-              <div class="notice">
-                <div class="h">Gestione partecipanti (D1)</div>
-                <div class="small">Crea partecipanti, assegna ruolo e team, modifica/elimina.</div>
-              </div>
+<label class="lbl">Logo URL</label>
+<input class="input" id="logoUrl"/>
 
-              <div class="sep"></div>
+<button class="btn primary" id="saveBranding">Save</button>
 
-              <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end">
-                <div style="flex:2;min-width:240px">
-                  <label class="lbl">Nome</label>
-                  <input class="input" id="pName" placeholder="Es. Rossi Mario" />
-                </div>
-                <div style="flex:2;min-width:240px">
-                  <label class="lbl">Email (opzionale)</label>
-                  <input class="input" id="pEmail" placeholder="nome@dominio.tld" />
-                </div>
-                <div style="flex:1;min-width:160px">
-                  <label class="lbl">Ruolo</label>
-                  <select class="input" id="pRole">
-                    <option>PLAYER</option>
-                    <option>OBSERVER</option>
-                    <option>INSTRUCTOR</option>
-                    <option>ADMIN</option>
-                  </select>
-                </div>
-                <div style="flex:1;min-width:160px">
-                  <label class="lbl">Team</label>
-                  <select class="input" id="pTeam"></select>
-                </div>
+</div>
+</div>
 
-                <div class="row" style="gap:8px;flex-wrap:wrap">
-                  <button class="btn primary" id="pAddBtn">Salva</button>
-                  <button class="btn ghost" id="pReloadBtn">Ricarica</button>
-                </div>
-              </div>
+<div class="card span12">
+<div class="card-title">Default Theme</div>
+<div class="card-body">
 
-              <div class="sep"></div>
-              <div id="pList" class="stack"></div>
-            </div>
-          </div>
-        </div>
+<select class="input" id="defaultTheme">
+<option value="intel-dark">Dark Intelligence</option>
+<option value="nato-blue">NATO Blue</option>
+<option value="light-analyst">Light Analyst</option>
+<option value="tactical-green">Tactical Green</option>
+</select>
 
-        <!-- INVITES -->
-        <div class="panel" data-panel="invites" style="display:none">
-          <div class="card span12">
-            <div class="card-title">Invites</div>
-            <div class="card-body">
-              <div class="notice">
-                <div class="h">Export / testo email</div>
-                <div class="small">Genera CSV per mail-merge e copia testo email per singolo partecipante.</div>
-              </div>
+<button class="btn primary" id="saveTheme">Save Theme</button>
 
-              <div class="sep"></div>
+</div>
+</div>
 
-              <label class="lbl">Oggetto</label>
-              <input class="input" id="invSubject" value="SimIA — Accesso alla simulazione" />
+</div>
 
-              <label class="lbl" style="margin-top:10px">Template email</label>
-              <textarea class="input mono" id="invTpl" rows="9">Ciao {NAME},
 
-di seguito il link di accesso a SimIA per il tuo ruolo ({ROLE}):
-{LINK}
+<!-- PARTICIPANTS -->
+<div class="panel" data-panel="participants" style="display:none">
 
-Team: {TEAM}
+<div class="card span12">
+<div class="card-title">Teams</div>
+<div class="card-body">
 
-EXERCISE ONLY.
+<input class="input" id="teamName" placeholder="Team name"/>
+<button class="btn primary" id="addTeam">Add Team</button>
 
-A presto,
-SimIA Control</textarea>
+<div id="teamList"></div>
 
-              <div class="row" style="margin-top:10px;flex-wrap:wrap">
-                <button class="btn" id="exportCsvBtn">Export CSV</button>
-                <button class="btn ghost" id="exportJsonBtn">Export JSON</button>
-              </div>
+</div>
+</div>
 
-              <div class="sep"></div>
-              <div class="small">Vai su “Participants” per usare “Copia email / Copia link”.</div>
-            </div>
-          </div>
-        </div>
+<div class="card span12">
+<div class="card-title">Participants</div>
+<div class="card-body">
+
+<input class="input" id="pName" placeholder="Name"/>
+<input class="input" id="pEmail" placeholder="Email"/>
+<input class="input" id="pTeam" placeholder="Team"/>
+
+<button class="btn primary" id="addParticipant">Add</button>
+
+<div id="participantsList"></div>
+
+</div>
+</div>
+
+</div>
+
+
 <!-- SCENARIO -->
 <div class="panel" data-panel="scenario" style="display:none">
-  <div class="card span12">
-    <div class="card-title">Scenario Controller</div>
-    <div class="card-body">
-      <div class="notice">
-        <div class="h">Broadcast & Inject (D1)</div>
-        <div class="small">Invia eventi alla simulazione e consulta il Control Log persistente.</div>
-      </div>
 
-      <div class="sep"></div>
+<div class="card span12">
+<div class="card-title">Scenario Defaults</div>
+<div class="card-body">
 
-      <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end">
-        <div style="min-width:180px;flex:1">
-          <label class="lbl">Kind</label>
-          <select class="input" id="scKind">
-            <option>BROADCAST</option>
-            <option>INJECT</option>
-          </select>
-        </div>
+<label class="lbl">Session Name</label>
+<input class="input" id="sessionName"/>
 
-        <div style="min-width:180px;flex:1">
-          <label class="lbl">Severity</label>
-          <select class="input" id="scSeverity">
-            <option>INFO</option>
-            <option>AMBER</option>
-            <option>RED</option>
-          </select>
-        </div>
+<label class="lbl">Initial Phase</label>
+<select class="input" id="initialPhase">
+<option>PHASE-1</option>
+<option>PHASE-2</option>
+<option>PHASE-3</option>
+<option>PHASE-4</option>
+</select>
 
-        <div style="min-width:220px;flex:2">
-          <label class="lbl">Audience</label>
-          <input class="input" id="scAudience" value="ALL" placeholder="ALL / TEAM:A / TEAM:B / ROLE:OBSERVER" />
-        </div>
+<button class="btn primary" id="saveScenarioDefaults">Save</button>
 
-        <div style="min-width:200px;flex:1">
-          <label class="lbl">Phase (opzionale)</label>
-          <input class="input" id="scPhase" placeholder="PHASE-1" />
-        </div>
-
-        <div class="row" style="gap:8px;flex-wrap:wrap">
-          <button class="btn primary" id="scSendBtn">Invia</button>
-          <button class="btn ghost" id="scReloadBtn">Ricarica log</button>
-        </div>
-      </div>
-
-      <div class="sep"></div>
-
-      <label class="lbl">Title</label>
-      <input class="input" id="scTitle" placeholder="Titolo (opzionale)" />
-
-      <label class="lbl" style="margin-top:10px">Body</label>
-      <textarea class="input" id="scBody" rows="7" placeholder="Testo dell'evento..."></textarea>
-
-      <div class="sep"></div>
-
-      <div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-        <div>
-          <div class="h">Control Log</div>
-          <div class="small">Ultimi 200 eventi (dal DB).</div>
-        </div>
-        <span class="pill mono" id="scCount">—</span>
-      </div>
-
-      <div class="sep"></div>
-      <div id="scLog" class="stack"></div>
-    <div class="sep"></div>
-
-<div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-  <div>
-    <div class="h">ACK Monitor</div>
-    <div class="small">Stato letture per evento (attesi vs letture registrate).</div>
-  </div>
-  <div class="row" style="gap:8px;flex-wrap:wrap">
-    <select class="input" id="ackLimit" style="min-width:160px">
-      <option value="10">Ultimi 10</option>
-      <option value="20">Ultimi 20</option>
-      <option value="30" selected>Ultimi 30</option>
-      <option value="50">Ultimi 50</option>
-    </select>
-    <button class="btn ghost" id="ackReloadBtn">Ricarica ACK</button>
-  </div>
+</div>
 </div>
 
-<div class="sep"></div>
-<div id="ackTable" class="stack"></div>
-	</div>
-  </div>
 </div>
-        <!-- SYSTEM -->
-        <div class="panel" data-panel="system" style="display:none">
-          <div class="card span12">
-            <div class="card-title">System</div>
-            <div class="card-body">
-              <div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-                <div>
-                  <div class="h">Diagnostica</div>
-                  <div class="small">Verifica stato Functions e DB binding.</div>
-                </div>
-                <span class="pill mono" id="sysBadge">—</span>
-              </div>
 
-              <div class="sep"></div>
 
-              <div class="small mono">/api/health</div>
-              <pre class="pre" id="sysHealth">—</pre>
+<!-- SYSTEM -->
+<div class="panel" data-panel="system" style="display:none">
 
-              <div class="small mono">/api/dbcheck</div>
-              <pre class="pre" id="sysDbcheck">—</pre>
-            </div>
-          </div>
-        </div>
+<div class="card span12">
+<div class="card-title">System Status</div>
+<div class="card-body">
 
-      </div>
-    </section>
-  </main>
+<button class="btn" id="checkHealth">Check API</button>
 
-  <script src="/assets/app.js"></script>
-  <script src="/assets/config_ui.js"></script>
-  <script src="/assets/theme.js"></script>
+<pre id="healthResult"></pre>
+
+</div>
+</div>
+
+</div>
+
+</div>
+</section>
+</main>
+
+<script src="/assets/app.js"></script>
+<script src="/assets/theme.js"></script>
+
+<script>
+
+document.querySelectorAll(".tab").forEach(tab=>{
+tab.onclick = e=>{
+
+document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"))
+tab.classList.add("active")
+
+const name = tab.dataset.tab
+
+document.querySelectorAll(".panel").forEach(p=>{
+p.style.display = "none"
+})
+
+document.querySelector('[data-panel="'+name+'"]').style.display="block"
+
+}
+})
+
+document.getElementById("checkHealth").onclick = async ()=>{
+
+const r = await fetch("/api/health")
+const j = await r.json()
+
+document.getElementById("healthResult").textContent =
+JSON.stringify(j,null,2)
+
+}
+
+</script>
+
 </body>
 </html>
