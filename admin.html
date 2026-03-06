@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="it">
 <head>
@@ -12,7 +13,7 @@
     <div class="logo">SI</div>
     <div>
       <div class="brand-title">SimIA</div>
-      <div class="brand-sub">Admin Console — participants credentials</div>
+      <div class="brand-sub">Admin Console — credentials tools</div>
     </div>
   </div>
   <div class="session">
@@ -139,6 +140,7 @@
               <div class="row" style="gap:8px;flex-wrap:wrap">
                 <button class="btn primary" id="pAddBtn">Save participant</button>
                 <button class="btn ghost" id="pReloadBtn">Reload</button>
+                <button class="btn" id="pExportCsvBtn">Export CSV</button>
               </div>
             </div>
           </div>
@@ -216,15 +218,25 @@ async function jdel(url){
   if(!r.ok) throw new Error(j?.error || ("HTTP "+r.status));
   return j;
 }
-
-let TEAMS = [];
-let PARTICIPANTS = [];
-
+function randCode(){ return String(Math.floor(100000 + Math.random()*900000)); }
 function entryLink(p){
   const base = new URL("/access.html", location.origin);
   base.searchParams.set("pid", p.id);
   return base.toString();
 }
+function downloadText(text, filename, mime){
+  const blob = new Blob([text], { type: mime || "text/plain" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename || "download.txt";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 500);
+}
+
+let TEAMS = [];
+let PARTICIPANTS = [];
 
 function setActiveTab(name){
   document.querySelectorAll(".tab").forEach(t=> t.classList.toggle("active", t.dataset.tab === name));
@@ -254,7 +266,6 @@ function renderTeams(){
     box.appendChild(div);
   });
 }
-
 function fillTeamSelect(){
   const sel = document.getElementById("pTeam");
   sel.innerHTML = "";
@@ -268,7 +279,6 @@ function fillTeamSelect(){
   });
   sel.value = "ALL";
 }
-
 async function loadTeams(){
   const j = await jget("/api/teams");
   TEAMS = Array.isArray(j.teams) ? j.teams : [];
@@ -282,6 +292,23 @@ async function saveTeams(){
     icon: String(t.icon||"").trim()
   }));
   await jpost("/api/teams", { teams: payload });
+}
+
+function participantCsv(){
+  const rows = [["name","email","role","team","id","access_code","is_active","link"]];
+  PARTICIPANTS.forEach(p=>{
+    rows.push([
+      p.name || "",
+      p.email || "",
+      String(p.role || "").toUpperCase(),
+      String(p.team_id || "ALL").toUpperCase(),
+      p.id || "",
+      p.access_code || "",
+      Number(p.is_active) === 1 ? "1" : "0",
+      entryLink(p)
+    ]);
+  });
+  return rows.map(r=>r.map(x=>`"${String(x).replaceAll('"','""')}"`).join(",")).join("\n");
 }
 
 function renderParticipants(){
@@ -325,6 +352,8 @@ function renderParticipants(){
         <div class="row" style="gap:8px;flex-wrap:wrap;justify-content:flex-end">
           <button class="btn" data-link>Copy link</button>
           <button class="btn ghost" data-emailmsg>Copy email</button>
+          <button class="btn" data-regencode>Regenerate code</button>
+          <button class="btn ghost" data-toggle>${activeVal==="1"?"Disable":"Enable"}</button>
           <button class="btn primary" data-save>Save</button>
           <button class="btn danger" data-del>Delete</button>
         </div>
@@ -350,6 +379,14 @@ function renderParticipants(){
       const team = div.querySelector("[data-team]").value || "ALL";
       const msg = `Oggetto: Accesso SimIA\n\nCiao ${div.querySelector("[data-name]").value || ""},\n\nusa questo link per accedere a SimIA:\n${link}\n\nAccess code: ${code}\nRuolo: ${role}\nTeam: ${team}\n`;
       try{ await navigator.clipboard.writeText(msg); alert("Email copiata."); }catch{ alert(msg); }
+    });
+    div.querySelector("[data-regencode]").addEventListener("click", ()=>{
+      div.querySelector("[data-code]").value = randCode();
+    });
+    div.querySelector("[data-toggle]").addEventListener("click", ()=>{
+      const sel = div.querySelector("[data-active]");
+      sel.value = sel.value === "1" ? "0" : "1";
+      div.querySelector("[data-toggle]").textContent = sel.value === "1" ? "Disable" : "Enable";
     });
     div.querySelector("[data-save]").addEventListener("click", async ()=>{
       try{
@@ -448,6 +485,9 @@ function bindParticipants(){
     alert(`Partecipante salvato. ID: ${res.id} | Access Code: ${res.access_code}`);
   });
   document.getElementById("pReloadBtn").addEventListener("click", ()=>loadParticipants().catch(e=>alert(e)));
+  document.getElementById("pExportCsvBtn").addEventListener("click", ()=>{
+    downloadText(participantCsv(), "simia_participants_credentials.csv", "text/csv");
+  });
 }
 
 function bindSystem(){

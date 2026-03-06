@@ -1,0 +1,31 @@
+SimIA v1.4.3 — Participants credentials tools
+
+What this update adds
+- In Admin -> Participants:
+  - Regenerate Access Code
+  - Enable / Disable with one click
+  - Export participants credentials to CSV
+- Existing inline editor remains:
+  - ID
+  - Access Code
+  - Active status
+  - Role / Team / Name / Email
+
+Files included
+- admin.html (replacement)
+
+Prerequisite
+- Access verification update v1.4.1 should already be installed
+  (participants API with access_code / is_active)
+
+Install
+1) Replace admin.html with this file
+2) Commit + Push
+
+Checks
+A) Open /admin.html -> Participants
+B) Click Regenerate code on one participant
+C) Click Save
+D) Click Enable/Disable and Save
+E) Click Export CSV and verify file download
+
