@@ -1,0 +1,33 @@
+SimIA v1.6 — Admin restructure: Setup, Roles, Participants
+
+What this update adds
+- Admin Console reorganized into:
+  - Setup
+  - Roles
+  - Participants
+  - Scenario
+  - System
+- Setup:
+  - Brand name
+  - Exercise subtitle
+  - Logo by URL or local upload (stored in app_config as Data URL)
+  - Platform theme
+- Roles:
+  - Create/manage roles
+  - destination_page
+  - can_have_team
+  - active/inactive
+- Participants:
+  - Role-aware assignment
+  - View/edit/remove/regenerate code/export CSV
+- Access routing now uses destination_page from roles
+- Config API extended for branding fields
+
+Install
+1) Copy files into repo preserving folders
+2) Run SQL in D1 from migrations/040_roles_and_admin_restructure.sql
+3) Commit + Push
+
+Notes
+- Local logo upload is stored in D1 as Data URL; use a small logo file for best results.
+- Scenario tab intentionally left minimal for later definition.
