@@ -1,0 +1,11 @@
+Admin UI note for participants
+- The API now accepts/returns:
+  access_code
+  is_active
+
+Operational procedure:
+1) Create participant
+2) Read participant details from /api/participants
+3) Distribute:
+   Link: /access.html?pid=<ID>
+   Code: <access_code>
