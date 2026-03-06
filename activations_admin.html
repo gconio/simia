@@ -27,6 +27,18 @@
 <div class="grid">
 
 <div class="card span12">
+  <div class="card-title">Timeline Board</div>
+  <div class="card-body">
+    <div class="notice">
+      <div class="h">Overview by phase</div>
+      <div class="small">Le activations sono raggruppate per fase e ordinate automaticamente per T+ minuti.</div>
+    </div>
+    <div class="sep"></div>
+    <div id="timelineBoard" class="row" style="gap:12px;align-items:flex-start;overflow-x:auto;flex-wrap:nowrap"></div>
+  </div>
+</div>
+
+<div class="card span12">
   <div class="card-title">Activations</div>
   <div class="card-body">
     <div class="notice">
@@ -37,7 +49,10 @@
 
     <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end">
       <div style="min-width:180px;flex:2"><label class="lbl">Title</label><input class="input" id="iTitle" placeholder="Titolo activation"></div>
-      <div style="min-width:140px;flex:1"><label class="lbl">Phase</label><input class="input mono" id="iPhase" placeholder="PHASE-1"></div>
+      <div style="min-width:240px;flex:1">
+        <label class="lbl">Phase</label>
+        <select class="input" id="iPhase"></select>
+      </div>
       <div style="min-width:140px;flex:1"><label class="lbl">Kind</label><select class="input" id="iKind"><option>INJECT</option><option>BROADCAST</option><option>UPDATE</option><option>ALERT</option><option>TASK</option></select></div>
       <div style="min-width:140px;flex:1"><label class="lbl">Source</label><select class="input" id="iSource"><option>OSINT</option><option>MEDIA</option><option>HUMINT</option><option>SIGINT</option><option>GEOINT</option><option>GOV</option><option>SOCIAL</option><option>INTERNAL</option></select></div>
       <div style="min-width:120px;flex:1"><label class="lbl">Severity</label><select class="input" id="iSeverity"><option>INFO</option><option>AMBER</option><option>RED</option></select></div>
@@ -112,11 +127,16 @@ async function jdel(url){
 }
 
 let CURRENT_ACTIVATION_ID = "";
+let PHASES = [];
+let ACTIVATIONS = [];
 
+function phaseLabel(p){
+  return (p.phase_code || "") + (p.title ? " — " + p.title : "");
+}
 function activationFormClear(){
   CURRENT_ACTIVATION_ID = "";
   document.getElementById("iTitle").value = "";
-  document.getElementById("iPhase").value = "";
+  if (PHASES.length) document.getElementById("iPhase").value = PHASES[0].phase_code || "";
   document.getElementById("iKind").value = "INJECT";
   document.getElementById("iSource").value = "OSINT";
   document.getElementById("iSeverity").value = "INFO";
@@ -141,51 +161,124 @@ function activationFormSet(i){
   document.getElementById("iStatus").value = i.status || "draft";
   document.getElementById("iAuthor").value = i.author || "admin";
   document.getElementById("iBody").value = i.body || "";
-  document.getElementById("activationEditorState").textContent = `EDITING: ${i.title || ""}`;
+  document.getElementById("activationEditorState").textContent = "EDITING: " + (i.title || "");
 }
 
-async function loadInjects(){
-  const j = await jget("/api/scenario/injects");
-  const box = document.getElementById("injectsList");
-  box.innerHTML = "";
-  const rows = j.injects || [];
-  if(!rows.length){
-    box.innerHTML = '<div class="item"><div class="small">Nessuna activation configurata.</div></div>';
+function fillPhaseSelect(){
+  const sel = document.getElementById("iPhase");
+  const current = sel.value || "";
+  sel.innerHTML = "";
+  if(!PHASES.length){
+    const o = document.createElement("option");
+    o.value = "";
+    o.textContent = "No phases available";
+    sel.appendChild(o);
+    sel.disabled = true;
     return;
   }
-  rows.forEach(i=>{
-    const eta = i.effective_release_at ? `<span class="pill mono">ETA ${esc(i.effective_release_at)}</span>` : `<span class="pill mono">ETA pending scenario start</span>`;
+  sel.disabled = false;
+  PHASES.forEach(p=>{
+    const o = document.createElement("option");
+    o.value = p.phase_code || "";
+    o.textContent = phaseLabel(p);
+    sel.appendChild(o);
+  });
+  if(current && Array.from(sel.options).some(o=>o.value===current)) sel.value = current;
+  else sel.value = PHASES[0].phase_code || "";
+}
+
+function renderTimelineBoard(){
+  const box = document.getElementById("timelineBoard");
+  box.innerHTML = "";
+  if(!PHASES.length){
+    box.innerHTML = '<div class="item" style="min-width:260px"><div class="small">Nessuna fase disponibile.</div></div>';
+    return;
+  }
+  PHASES.forEach(p=>{
+    const col = document.createElement("div");
+    col.className = "item";
+    col.style.minWidth = "280px";
+    const acts = ACTIVATIONS.filter(a => String(a.phase_code||"") === String(p.phase_code||""))
+      .sort((a,b)=>Number(a.release_offset_min||0)-Number(b.release_offset_min||0));
+    let actsHtml = "";
+    if(acts.length){
+      actsHtml = acts.map(a=>{
+        const eta = a.effective_release_at ? "ETA " + esc(a.effective_release_at) : "ETA pending";
+        return '<div class="item" style="margin-top:8px">' +
+          '<div class="h">' + esc(a.title) + '</div>' +
+          '<div class="small" style="margin-top:4px">' +
+          '<span class="pill mono">T+' + esc(a.release_offset_min || 0) + '</span> ' +
+          '<span class="pill mono">' + esc(a.severity || "") + '</span> ' +
+          '<span class="pill mono">' + esc(a.status || "") + '</span>' +
+          '</div>' +
+          '<div class="small" style="margin-top:4px">' + esc(a.kind || "") + ' • ' + esc(a.audience_type || "") + ':' + esc(a.audience_value || "") + '</div>' +
+          '<div class="small" style="margin-top:4px">' + eta + '</div>' +
+          '</div>';
+      }).join("");
+    } else {
+      actsHtml = '<div class="small" style="margin-top:8px">Nessuna activation pianificata.</div>';
+    }
+    col.innerHTML = '<div class="h">' + esc(phaseLabel(p)) + '</div>' +
+      '<div class="small" style="margin-top:6px">' +
+      '<span class="pill mono">ORDER ' + esc(p.sort_order || "") + '</span> ' +
+      '<span class="pill mono">' + esc(p.status || "") + '</span>' +
+      '</div>' + actsHtml;
+    box.appendChild(col);
+  });
+}
+
+async function loadPhases(){
+  const j = await jget("/api/scenario/phases");
+  PHASES = j.phases || [];
+  fillPhaseSelect();
+}
+async function loadInjects(){
+  const j = await jget("/api/scenario/injects");
+  ACTIVATIONS = j.injects || [];
+  const box = document.getElementById("injectsList");
+  box.innerHTML = "";
+  if(!ACTIVATIONS.length){
+    box.innerHTML = '<div class="item"><div class="small">Nessuna activation configurata.</div></div>';
+    renderTimelineBoard();
+    return;
+  }
+  ACTIVATIONS.forEach(i=>{
+    const eta = i.effective_release_at ? '<span class="pill mono">ETA ' + esc(i.effective_release_at) + '</span>' : '<span class="pill mono">ETA pending scenario start</span>';
+    const phase = PHASES.find(p=>String(p.phase_code||"")===String(i.phase_code||""));
+    const phaseText = phase ? phaseLabel(phase) : (i.phase_code || "");
     const div = document.createElement("div");
     div.className = "item";
-    div.innerHTML = `<div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap">
-      <div style="flex:1">
-        <div class="h">${esc(i.title)}</div>
-        <div class="small" style="margin-top:6px">
-          <span class="pill mono">${esc(i.kind)}</span>
-          <span class="pill mono">${esc(i.source_type)}</span>
-          <span class="pill mono">${esc(i.severity)}</span>
-          <span class="pill mono">${esc(i.audience_type)}:${esc(i.audience_value)}</span>
-          ${i.phase_code ? `<span class="pill mono">${esc(i.phase_code)}</span>` : ""}
-          <span class="pill mono">T+${esc(i.release_offset_min || 0)} min</span>
-          ${eta}
-          <span class="pill mono">${esc(i.status)}</span>
-        </div>
-        <div style="margin-top:10px;white-space:pre-wrap">${esc(i.body)}</div>
-      </div>
-      <div class="row" style="gap:8px;flex-wrap:wrap">
-        <button class="btn" data-edit>Edit</button>
-        <button class="btn danger" data-del>Delete</button>
-      </div>
-    </div>`;
+    div.innerHTML = '<div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap">' +
+      '<div style="flex:1">' +
+      '<div class="h">' + esc(i.title) + '</div>' +
+      '<div class="small" style="margin-top:6px">' +
+      '<span class="pill mono">' + esc(i.kind) + '</span> ' +
+      '<span class="pill mono">' + esc(i.source_type) + '</span> ' +
+      '<span class="pill mono">' + esc(i.severity) + '</span> ' +
+      '<span class="pill mono">' + esc(i.audience_type) + ':' + esc(i.audience_value) + '</span> ' +
+      '<span class="pill mono">' + esc(phaseText) + '</span> ' +
+      '<span class="pill mono">T+' + esc(i.release_offset_min || 0) + ' min</span> ' +
+      eta + ' ' +
+      '<span class="pill mono">' + esc(i.status) + '</span>' +
+      '</div>' +
+      '<div style="margin-top:10px;white-space:pre-wrap">' + esc(i.body) + '</div>' +
+      '</div>' +
+      '<div class="row" style="gap:8px;flex-wrap:wrap">' +
+      '<button class="btn" data-edit>Edit</button>' +
+      '<button class="btn danger" data-del>Delete</button>' +
+      '</div>' +
+      '</div>';
     div.querySelector("[data-edit]").addEventListener("click", ()=>activationFormSet(i));
     div.querySelector("[data-del]").addEventListener("click", async ()=>{
       if(!confirm("Eliminare questa activation?")) return;
-      await jdel(`/api/scenario/injects?id=${encodeURIComponent(i.id)}`);
+      await jdel("/api/scenario/injects?id=" + encodeURIComponent(i.id));
       if(CURRENT_ACTIVATION_ID === i.id) activationFormClear();
       await loadInjects();
+      renderTimelineBoard();
     });
     box.appendChild(div);
   });
+  renderTimelineBoard();
 }
 
 async function loadActions(){
@@ -200,13 +293,10 @@ async function loadActions(){
   rows.forEach(a=>{
     const div = document.createElement("div");
     div.className = "item";
-    div.innerHTML = `<div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap">
-      <div>
-        <div class="h">${esc(a.action_type)}</div>
-        <div class="small">${esc(a.notes || "")}</div>
-      </div>
-      <div class="small mono">${esc(a.actor || "admin")} • ${esc(a.ts || "")}</div>
-    </div>`;
+    div.innerHTML = '<div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap">' +
+      '<div><div class="h">' + esc(a.action_type) + '</div><div class="small">' + esc(a.notes || "") + '</div></div>' +
+      '<div class="small mono">' + esc(a.actor || "admin") + ' • ' + esc(a.ts || "") + '</div>' +
+      '</div>';
     box.appendChild(div);
   });
 }
@@ -231,12 +321,18 @@ document.getElementById("saveInjectBtn").addEventListener("click", async ()=>{
   await loadActions();
   alert("Activation salvata.");
 });
-document.getElementById("reloadInjectsBtn").addEventListener("click", loadInjects);
+document.getElementById("reloadInjectsBtn").addEventListener("click", async ()=>{
+  await loadPhases();
+  await loadInjects();
+});
 document.getElementById("reloadActionsBtn").addEventListener("click", loadActions);
 
-activationFormClear();
-loadInjects();
-loadActions();
+(async function init(){
+  await loadPhases();
+  await loadInjects();
+  await loadActions();
+  activationFormClear();
+})();
 </script>
 </body>
 </html>
