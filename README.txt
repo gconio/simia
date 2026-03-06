@@ -1,23 +1,36 @@
-SimIA v2.4 — Activations phase-select + timeline board
+SimIA v2.5 — White Cell controls inside Activations
 
 What this update adds
-- activations_admin.html now loads phases from the DB
-- Phase field is no longer free text; it is a select populated from /api/scenario/phases
-- New Timeline Board at the top:
-  - columns by phase
-  - activations grouped within each phase
-  - ordered by T+ minutes
+- New API:
+  - /api/scenario/control
+- White Cell actions now available inside Activations:
+  - Release now
+  - Delay +5 min
+  - Cancel
+  - Retarget
+- Actions available:
+  - in activation list
+  - in timeline board cards
 
 Files included
+- functions/api/scenario/control.js
 - activations_admin.html
 - README.txt
 
 Prerequisites
-- /api/scenario/phases already installed
-- /api/scenario/injects already installed
-- /api/scenario/actions already installed
-- branding.js already installed
+- /api/scenario/phases installed
+- /api/scenario/injects installed
+- /api/scenario/actions installed
+- branding.js installed
 
 Install
-1) Replace activations_admin.html
+1) Copy files preserving folders
 2) Commit + Push
+
+Checks
+A) Open /activations_admin.html
+B) Use Release now on an activation
+C) Use Delay +5
+D) Use Cancel
+E) Use Retarget
+F) Verify White Cell Log updates

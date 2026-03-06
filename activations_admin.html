@@ -197,7 +197,7 @@ function renderTimelineBoard(){
   PHASES.forEach(p=>{
     const col = document.createElement("div");
     col.className = "item";
-    col.style.minWidth = "280px";
+    col.style.minWidth = "300px";
     const acts = ACTIVATIONS.filter(a => String(a.phase_code||"") === String(p.phase_code||""))
       .sort((a,b)=>Number(a.release_offset_min||0)-Number(b.release_offset_min||0));
     let actsHtml = "";
@@ -213,6 +213,12 @@ function renderTimelineBoard(){
           '</div>' +
           '<div class="small" style="margin-top:4px">' + esc(a.kind || "") + ' • ' + esc(a.audience_type || "") + ':' + esc(a.audience_value || "") + '</div>' +
           '<div class="small" style="margin-top:4px">' + eta + '</div>' +
+          '<div class="row" style="margin-top:8px;gap:6px;flex-wrap:wrap">' +
+          '<button class="btn" data-release="'+ esc(a.id) +'">Release now</button>' +
+          '<button class="btn ghost" data-delay="'+ esc(a.id) +'">Delay +5</button>' +
+          '<button class="btn ghost" data-retarget="'+ esc(a.id) +'">Retarget</button>' +
+          '<button class="btn danger" data-cancel="'+ esc(a.id) +'">Cancel</button>' +
+          '</div>' +
           '</div>';
       }).join("");
     } else {
@@ -224,6 +230,40 @@ function renderTimelineBoard(){
       '<span class="pill mono">' + esc(p.status || "") + '</span>' +
       '</div>' + actsHtml;
     box.appendChild(col);
+  });
+
+  box.querySelectorAll("[data-release]").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      await jpost("/api/scenario/control", { action:"release_now", inject_id: btn.getAttribute("data-release"), actor:"white-cell" });
+      await reloadAll();
+      alert("Activation rilasciata.");
+    });
+  });
+  box.querySelectorAll("[data-delay]").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      await jpost("/api/scenario/control", { action:"delay", inject_id: btn.getAttribute("data-delay"), delay_min:5, actor:"white-cell" });
+      await reloadAll();
+      alert("Activation ritardata di 5 minuti.");
+    });
+  });
+  box.querySelectorAll("[data-cancel]").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      if(!confirm("Cancellare questa activation?")) return;
+      await jpost("/api/scenario/control", { action:"cancel", inject_id: btn.getAttribute("data-cancel"), actor:"white-cell" });
+      await reloadAll();
+      alert("Activation cancellata.");
+    });
+  });
+  box.querySelectorAll("[data-retarget]").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      const audience_type = prompt("Nuovo audience_type (ALL / TEAM / ROLE / USER)", "TEAM");
+      if(!audience_type) return;
+      const audience_value = prompt("Nuovo audience_value", "A");
+      if(!audience_value) return;
+      await jpost("/api/scenario/control", { action:"retarget", inject_id: btn.getAttribute("data-retarget"), audience_type, audience_value, actor:"white-cell" });
+      await reloadAll();
+      alert("Activation retargeted.");
+    });
   });
 }
 
@@ -262,10 +302,14 @@ async function loadInjects(){
       '<span class="pill mono">' + esc(i.status) + '</span>' +
       '</div>' +
       '<div style="margin-top:10px;white-space:pre-wrap">' + esc(i.body) + '</div>' +
-      '</div>' +
-      '<div class="row" style="gap:8px;flex-wrap:wrap">' +
+      '<div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">' +
       '<button class="btn" data-edit>Edit</button>' +
+      '<button class="btn" data-release>Release now</button>' +
+      '<button class="btn ghost" data-delay>Delay +5</button>' +
+      '<button class="btn ghost" data-retarget>Retarget</button>' +
+      '<button class="btn danger" data-cancel>Cancel</button>' +
       '<button class="btn danger" data-del>Delete</button>' +
+      '</div>' +
       '</div>' +
       '</div>';
     div.querySelector("[data-edit]").addEventListener("click", ()=>activationFormSet(i));
@@ -273,8 +317,32 @@ async function loadInjects(){
       if(!confirm("Eliminare questa activation?")) return;
       await jdel("/api/scenario/injects?id=" + encodeURIComponent(i.id));
       if(CURRENT_ACTIVATION_ID === i.id) activationFormClear();
-      await loadInjects();
-      renderTimelineBoard();
+      await reloadAll();
+    });
+    div.querySelector("[data-release]").addEventListener("click", async ()=>{
+      await jpost("/api/scenario/control", { action:"release_now", inject_id: i.id, actor:"white-cell" });
+      await reloadAll();
+      alert("Activation rilasciata.");
+    });
+    div.querySelector("[data-delay]").addEventListener("click", async ()=>{
+      await jpost("/api/scenario/control", { action:"delay", inject_id: i.id, delay_min:5, actor:"white-cell" });
+      await reloadAll();
+      alert("Activation ritardata di 5 minuti.");
+    });
+    div.querySelector("[data-cancel]").addEventListener("click", async ()=>{
+      if(!confirm("Cancellare questa activation?")) return;
+      await jpost("/api/scenario/control", { action:"cancel", inject_id: i.id, actor:"white-cell" });
+      await reloadAll();
+      alert("Activation cancellata.");
+    });
+    div.querySelector("[data-retarget]").addEventListener("click", async ()=>{
+      const audience_type = prompt("Nuovo audience_type (ALL / TEAM / ROLE / USER)", i.audience_type || "TEAM");
+      if(!audience_type) return;
+      const audience_value = prompt("Nuovo audience_value", i.audience_value || "A");
+      if(!audience_value) return;
+      await jpost("/api/scenario/control", { action:"retarget", inject_id: i.id, audience_type, audience_value, actor:"white-cell" });
+      await reloadAll();
+      alert("Activation retargeted.");
     });
     box.appendChild(div);
   });
@@ -301,6 +369,12 @@ async function loadActions(){
   });
 }
 
+async function reloadAll(){
+  await loadPhases();
+  await loadInjects();
+  await loadActions();
+}
+
 document.getElementById("saveInjectBtn").addEventListener("click", async ()=>{
   await jpost("/api/scenario/injects", {
     id: CURRENT_ACTIVATION_ID || undefined,
@@ -317,20 +391,14 @@ document.getElementById("saveInjectBtn").addEventListener("click", async ()=>{
     body: document.getElementById("iBody").value
   });
   activationFormClear();
-  await loadInjects();
-  await loadActions();
+  await reloadAll();
   alert("Activation salvata.");
 });
-document.getElementById("reloadInjectsBtn").addEventListener("click", async ()=>{
-  await loadPhases();
-  await loadInjects();
-});
+document.getElementById("reloadInjectsBtn").addEventListener("click", reloadAll);
 document.getElementById("reloadActionsBtn").addEventListener("click", loadActions);
 
 (async function init(){
-  await loadPhases();
-  await loadInjects();
-  await loadActions();
+  await reloadAll();
   activationFormClear();
 })();
 </script>
