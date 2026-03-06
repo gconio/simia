@@ -12,7 +12,7 @@
     <div class="logo">SI</div>
     <div>
       <div class="brand-title">SimIA</div>
-      <div class="brand-sub">Admin Console — role aware</div>
+      <div class="brand-sub">Admin Console — participants credentials</div>
     </div>
   </div>
   <div class="session">
@@ -24,7 +24,6 @@
 
 <main class="layout layout-wide">
   <section class="content">
-
     <div class="tabs">
       <a class="tab active" data-tab="setup" href="#">Setup</a>
       <a class="tab" data-tab="participants" href="#">Participants</a>
@@ -89,11 +88,11 @@
         </div>
 
         <div class="card span12">
-          <div class="card-title">Participants / Roles</div>
+          <div class="card-title">Create participant</div>
           <div class="card-body">
             <div class="notice">
               <div class="h">Role-based access</div>
-              <div class="small">Ogni partecipante deve avere un ruolo. Il link generato porterà automaticamente alla vista corretta: Admin, Instructor, Player o Observer.</div>
+              <div class="small">Ogni partecipante ha Role, Team, ID, Access Code e stato attivo. Il link di accesso usa /access.html?pid=&lt;ID&gt; e richiede il codice.</div>
             </div>
             <div class="sep"></div>
 
@@ -119,13 +118,35 @@
                 <label class="lbl">Team</label>
                 <select class="input" id="pTeam"></select>
               </div>
+            </div>
+
+            <div class="row" style="margin-top:10px;gap:10px;flex-wrap:wrap;align-items:flex-end">
+              <div style="min-width:220px;flex:2">
+                <label class="lbl">Custom ID (opzionale)</label>
+                <input class="input mono" id="pId" placeholder="Lascia vuoto per UUID automatico" />
+              </div>
+              <div style="min-width:180px;flex:1">
+                <label class="lbl">Access Code (opzionale)</label>
+                <input class="input mono" id="pAccessCode" placeholder="6 cifre o custom code" />
+              </div>
+              <div style="min-width:160px;flex:1">
+                <label class="lbl">Active</label>
+                <select class="input" id="pActive">
+                  <option value="1">YES</option>
+                  <option value="0">NO</option>
+                </select>
+              </div>
               <div class="row" style="gap:8px;flex-wrap:wrap">
                 <button class="btn primary" id="pAddBtn">Save participant</button>
                 <button class="btn ghost" id="pReloadBtn">Reload</button>
               </div>
             </div>
+          </div>
+        </div>
 
-            <div class="sep"></div>
+        <div class="card span12">
+          <div class="card-title">Participants / Credentials editor</div>
+          <div class="card-body">
             <div id="participantsList" class="stack"></div>
           </div>
         </div>
@@ -206,12 +227,8 @@ function entryLink(p){
 }
 
 function setActiveTab(name){
-  document.querySelectorAll(".tab").forEach(t=>{
-    t.classList.toggle("active", t.dataset.tab === name);
-  });
-  document.querySelectorAll(".panel").forEach(p=>{
-    p.style.display = (p.dataset.panel === name) ? "" : "none";
-  });
+  document.querySelectorAll(".tab").forEach(t=> t.classList.toggle("active", t.dataset.tab === name));
+  document.querySelectorAll(".panel").forEach(p=> p.style.display = (p.dataset.panel === name) ? "" : "none");
 }
 document.querySelectorAll(".tab").forEach(tab=>{
   tab.addEventListener("click", (e)=>{
@@ -227,23 +244,12 @@ function renderTeams(){
     box.innerHTML = `<div class="item"><div class="h">No teams</div></div>`;
     return;
   }
-
   TEAMS.forEach((t, idx)=>{
     const div = document.createElement("div");
     div.className = "item";
-    div.innerHTML = `
-      <div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">
-        <div style="flex:1">
-          <div class="h">${esc(t.label || t.id)} <span class="small mono">(${esc(t.id)})</span></div>
-          <div class="small" style="margin-top:6px">${esc(t.icon || "—")}</div>
-        </div>
-        <button class="btn danger" data-del>Delete</button>
-      </div>
-    `;
-    div.querySelector("[data-del]")?.addEventListener("click", ()=>{
-      TEAMS.splice(idx,1);
-      renderTeams();
-      fillTeamSelect();
+    div.innerHTML = `<div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap"><div style="flex:1"><div class="h">${esc(t.label || t.id)} <span class="small mono">(${esc(t.id)})</span></div><div class="small" style="margin-top:6px">${esc(t.icon || "—")}</div></div><button class="btn danger" data-del>Delete</button></div>`;
+    div.querySelector("[data-del]").addEventListener("click", ()=>{
+      TEAMS.splice(idx,1); renderTeams(); fillTeamSelect();
     });
     box.appendChild(div);
   });
@@ -253,10 +259,7 @@ function fillTeamSelect(){
   const sel = document.getElementById("pTeam");
   sel.innerHTML = "";
   const all = document.createElement("option");
-  all.value = "ALL";
-  all.textContent = "All Teams";
-  sel.appendChild(all);
-
+  all.value = "ALL"; all.textContent = "All Teams"; sel.appendChild(all);
   TEAMS.forEach(t=>{
     const o = document.createElement("option");
     o.value = String(t.id || "ALL").toUpperCase();
@@ -272,7 +275,6 @@ async function loadTeams(){
   renderTeams();
   fillTeamSelect();
 }
-
 async function saveTeams(){
   const payload = TEAMS.filter(t=>String(t.id||"").trim()).map(t=>({
     id: String(t.id||"").trim().toUpperCase(),
@@ -285,7 +287,6 @@ async function saveTeams(){
 function renderParticipants(){
   const box = document.getElementById("participantsList");
   box.innerHTML = "";
-
   if(!PARTICIPANTS.length){
     box.innerHTML = `<div class="item"><div class="h">No participants</div></div>`;
     return;
@@ -295,37 +296,79 @@ function renderParticipants(){
     const div = document.createElement("div");
     div.className = "item";
     const link = entryLink(p);
+    const activeVal = Number(p.is_active) === 1 ? "1" : "0";
+
     div.innerHTML = `
       <div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
-        <div style="flex:1;min-width:300px">
-          <div class="h">${esc(p.name || "")}</div>
-          <div class="small" style="margin-top:6px">
-            ${p.email ? `<span class="pill mono">${esc(p.email)}</span>` : ``}
-            <span class="pill mono">${esc(String(p.role||"").toUpperCase())}</span>
-            <span class="pill mono">${esc(String(p.team_id||"ALL").toUpperCase())}</span>
-            <span class="pill mono">${esc(p.id || "")}</span>
+        <div style="flex:1;min-width:420px">
+          <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end">
+            <div style="min-width:180px;flex:2"><label class="lbl">Name</label><input class="input" data-name value="${esc(p.name || "")}" /></div>
+            <div style="min-width:180px;flex:2"><label class="lbl">Email</label><input class="input" data-email value="${esc(p.email || "")}" /></div>
+            <div style="min-width:140px;flex:1"><label class="lbl">Role</label><select class="input" data-role>
+              <option ${String(p.role).toUpperCase()==="PLAYER"?"selected":""}>PLAYER</option>
+              <option ${String(p.role).toUpperCase()==="OBSERVER"?"selected":""}>OBSERVER</option>
+              <option ${String(p.role).toUpperCase()==="INSTRUCTOR"?"selected":""}>INSTRUCTOR</option>
+              <option ${String(p.role).toUpperCase()==="ADMIN"?"selected":""}>ADMIN</option>
+            </select></div>
+            <div style="min-width:140px;flex:1"><label class="lbl">Team</label><select class="input" data-team></select></div>
+          </div>
+          <div class="row" style="margin-top:10px;gap:10px;flex-wrap:wrap;align-items:flex-end">
+            <div style="min-width:260px;flex:2"><label class="lbl">ID</label><input class="input mono" data-id value="${esc(p.id || "")}" /></div>
+            <div style="min-width:180px;flex:1"><label class="lbl">Access Code</label><input class="input mono" data-code value="${esc(p.access_code || "")}" /></div>
+            <div style="min-width:140px;flex:1"><label class="lbl">Active</label><select class="input" data-active>
+              <option value="1" ${activeVal==="1"?"selected":""}>YES</option>
+              <option value="0" ${activeVal==="0"?"selected":""}>NO</option>
+            </select></div>
           </div>
           <div class="small mono" style="margin-top:10px;word-break:break-all">${esc(link)}</div>
         </div>
-
         <div class="row" style="gap:8px;flex-wrap:wrap;justify-content:flex-end">
           <button class="btn" data-link>Copy link</button>
-          <button class="btn ghost" data-email>Copy email</button>
+          <button class="btn ghost" data-emailmsg>Copy email</button>
+          <button class="btn primary" data-save>Save</button>
           <button class="btn danger" data-del>Delete</button>
         </div>
-      </div>
-    `;
+      </div>`;
 
-    div.querySelector("[data-link]")?.addEventListener("click", async ()=>{
+    const teamSel = div.querySelector("[data-team]");
+    const all = document.createElement("option");
+    all.value = "ALL"; all.textContent = "All Teams"; teamSel.appendChild(all);
+    TEAMS.forEach(t=>{
+      const o = document.createElement("option");
+      o.value = String(t.id || "ALL").toUpperCase();
+      o.textContent = (t.icon ? `${t.icon} ` : "") + (t.label || t.id);
+      if(String(p.team_id||"ALL").toUpperCase() === o.value) o.selected = true;
+      teamSel.appendChild(o);
+    });
+
+    div.querySelector("[data-link]").addEventListener("click", async ()=>{
       try{ await navigator.clipboard.writeText(link); alert("Link copiato."); }catch{ alert(link); }
     });
-
-    div.querySelector("[data-email]")?.addEventListener("click", async ()=>{
-      const msg = `Oggetto: Accesso SimIA\n\nCiao ${p.name || ""},\n\nusa questo link per accedere a SimIA:\n${link}\n\nRuolo: ${String(p.role||"").toUpperCase()}\nTeam: ${String(p.team_id||"ALL").toUpperCase()}\n`;
+    div.querySelector("[data-emailmsg]").addEventListener("click", async ()=>{
+      const code = div.querySelector("[data-code]").value || "";
+      const role = div.querySelector("[data-role]").value || "";
+      const team = div.querySelector("[data-team]").value || "ALL";
+      const msg = `Oggetto: Accesso SimIA\n\nCiao ${div.querySelector("[data-name]").value || ""},\n\nusa questo link per accedere a SimIA:\n${link}\n\nAccess code: ${code}\nRuolo: ${role}\nTeam: ${team}\n`;
       try{ await navigator.clipboard.writeText(msg); alert("Email copiata."); }catch{ alert(msg); }
     });
-
-    div.querySelector("[data-del]")?.addEventListener("click", async ()=>{
+    div.querySelector("[data-save]").addEventListener("click", async ()=>{
+      try{
+        await jpost("/api/participants", {
+          id: div.querySelector("[data-id]").value,
+          name: div.querySelector("[data-name]").value,
+          email: div.querySelector("[data-email]").value,
+          role: div.querySelector("[data-role]").value,
+          team_id: div.querySelector("[data-team]").value,
+          access_code: div.querySelector("[data-code]").value,
+          is_active: div.querySelector("[data-active]").value
+        });
+        await loadParticipants();
+        alert("Partecipante aggiornato.");
+      }catch(e){
+        alert("Errore salvataggio: " + e);
+      }
+    });
+    div.querySelector("[data-del]").addEventListener("click", async ()=>{
       if(!confirm("Eliminare questo partecipante?")) return;
       await jdel(`/api/participants?id=${encodeURIComponent(p.id)}`);
       await loadParticipants();
@@ -342,7 +385,7 @@ async function loadParticipants(){
 }
 
 function bindSetup(){
-  document.getElementById("cfgThemeSave")?.addEventListener("click", async ()=>{
+  document.getElementById("cfgThemeSave").addEventListener("click", async ()=>{
     const theme = document.getElementById("cfgTheme").value;
     document.getElementById("cfgThemeStatus").textContent = "Saving...";
     try{
@@ -354,7 +397,6 @@ function bindSetup(){
       alert("Errore salvataggio theme: " + e);
     }
   });
-
   (async ()=>{
     try{
       const j = await jget("/api/config");
@@ -368,7 +410,7 @@ function bindSetup(){
 }
 
 function bindParticipants(){
-  document.getElementById("addTeamBtn")?.addEventListener("click", ()=>{
+  document.getElementById("addTeamBtn").addEventListener("click", ()=>{
     const id = (document.getElementById("teamId").value || "").trim().toUpperCase();
     const label = (document.getElementById("teamLabel").value || "").trim();
     const icon = (document.getElementById("teamIcon").value || "").trim();
@@ -381,49 +423,45 @@ function bindParticipants(){
     renderTeams();
     fillTeamSelect();
   });
-
-  document.getElementById("reloadTeamsBtn")?.addEventListener("click", ()=>loadTeams().catch(e=>alert(e)));
-  document.getElementById("saveTeamsBtn")?.addEventListener("click", async ()=>{
-    await saveTeams();
-    await loadTeams();
-    alert("Teams salvati.");
+  document.getElementById("reloadTeamsBtn").addEventListener("click", ()=>loadTeams().catch(e=>alert(e)));
+  document.getElementById("saveTeamsBtn").addEventListener("click", async ()=>{
+    await saveTeams(); await loadTeams(); alert("Teams salvati.");
   });
-
-  document.getElementById("pAddBtn")?.addEventListener("click", async ()=>{
-    const name = (document.getElementById("pName").value || "").trim();
-    const email = (document.getElementById("pEmail").value || "").trim();
-    const role = (document.getElementById("pRole").value || "PLAYER").toUpperCase();
-    const team_id = (document.getElementById("pTeam").value || "ALL").toUpperCase();
-
-    if(!name){ alert("Inserisci Name."); return; }
-
-    await jpost("/api/participants", { name, email, role, team_id });
-
+  document.getElementById("pAddBtn").addEventListener("click", async ()=>{
+    const payload = {
+      id: (document.getElementById("pId").value || "").trim() || undefined,
+      name: (document.getElementById("pName").value || "").trim(),
+      email: (document.getElementById("pEmail").value || "").trim(),
+      role: (document.getElementById("pRole").value || "PLAYER").toUpperCase(),
+      team_id: (document.getElementById("pTeam").value || "ALL").toUpperCase(),
+      access_code: (document.getElementById("pAccessCode").value || "").trim() || undefined,
+      is_active: Number(document.getElementById("pActive").value || "1")
+    };
+    if(!payload.name){ alert("Inserisci Name."); return; }
+    const res = await jpost("/api/participants", payload);
     document.getElementById("pName").value = "";
     document.getElementById("pEmail").value = "";
+    document.getElementById("pId").value = "";
+    document.getElementById("pAccessCode").value = "";
+    document.getElementById("pActive").value = "1";
     await loadParticipants();
+    alert(`Partecipante salvato. ID: ${res.id} | Access Code: ${res.access_code}`);
   });
-
-  document.getElementById("pReloadBtn")?.addEventListener("click", ()=>loadParticipants().catch(e=>alert(e)));
+  document.getElementById("pReloadBtn").addEventListener("click", ()=>loadParticipants().catch(e=>alert(e)));
 }
 
 function bindSystem(){
-  document.getElementById("checkHealth")?.addEventListener("click", async ()=>{
+  document.getElementById("checkHealth").addEventListener("click", async ()=>{
     try{
       const j = await jget("/api/health");
       document.getElementById("healthResult").textContent = JSON.stringify(j, null, 2);
-    }catch(e){
-      document.getElementById("healthResult").textContent = String(e);
-    }
+    }catch(e){ document.getElementById("healthResult").textContent = String(e); }
   });
-
-  document.getElementById("checkDb")?.addEventListener("click", async ()=>{
+  document.getElementById("checkDb").addEventListener("click", async ()=>{
     try{
       const j = await jget("/api/dbcheck");
       document.getElementById("dbResult").textContent = JSON.stringify(j, null, 2);
-    }catch(e){
-      document.getElementById("dbResult").textContent = String(e);
-    }
+    }catch(e){ document.getElementById("dbResult").textContent = String(e); }
   });
 }
 
