@@ -1,0 +1,34 @@
+SimIA v1.4.1 — User verification at access
+
+What this adds
+- Access verification before routing to role page
+- Each participant has:
+  - role
+  - access_code
+  - is_active
+- New API:
+  POST /api/verify_access
+- access.html now asks for access code before redirect
+
+Files included
+- migrations/030_participants_access_code.sql
+- functions/api/participants.js
+- functions/api/verify_access.js
+- access.html
+- ADMIN_PATCH_NOTES.txt
+
+Important
+- Existing participants will need an access_code.
+  You can update them by re-saving the participant through the API or by creating new participants.
+  New participants get an auto-generated 6-digit code if none is provided.
+
+Install
+1) Copy files into repo preserving folders
+2) Run SQL in D1 from migrations/030_participants_access_code.sql
+3) Commit + Push
+
+Check
+A) Open /api/participants -> access_code and is_active should be present
+B) Open /access.html?pid=<ID>
+C) Enter access code
+D) Redirect happens only if code is valid

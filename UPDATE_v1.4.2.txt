@@ -1,0 +1,29 @@
+SimIA v1.4.2 — Admin can view/edit ID and Access Code
+
+What this update adds
+- In Admin -> Participants:
+  - View and edit participant ID
+  - View and edit Access Code
+  - View and edit Active status
+  - Save changes inline
+- Create participant form now supports:
+  - custom ID
+  - custom Access Code
+  - Active flag
+
+Files included
+- admin.html (replacement)
+
+Prerequisite
+- Access verification update v1.4.1 should already be installed
+  (participants API with access_code / is_active)
+
+Install
+1) Replace admin.html with this file
+2) Commit + Push
+
+Checks
+A) Open /admin.html -> Participants
+B) Existing participants show ID + Access Code + Active
+C) Modify and click Save
+D) Re-open /api/participants?id=<ID> and verify the changes
