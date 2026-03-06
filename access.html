@@ -6,4 +6,6 @@ async function loadBrand(){try{const j=await jget("/api/config");const cfg=j.con
 const u=new URL(location.href);const pid=(u.searchParams.get("pid")||"").trim();if(pid)document.getElementById("pidBox").value=pid;
 document.getElementById("verifyBtn").addEventListener("click",async()=>{try{const pid=(document.getElementById("pidBox").value||"").trim();const access_code=(document.getElementById("codeBox").value||"").trim();if(!pid||!access_code){setStatus("Dati mancanti","Inserisci Participant ID e Access code.","Missing pid or access_code");return;}setStatus("Verifica in corso…","Controllo credenziali e ruolo.","POST /api/verify_access");const j=await jpost("/api/verify_access",{pid,access_code});const p=j.participant;const role=String(p.role||"PLAYER").toUpperCase();const team=String(p.team_id||"ALL").toUpperCase();setStatus("Accesso autorizzato",`${p.name} → ${role} / TEAM:${team}`,JSON.stringify(j,null,2));const dest=new URL(j.destination_page||"/player.html",location.origin);dest.searchParams.set("pid",p.id);dest.searchParams.set("role",role);dest.searchParams.set("team",team);setTimeout(()=>location.href=dest.toString(),500);}catch(e){setStatus("Accesso negato",String(e),String(e));}});
 loadBrand();
-</script></body></html>
+</script>
+<script src="/assets/branding.js"></script>
+</body></html>
