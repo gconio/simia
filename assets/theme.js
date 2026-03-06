@@ -1,33 +1,62 @@
-/* SimIA Theme Switcher
-   - Persists theme in localStorage: simia.theme
-   - Injects a small selector into topbar .session (if found)
-   - Safe to load on any page (no dependencies)
+/* SimIA Theme Manager (Platform default via D1 + per-user override)
+Priority:
+1) localStorage simia.theme (user override)
+2) /api/config (platform default: defaultTheme)
+3) fallback: intel-dark
+
+Also injects /assets/theme.css automatically if not present.
+Optionally injects a Theme selector into the topbar.
 */
 (function(){
   const KEY = "simia.theme";
   const THEMES = [
-    { id:"intel-dark",   label:"Dark Intelligence" },
-    { id:"nato-blue",    label:"NATO / Security Blue" },
-    { id:"light-analyst",label:"Light Analyst" },
-    { id:"tactical-green",label:"Tactical Green" },
+    { id:"intel-dark",    label:"Dark Intelligence" },
+    { id:"nato-blue",     label:"NATO / Security Blue" },
+    { id:"light-analyst", label:"Light Analyst" },
+    { id:"tactical-green",label:"Tactical Green" }
   ];
 
-  function apply(themeId){
-    const t = THEMES.find(x=>x.id===themeId) ? themeId : "intel-dark";
+  function valid(id){ return THEMES.some(t=>t.id===id); }
+
+  function injectCss(){
+    const href = "/assets/theme.css";
+    const exists = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+      .some(l => (l.getAttribute("href")||"").endsWith(href));
+    if(exists) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = href;
+    document.head.appendChild(link);
+  }
+
+  function apply(themeId, persist){
+    const t = valid(themeId) ? themeId : "intel-dark";
     document.documentElement.setAttribute("data-theme", t);
-    try{ localStorage.setItem(KEY, t); }catch(e){}
+    if(persist){
+      try{ localStorage.setItem(KEY, t); }catch(e){}
+    }
     return t;
   }
 
-  function current(){
-    try{ return localStorage.getItem(KEY) || "intel-dark"; }catch(e){ return "intel-dark"; }
+  function currentOverride(){
+    try{ return localStorage.getItem(KEY) || ""; }catch(e){ return ""; }
   }
 
-  function inject(){
+  async function fetchDefault(){
+    try{
+      const r = await fetch("/api/config", { headers:{ "Accept":"application/json" }});
+      if(!r.ok) return "";
+      const j = await r.json();
+      const t = j?.config?.defaultTheme || j?.defaultTheme || "";
+      return valid(t) ? t : "";
+    }catch(e){
+      return "";
+    }
+  }
+
+  function injectSelector(activeTheme){
     const host = document.querySelector(".topbar .session") || document.querySelector(".session");
     if(!host) return;
-
-    // Avoid duplicates
     if(document.getElementById("simiaThemeSelect")) return;
 
     const wrap = document.createElement("div");
@@ -52,21 +81,28 @@
       o.textContent = t.label;
       sel.appendChild(o);
     }
+    sel.value = activeTheme;
 
-    const active = apply(current());
-    sel.value = active;
-
-    sel.addEventListener("change", ()=> apply(sel.value));
+    sel.addEventListener("change", ()=> apply(sel.value, true));
 
     wrap.appendChild(lab);
     wrap.appendChild(sel);
 
-    // Insert first, so existing buttons remain visible
     host.prepend(wrap);
   }
 
-  document.addEventListener("DOMContentLoaded", ()=>{
-    apply(current());
-    inject();
+  document.addEventListener("DOMContentLoaded", async ()=>{
+    injectCss();
+
+    const override = currentOverride();
+    if(valid(override)){
+      const t = apply(override, false);
+      injectSelector(t);
+      return;
+    }
+
+    const def = await fetchDefault();
+    const t = apply(def || "intel-dark", false);
+    injectSelector(t);
   });
 })();
