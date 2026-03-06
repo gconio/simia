@@ -58,7 +58,7 @@ export async function onRequest({ request, env }) {
       const team_id = norm(body.team_id || "ALL");
       const created_at = new Date().toISOString();
       const access_code = String(body.access_code || genCode()).trim();
-      const is_active = Number(body.is_active === 0 || body.is_active === False ? 0 : 1);
+      const is_active = (body.is_active === 0 || body.is_active === "0" || body.is_active === false) ? 0 : 1;
 
       if(!name){
         return new Response(JSON.stringify({ ok:false, error:"name is required" }), {

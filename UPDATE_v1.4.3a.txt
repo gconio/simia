@@ -1,0 +1,21 @@
+SimIA v1.4.3a — Fix participants save bug
+
+Bug fixed
+- ReferenceError: False is not defined
+
+Cause
+- The participants API used an invalid token in JavaScript when evaluating is_active.
+
+File included
+- functions/api/participants.js
+
+Install
+1) Replace functions/api/participants.js with the file in this package
+2) Commit + Push
+
+Retest
+- Admin -> Participants
+- Regenerate code
+- Save
+- The save should now work correctly
+
