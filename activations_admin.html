@@ -1,416 +1,74 @@
 <!doctype html>
-<html lang="it">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>SimIA — Activations</title>
-<link rel="stylesheet" href="/assets/styles.css"/>
-</head>
+<html lang="it"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>SimIA — Activations</title><link rel="stylesheet" href="/assets/styles.css"/></head>
 <body>
-<header class="topbar">
-  <div class="brand">
-    <div class="logo" id="brandLogo">SI</div>
-    <div>
-      <div class="brand-title" id="brandTitle">SimIA</div>
-      <div class="brand-sub" id="brandSub">Activations Management</div>
-    </div>
-  </div>
-  <div class="session">
-    <a class="btn ghost" href="/exercise_admin.html">Exercise / Scenario</a>
-    <a class="btn ghost" href="/admin.html">Admin</a>
-    <a class="btn ghost" href="/outputs_admin.html">Outputs</a>
-  </div>
-</header>
-
-<main class="layout layout-wide">
-<section class="content">
-<div class="grid">
-
-<div class="card span12">
-  <div class="card-title">Timeline Board</div>
-  <div class="card-body">
-    <div class="notice">
-      <div class="h">Overview by phase</div>
-      <div class="small">Le activations sono raggruppate per fase e ordinate automaticamente per T+ minuti.</div>
-    </div>
-    <div class="sep"></div>
-    <div id="timelineBoard" class="row" style="gap:12px;align-items:flex-start;overflow-x:auto;flex-wrap:nowrap"></div>
-  </div>
+<header class="topbar"><div class="brand"><div class="logo" id="brandLogo">SI</div><div><div class="brand-title" id="brandTitle">SimIA</div><div class="brand-sub" id="brandSub">Activations Management</div></div></div><div class="session"><a class="btn ghost" href="/exercise_admin.html">Exercise / Scenario</a><a class="btn ghost" href="/admin.html">Admin</a><a class="btn ghost" href="/outputs_admin.html">Outputs</a></div></header>
+<main class="layout layout-wide"><section class="content"><div class="grid">
+<div class="card span12"><div class="card-title">Timeline Board</div><div class="card-body"><div class="notice"><div class="h">Overview by phase</div><div class="small">Le activations sono raggruppate per fase e ordinate automaticamente per T+ minuti. Le azioni White Cell rispettano i limiti della fase.</div></div><div class="sep"></div><div id="timelineBoard" class="row" style="gap:12px;align-items:flex-start;overflow-x:auto;flex-wrap:nowrap"></div></div></div>
+<div class="card span12"><div class="card-title">Activations</div><div class="card-body">
+<div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end">
+<div style="min-width:180px;flex:2"><label class="lbl">Title</label><input class="input" id="iTitle"></div>
+<div style="min-width:240px;flex:1"><label class="lbl">Phase</label><select class="input" id="iPhase"></select></div>
+<div style="min-width:140px;flex:1"><label class="lbl">Kind</label><select class="input" id="iKind"><option>INJECT</option><option>BROADCAST</option><option>UPDATE</option><option>ALERT</option><option>TASK</option></select></div>
+<div style="min-width:140px;flex:1"><label class="lbl">Source</label><select class="input" id="iSource"><option>OSINT</option><option>MEDIA</option><option>HUMINT</option><option>SIGINT</option><option>GEOINT</option><option>GOV</option><option>SOCIAL</option><option>INTERNAL</option></select></div>
+<div style="min-width:120px;flex:1"><label class="lbl">Severity</label><select class="input" id="iSeverity"><option>INFO</option><option>AMBER</option><option>RED</option></select></div>
 </div>
-
-<div class="card span12">
-  <div class="card-title">Activations</div>
-  <div class="card-body">
-    <div class="notice">
-      <div class="h">Operational layer</div>
-      <div class="small">Qui gestisci esclusivamente le attivazioni: fase di riferimento, T+ minuti, audience, severity, source e stato operativo.</div>
-    </div>
-    <div class="sep"></div>
-
-    <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end">
-      <div style="min-width:180px;flex:2"><label class="lbl">Title</label><input class="input" id="iTitle" placeholder="Titolo activation"></div>
-      <div style="min-width:240px;flex:1">
-        <label class="lbl">Phase</label>
-        <select class="input" id="iPhase"></select>
-      </div>
-      <div style="min-width:140px;flex:1"><label class="lbl">Kind</label><select class="input" id="iKind"><option>INJECT</option><option>BROADCAST</option><option>UPDATE</option><option>ALERT</option><option>TASK</option></select></div>
-      <div style="min-width:140px;flex:1"><label class="lbl">Source</label><select class="input" id="iSource"><option>OSINT</option><option>MEDIA</option><option>HUMINT</option><option>SIGINT</option><option>GEOINT</option><option>GOV</option><option>SOCIAL</option><option>INTERNAL</option></select></div>
-      <div style="min-width:120px;flex:1"><label class="lbl">Severity</label><select class="input" id="iSeverity"><option>INFO</option><option>AMBER</option><option>RED</option></select></div>
-    </div>
-
-    <div class="row" style="margin-top:10px;gap:10px;flex-wrap:wrap;align-items:flex-end">
-      <div style="min-width:140px;flex:1"><label class="lbl">Audience type</label><select class="input" id="iAudienceType"><option>ALL</option><option>TEAM</option><option>ROLE</option><option>USER</option></select></div>
-      <div style="min-width:180px;flex:1"><label class="lbl">Audience value</label><input class="input mono" id="iAudienceValue" value="ALL"></div>
-      <div style="min-width:150px;flex:1"><label class="lbl">T+ minutes</label><input class="input mono" id="iOffsetMin" value="0"></div>
-      <div style="min-width:140px;flex:1"><label class="lbl">Status</label><select class="input" id="iStatus"><option>draft</option><option>scheduled</option><option>queued</option><option>released</option><option>cancelled</option></select></div>
-      <div style="min-width:160px;flex:1"><label class="lbl">Author</label><input class="input" id="iAuthor" value="admin"></div>
-    </div>
-
-    <div style="margin-top:10px">
-      <label class="lbl">Body</label>
-      <textarea class="input" id="iBody" style="min-height:110px"></textarea>
-    </div>
-
-    <div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">
-      <button class="btn primary" id="saveInjectBtn">Save Activation</button>
-      <button class="btn ghost" id="reloadInjectsBtn">Reload</button>
-      <span class="pill mono" id="activationEditorState">NEW ACTIVATION</span>
-    </div>
-
-    <div class="sep"></div>
-    <div id="injectsList" class="stack"></div>
-  </div>
+<div class="row" style="margin-top:10px;gap:10px;flex-wrap:wrap;align-items:flex-end">
+<div style="min-width:140px;flex:1"><label class="lbl">Audience type</label><select class="input" id="iAudienceType"><option>ALL</option><option>TEAM</option><option>ROLE</option><option>USER</option></select></div>
+<div style="min-width:180px;flex:1"><label class="lbl">Audience value</label><input class="input mono" id="iAudienceValue" value="ALL"></div>
+<div style="min-width:150px;flex:1"><label class="lbl">T+ minutes</label><input class="input mono" id="iOffsetMin" value="0"></div>
+<div style="min-width:140px;flex:1"><label class="lbl">Status</label><select class="input" id="iStatus"><option>draft</option><option>scheduled</option><option>queued</option><option>released</option><option>cancelled</option></select></div>
+<div style="min-width:160px;flex:1"><label class="lbl">Author</label><input class="input" id="iAuthor" value="admin"></div>
 </div>
-
-<div class="card span12">
-  <div class="card-title">White Cell Log</div>
-  <div class="card-body">
-    <div class="row" style="gap:8px;flex-wrap:wrap">
-      <button class="btn ghost" id="reloadActionsBtn">Reload log</button>
-      <button class="btn" id="toggleActionsBtn">Show all</button>
-      <span class="pill mono" id="actionsModePill">LAST 5</span>
-    </div>
-    <div class="sep"></div>
-    <div id="actionsList" class="stack"></div>
-  </div>
-</div>
-
-</div>
-</section>
-</main>
-
-<script src="/assets/theme.js"></script>
-<script src="/assets/branding.js"></script>
+<div style="margin-top:10px"><label class="lbl">Body</label><textarea class="input" id="iBody" style="min-height:110px"></textarea></div>
+<div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap"><button class="btn primary" id="saveInjectBtn">Save Activation</button><button class="btn ghost" id="reloadInjectsBtn">Refresh Data</button><span class="pill mono" id="activationEditorState">NEW ACTIVATION</span></div>
+<div class="sep"></div><div id="injectsList" class="stack"></div></div></div>
+<div class="card span12"><div class="card-title">White Cell Log</div><div class="card-body"><div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn ghost" id="reloadActionsBtn">Reload log</button><button class="btn" id="toggleActionsBtn">Show all</button><span class="pill mono" id="actionsModePill">LAST 5</span></div><div class="sep"></div><div id="actionsList" class="stack"></div></div></div>
+</div></section></main>
+<script src="/assets/theme.js"></script><script src="/assets/branding.js"></script>
 <script>
-function esc(s){
-  return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;").replaceAll("'","&#39;");
+function esc(s){ return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;"); }
+async function jget(url){ const r=await fetch(url,{headers:{Accept:"application/json"}}); const t=await r.text(); let j; try{j=JSON.parse(t)}catch{j={raw:t}} if(!r.ok) throw new Error(j?.error||("HTTP "+r.status)); return j; }
+async function jpost(url,body){ const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(body)}); const t=await r.text(); let j; try{j=JSON.parse(t)}catch{j={raw:t}} if(!r.ok) throw new Error(j?.error||("HTTP "+r.status)); return j; }
+async function jdel(url){ const r=await fetch(url,{method:"DELETE"}); const t=await r.text(); let j; try{j=JSON.parse(t)}catch{j={raw:t}} if(!r.ok) throw new Error(j?.error||("HTTP "+r.status)); return j; }
+let CURRENT_ACTIVATION_ID="", PHASES=[], ACTIVATIONS=[], ACTIONS_SHOW_ALL=false;
+function phaseLabel(p){ return (p.phase_code||"") + (p.title ? " — "+p.title : ""); }
+function activationFormClear(){ CURRENT_ACTIVATION_ID=""; document.getElementById("iTitle").value=""; if(PHASES.length) document.getElementById("iPhase").value=PHASES[0].phase_code||""; document.getElementById("iKind").value="INJECT"; document.getElementById("iSource").value="OSINT"; document.getElementById("iSeverity").value="INFO"; document.getElementById("iAudienceType").value="ALL"; document.getElementById("iAudienceValue").value="ALL"; document.getElementById("iOffsetMin").value="0"; document.getElementById("iStatus").value="draft"; document.getElementById("iAuthor").value="admin"; document.getElementById("iBody").value=""; document.getElementById("activationEditorState").textContent="NEW ACTIVATION"; }
+function activationFormSet(i){ CURRENT_ACTIVATION_ID=i.id||""; document.getElementById("iTitle").value=i.title||""; document.getElementById("iPhase").value=i.phase_code||""; document.getElementById("iKind").value=i.kind||"INJECT"; document.getElementById("iSource").value=i.source_type||"OSINT"; document.getElementById("iSeverity").value=i.severity||"INFO"; document.getElementById("iAudienceType").value=i.audience_type||"ALL"; document.getElementById("iAudienceValue").value=i.audience_value||"ALL"; document.getElementById("iOffsetMin").value=i.release_offset_min||0; document.getElementById("iStatus").value=i.status||"draft"; document.getElementById("iAuthor").value=i.author||"admin"; document.getElementById("iBody").value=i.body||""; document.getElementById("activationEditorState").textContent="EDITING: "+(i.title||""); }
+function fillPhaseSelect(){ const sel=document.getElementById("iPhase"); const current=sel.value||""; sel.innerHTML=""; if(!PHASES.length){ const o=document.createElement("option"); o.value=""; o.textContent="No phases available"; sel.appendChild(o); sel.disabled=true; return; } sel.disabled=false; PHASES.forEach(p=>{ const o=document.createElement("option"); o.value=p.phase_code||""; o.textContent=phaseLabel(p); sel.appendChild(o);}); if(current && Array.from(sel.options).some(o=>o.value===current)) sel.value=current; else sel.value=PHASES[0].phase_code||""; }
+async function controlAction(payload, successMessage){ const res=await jpost("/api/scenario/control",payload); await reloadAll(); if(res.clamped) alert(successMessage+"\n\nCorrezione automatica fase: offset finale T+"+res.final_offset); else alert(successMessage); }
+function bindTimelineButtons(root){
+  root.querySelectorAll("[data-release]").forEach(btn=>btn.addEventListener("click", async()=>{ await controlAction({action:"release_now",inject_id:btn.getAttribute("data-release"),actor:"white-cell"},"Activation rilasciata."); }));
+  root.querySelectorAll("[data-delay]").forEach(btn=>btn.addEventListener("click", async()=>{ await controlAction({action:"delay",inject_id:btn.getAttribute("data-delay"),delay_min:5,actor:"white-cell"},"Activation ritardata di 5 minuti."); }));
+  root.querySelectorAll("[data-shift]").forEach(btn=>btn.addEventListener("click", async()=>{ await controlAction({action:"shift_subsequent",inject_id:btn.getAttribute("data-shift"),delay_min:5,actor:"white-cell"},"Timeline successiva spostata di 5 minuti."); }));
+  root.querySelectorAll("[data-cancel]").forEach(btn=>btn.addEventListener("click", async()=>{ if(!confirm("Cancellare questa activation?")) return; await controlAction({action:"cancel",inject_id:btn.getAttribute("data-cancel"),actor:"white-cell"},"Activation cancellata."); }));
+  root.querySelectorAll("[data-retarget]").forEach(btn=>btn.addEventListener("click", async()=>{ const audience_type=prompt("Nuovo audience_type (ALL / TEAM / ROLE / USER)","TEAM"); if(!audience_type) return; const audience_value=prompt("Nuovo audience_value","A"); if(!audience_value) return; await controlAction({action:"retarget",inject_id:btn.getAttribute("data-retarget"),audience_type,audience_value,actor:"white-cell"},"Activation retargeted."); }));
 }
-async function jget(url){
-  const r = await fetch(url, { headers:{ "Accept":"application/json" }});
-  const t = await r.text();
-  let j; try{ j = JSON.parse(t);}catch{ j = {raw:t}; }
-  if(!r.ok) throw new Error(j?.error || ("HTTP "+r.status));
-  return j;
-}
-async function jpost(url, body){
-  const r = await fetch(url, { method:"POST", headers:{ "Content-Type":"application/json", "Accept":"application/json" }, body: JSON.stringify(body) });
-  const t = await r.text();
-  let j; try{ j = JSON.parse(t);}catch{ j = {raw:t}; }
-  if(!r.ok) throw new Error(j?.error || ("HTTP "+r.status));
-  return j;
-}
-async function jdel(url){
-  const r = await fetch(url, { method:"DELETE" });
-  const t = await r.text();
-  let j; try{ j = JSON.parse(t);}catch{ j = {raw:t}; }
-  if(!r.ok) throw new Error(j?.error || ("HTTP "+r.status));
-  return j;
-}
-
-let CURRENT_ACTIVATION_ID = "";
-let PHASES = [];
-let ACTIVATIONS = [];
-let ACTIONS_SHOW_ALL = false;
-
-function phaseLabel(p){
-  return (p.phase_code || "") + (p.title ? " — " + p.title : "");
-}
-function activationFormClear(){
-  CURRENT_ACTIVATION_ID = "";
-  document.getElementById("iTitle").value = "";
-  if (PHASES.length) document.getElementById("iPhase").value = PHASES[0].phase_code || "";
-  document.getElementById("iKind").value = "INJECT";
-  document.getElementById("iSource").value = "OSINT";
-  document.getElementById("iSeverity").value = "INFO";
-  document.getElementById("iAudienceType").value = "ALL";
-  document.getElementById("iAudienceValue").value = "ALL";
-  document.getElementById("iOffsetMin").value = "0";
-  document.getElementById("iStatus").value = "draft";
-  document.getElementById("iAuthor").value = "admin";
-  document.getElementById("iBody").value = "";
-  document.getElementById("activationEditorState").textContent = "NEW ACTIVATION";
-}
-function activationFormSet(i){
-  CURRENT_ACTIVATION_ID = i.id || "";
-  document.getElementById("iTitle").value = i.title || "";
-  document.getElementById("iPhase").value = i.phase_code || "";
-  document.getElementById("iKind").value = i.kind || "INJECT";
-  document.getElementById("iSource").value = i.source_type || "OSINT";
-  document.getElementById("iSeverity").value = i.severity || "INFO";
-  document.getElementById("iAudienceType").value = i.audience_type || "ALL";
-  document.getElementById("iAudienceValue").value = i.audience_value || "ALL";
-  document.getElementById("iOffsetMin").value = i.release_offset_min || 0;
-  document.getElementById("iStatus").value = i.status || "draft";
-  document.getElementById("iAuthor").value = i.author || "admin";
-  document.getElementById("iBody").value = i.body || "";
-  document.getElementById("activationEditorState").textContent = "EDITING: " + (i.title || "");
-}
-
-function fillPhaseSelect(){
-  const sel = document.getElementById("iPhase");
-  const current = sel.value || "";
-  sel.innerHTML = "";
-  if(!PHASES.length){
-    const o = document.createElement("option");
-    o.value = "";
-    o.textContent = "No phases available";
-    sel.appendChild(o);
-    sel.disabled = true;
-    return;
-  }
-  sel.disabled = false;
-  PHASES.forEach(p=>{
-    const o = document.createElement("option");
-    o.value = p.phase_code || "";
-    o.textContent = phaseLabel(p);
-    sel.appendChild(o);
-  });
-  if(current && Array.from(sel.options).some(o=>o.value===current)) sel.value = current;
-  else sel.value = PHASES[0].phase_code || "";
-}
-
 function renderTimelineBoard(){
-  const box = document.getElementById("timelineBoard");
-  box.innerHTML = "";
-  if(!PHASES.length){
-    box.innerHTML = '<div class="item" style="min-width:260px"><div class="small">Nessuna fase disponibile.</div></div>';
-    return;
-  }
-  PHASES.forEach(p=>{
-    const col = document.createElement("div");
-    col.className = "item";
-    col.style.minWidth = "300px";
-    const acts = ACTIVATIONS.filter(a => String(a.phase_code||"") === String(p.phase_code||""))
-      .sort((a,b)=>Number(a.release_offset_min||0)-Number(b.release_offset_min||0));
-    let actsHtml = "";
-    if(acts.length){
-      actsHtml = acts.map(a=>{
-        const eta = a.effective_release_at ? "ETA " + esc(a.effective_release_at) : "ETA pending";
-        return '<div class="item" style="margin-top:8px">' +
-          '<div class="h">' + esc(a.title) + '</div>' +
-          '<div class="small" style="margin-top:4px">' +
-          '<span class="pill mono">T+' + esc(a.release_offset_min || 0) + '</span> ' +
-          '<span class="pill mono">' + esc(a.severity || "") + '</span> ' +
-          '<span class="pill mono">' + esc(a.status || "") + '</span>' +
-          '</div>' +
-          '<div class="small" style="margin-top:4px">' + esc(a.kind || "") + ' • ' + esc(a.audience_type || "") + ':' + esc(a.audience_value || "") + '</div>' +
-          '<div class="small" style="margin-top:4px">' + eta + '</div>' +
-          '<div class="row" style="margin-top:8px;gap:6px;flex-wrap:wrap">' +
-          '<button class="btn" data-release="'+ esc(a.id) +'">Release now</button>' +
-          '<button class="btn ghost" data-delay="'+ esc(a.id) +'">Delay +5</button>' +
-          '<button class="btn ghost" data-retarget="'+ esc(a.id) +'">Retarget</button>' +
-          '<button class="btn danger" data-cancel="'+ esc(a.id) +'">Cancel</button>' +
-          '</div>' +
-          '</div>';
-      }).join("");
-    } else {
-      actsHtml = '<div class="small" style="margin-top:8px">Nessuna activation pianificata.</div>';
-    }
-    col.innerHTML = '<div class="h">' + esc(phaseLabel(p)) + '</div>' +
-      '<div class="small" style="margin-top:6px">' +
-      '<span class="pill mono">ORDER ' + esc(p.sort_order || "") + '</span> ' +
-      '<span class="pill mono">' + esc(p.status || "") + '</span>' +
-      '</div>' + actsHtml;
-    box.appendChild(col);
+  const box=document.getElementById("timelineBoard"); box.innerHTML="";
+  if(!PHASES.length){ box.innerHTML='<div class="item" style="min-width:260px"><div class="small">Nessuna fase disponibile.</div></div>'; return; }
+  PHASES.forEach(p=>{ const col=document.createElement("div"); col.className="item"; col.style.minWidth="300px";
+    const acts=ACTIVATIONS.filter(a=>String(a.phase_code||"")===String(p.phase_code||"")).sort((a,b)=>Number(a.release_offset_min||0)-Number(b.release_offset_min||0));
+    let actsHtml=acts.length ? acts.map(a=>{ const eta=a.effective_release_at ? "ETA "+esc(a.effective_release_at) : "ETA pending"; return '<div class="item" style="margin-top:8px"><div class="h">'+esc(a.title)+'</div><div class="small" style="margin-top:4px"><span class="pill mono">T+'+esc(a.release_offset_min||0)+'</span> <span class="pill mono">'+esc(a.severity||"")+'</span> <span class="pill mono">'+esc(a.status||"")+'</span></div><div class="small" style="margin-top:4px">'+esc(a.kind||"")+' • '+esc(a.audience_type||"")+':'+esc(a.audience_value||"")+'</div><div class="small" style="margin-top:4px">'+eta+'</div><div class="row" style="margin-top:8px;gap:6px;flex-wrap:wrap"><button class="btn" data-release="'+esc(a.id)+'">Release now</button><button class="btn ghost" data-delay="'+esc(a.id)+'">Delay only +5</button><button class="btn ghost" data-shift="'+esc(a.id)+'">Shift subsequent +5</button><button class="btn ghost" data-retarget="'+esc(a.id)+'">Retarget</button><button class="btn danger" data-cancel="'+esc(a.id)+'">Cancel</button></div></div>'; }).join("") : '<div class="small" style="margin-top:8px">Nessuna activation pianificata.</div>';
+    col.innerHTML='<div class="h">'+esc(phaseLabel(p))+'</div><div class="small" style="margin-top:6px"><span class="pill mono">ORDER '+esc(p.sort_order||"")+'</span> <span class="pill mono">'+esc(p.status||"")+'</span></div>'+actsHtml; box.appendChild(col);
   });
-
-  box.querySelectorAll("[data-release]").forEach(btn=>{
-    btn.addEventListener("click", async ()=>{
-      await jpost("/api/scenario/control", { action:"release_now", inject_id: btn.getAttribute("data-release"), actor:"white-cell" });
-      await reloadAll();
-      alert("Activation rilasciata.");
-    });
-  });
-  box.querySelectorAll("[data-delay]").forEach(btn=>{
-    btn.addEventListener("click", async ()=>{
-      await jpost("/api/scenario/control", { action:"delay", inject_id: btn.getAttribute("data-delay"), delay_min:5, actor:"white-cell" });
-      await reloadAll();
-      alert("Activation ritardata di 5 minuti.");
-    });
-  });
-  box.querySelectorAll("[data-cancel]").forEach(btn=>{
-    btn.addEventListener("click", async ()=>{
-      if(!confirm("Cancellare questa activation?")) return;
-      await jpost("/api/scenario/control", { action:"cancel", inject_id: btn.getAttribute("data-cancel"), actor:"white-cell" });
-      await reloadAll();
-      alert("Activation cancellata.");
-    });
-  });
-  box.querySelectorAll("[data-retarget]").forEach(btn=>{
-    btn.addEventListener("click", async ()=>{
-      const audience_type = prompt("Nuovo audience_type (ALL / TEAM / ROLE / USER)", "TEAM");
-      if(!audience_type) return;
-      const audience_value = prompt("Nuovo audience_value", "A");
-      if(!audience_value) return;
-      await jpost("/api/scenario/control", { action:"retarget", inject_id: btn.getAttribute("data-retarget"), audience_type, audience_value, actor:"white-cell" });
-      await reloadAll();
-      alert("Activation retargeted.");
-    });
-  });
+  bindTimelineButtons(box);
 }
-
-async function loadPhases(){
-  const j = await jget("/api/scenario/phases");
-  PHASES = j.phases || [];
-  fillPhaseSelect();
-}
+async function loadPhases(){ const j=await jget("/api/scenario/phases"); PHASES=j.phases||[]; fillPhaseSelect(); }
 async function loadInjects(){
-  const j = await jget("/api/scenario/injects");
-  ACTIVATIONS = j.injects || [];
-  const box = document.getElementById("injectsList");
-  box.innerHTML = "";
-  if(!ACTIVATIONS.length){
-    box.innerHTML = '<div class="item"><div class="small">Nessuna activation configurata.</div></div>';
-    renderTimelineBoard();
-    return;
-  }
-  ACTIVATIONS.forEach(i=>{
-    const eta = i.effective_release_at ? '<span class="pill mono">ETA ' + esc(i.effective_release_at) + '</span>' : '<span class="pill mono">ETA pending scenario start</span>';
-    const phase = PHASES.find(p=>String(p.phase_code||"")===String(i.phase_code||""));
-    const phaseText = phase ? phaseLabel(phase) : (i.phase_code || "");
-    const div = document.createElement("div");
-    div.className = "item";
-    div.innerHTML = '<div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap">' +
-      '<div style="flex:1">' +
-      '<div class="h">' + esc(i.title) + '</div>' +
-      '<div class="small" style="margin-top:6px">' +
-      '<span class="pill mono">' + esc(i.kind) + '</span> ' +
-      '<span class="pill mono">' + esc(i.source_type) + '</span> ' +
-      '<span class="pill mono">' + esc(i.severity) + '</span> ' +
-      '<span class="pill mono">' + esc(i.audience_type) + ':' + esc(i.audience_value) + '</span> ' +
-      '<span class="pill mono">' + esc(phaseText) + '</span> ' +
-      '<span class="pill mono">T+' + esc(i.release_offset_min || 0) + ' min</span> ' +
-      eta + ' ' +
-      '<span class="pill mono">' + esc(i.status) + '</span>' +
-      '</div>' +
-      '<div style="margin-top:10px;white-space:pre-wrap">' + esc(i.body) + '</div>' +
-      '<div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">' +
-      '<button class="btn" data-edit>Edit</button>' +
-      '<button class="btn" data-release>Release now</button>' +
-      '<button class="btn ghost" data-delay>Delay +5</button>' +
-      '<button class="btn ghost" data-retarget>Retarget</button>' +
-      '<button class="btn danger" data-cancel>Cancel</button>' +
-      '<button class="btn danger" data-del>Delete</button>' +
-      '</div>' +
-      '</div>' +
-      '</div>';
-    div.querySelector("[data-edit]").addEventListener("click", ()=>activationFormSet(i));
-    div.querySelector("[data-del]").addEventListener("click", async ()=>{
-      if(!confirm("Eliminare questa activation?")) return;
-      await jdel("/api/scenario/injects?id=" + encodeURIComponent(i.id));
-      if(CURRENT_ACTIVATION_ID === i.id) activationFormClear();
-      await reloadAll();
-    });
-    div.querySelector("[data-release]").addEventListener("click", async ()=>{
-      await jpost("/api/scenario/control", { action:"release_now", inject_id: i.id, actor:"white-cell" });
-      await reloadAll();
-      alert("Activation rilasciata.");
-    });
-    div.querySelector("[data-delay]").addEventListener("click", async ()=>{
-      await jpost("/api/scenario/control", { action:"delay", inject_id: i.id, delay_min:5, actor:"white-cell" });
-      await reloadAll();
-      alert("Activation ritardata di 5 minuti.");
-    });
-    div.querySelector("[data-cancel]").addEventListener("click", async ()=>{
-      if(!confirm("Cancellare questa activation?")) return;
-      await jpost("/api/scenario/control", { action:"cancel", inject_id: i.id, actor:"white-cell" });
-      await reloadAll();
-      alert("Activation cancellata.");
-    });
-    div.querySelector("[data-retarget]").addEventListener("click", async ()=>{
-      const audience_type = prompt("Nuovo audience_type (ALL / TEAM / ROLE / USER)", i.audience_type || "TEAM");
-      if(!audience_type) return;
-      const audience_value = prompt("Nuovo audience_value", i.audience_value || "A");
-      if(!audience_value) return;
-      await jpost("/api/scenario/control", { action:"retarget", inject_id: i.id, audience_type, audience_value, actor:"white-cell" });
-      await reloadAll();
-      alert("Activation retargeted.");
-    });
+  const j=await jget("/api/scenario/injects"); ACTIVATIONS=j.injects||[]; const box=document.getElementById("injectsList"); box.innerHTML="";
+  if(!ACTIVATIONS.length){ box.innerHTML='<div class="item"><div class="small">Nessuna activation configurata.</div></div>'; renderTimelineBoard(); return; }
+  ACTIVATIONS.forEach(i=>{ const eta=i.effective_release_at ? '<span class="pill mono">ETA '+esc(i.effective_release_at)+'</span>' : '<span class="pill mono">ETA pending scenario start</span>'; const phase=PHASES.find(p=>String(p.phase_code||"")===String(i.phase_code||"")); const phaseText=phase ? phaseLabel(phase) : (i.phase_code||""); const div=document.createElement("div"); div.className="item"; div.innerHTML='<div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap"><div style="flex:1"><div class="h">'+esc(i.title)+'</div><div class="small" style="margin-top:6px"><span class="pill mono">'+esc(i.kind)+'</span> <span class="pill mono">'+esc(i.source_type)+'</span> <span class="pill mono">'+esc(i.severity)+'</span> <span class="pill mono">'+esc(i.audience_type)+':'+esc(i.audience_value)+'</span> <span class="pill mono">'+esc(phaseText)+'</span> <span class="pill mono">T+'+esc(i.release_offset_min||0)+' min</span> '+eta+' <span class="pill mono">'+esc(i.status)+'</span></div><div style="margin-top:10px;white-space:pre-wrap">'+esc(i.body)+'</div><div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap"><button class="btn" data-edit>Edit</button><button class="btn" data-release="'+esc(i.id)+'">Release now</button><button class="btn ghost" data-delay="'+esc(i.id)+'">Delay only +5</button><button class="btn ghost" data-shift="'+esc(i.id)+'">Shift subsequent +5</button><button class="btn ghost" data-retarget="'+esc(i.id)+'">Retarget</button><button class="btn danger" data-cancel="'+esc(i.id)+'">Cancel</button><button class="btn danger" data-del>Delete</button></div></div></div>';
+    div.querySelector("[data-edit]").addEventListener("click",()=>activationFormSet(i));
+    div.querySelector("[data-del]").addEventListener("click", async()=>{ if(!confirm("Eliminare questa activation?")) return; await jdel("/api/scenario/injects?id="+encodeURIComponent(i.id)); if(CURRENT_ACTIVATION_ID===i.id) activationFormClear(); await reloadAll(); });
     box.appendChild(div);
   });
-  renderTimelineBoard();
+  bindTimelineButtons(box); renderTimelineBoard();
 }
-
-async function loadActions(){
-  const limit = ACTIONS_SHOW_ALL ? 100 : 5;
-  const j = await jget("/api/scenario/actions?limit=" + limit);
-  const box = document.getElementById("actionsList");
-  box.innerHTML = "";
-  document.getElementById("actionsModePill").textContent = ACTIONS_SHOW_ALL ? "ALL LOGS" : "LAST 5";
-  document.getElementById("toggleActionsBtn").textContent = ACTIONS_SHOW_ALL ? "Show last 5" : "Show all";
-  const rows = j.actions || [];
-  if(!rows.length){
-    box.innerHTML = '<div class="item"><div class="small">Nessuna azione registrata.</div></div>';
-    return;
-  }
-  rows.forEach(a=>{
-    const div = document.createElement("div");
-    div.className = "item";
-    div.innerHTML = '<div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap">' +
-      '<div><div class="h">' + esc(a.action_type) + '</div><div class="small">' + esc(a.notes || "") + '</div></div>' +
-      '<div class="small mono">' + esc(a.actor || "admin") + ' • ' + esc(a.ts || "") + '</div>' +
-      '</div>';
-    box.appendChild(div);
-  });
-}
-
-async function reloadAll(){
-  await loadPhases();
-  await loadInjects();
-  await loadActions();
-}
-
-document.getElementById("saveInjectBtn").addEventListener("click", async ()=>{
-  await jpost("/api/scenario/injects", {
-    id: CURRENT_ACTIVATION_ID || undefined,
-    title: document.getElementById("iTitle").value,
-    phase_code: document.getElementById("iPhase").value,
-    kind: document.getElementById("iKind").value,
-    source_type: document.getElementById("iSource").value,
-    severity: document.getElementById("iSeverity").value,
-    audience_type: document.getElementById("iAudienceType").value,
-    audience_value: document.getElementById("iAudienceValue").value,
-    release_offset_min: document.getElementById("iOffsetMin").value,
-    status: document.getElementById("iStatus").value,
-    author: document.getElementById("iAuthor").value,
-    body: document.getElementById("iBody").value
-  });
-  activationFormClear();
-  await reloadAll();
-  alert("Activation salvata.");
-});
+async function loadActions(){ const limit=ACTIONS_SHOW_ALL ? 100 : 5; const j=await jget("/api/scenario/actions?limit="+limit); const box=document.getElementById("actionsList"); box.innerHTML=""; document.getElementById("actionsModePill").textContent=ACTIONS_SHOW_ALL?"ALL LOGS":"LAST 5"; document.getElementById("toggleActionsBtn").textContent=ACTIONS_SHOW_ALL?"Show last 5":"Show all"; const rows=j.actions||[]; if(!rows.length){ box.innerHTML='<div class="item"><div class="small">Nessuna azione registrata.</div></div>'; return; } rows.forEach(a=>{ const div=document.createElement("div"); div.className="item"; div.innerHTML='<div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap"><div><div class="h">'+esc(a.action_type)+'</div><div class="small">'+esc(a.notes||"")+'</div></div><div class="small mono">'+esc(a.actor||"admin")+' • '+esc(a.ts||"")+'</div></div>'; box.appendChild(div); }); }
+async function reloadAll(){ await loadPhases(); await loadInjects(); await loadActions(); }
+document.getElementById("saveInjectBtn").addEventListener("click", async()=>{ await jpost("/api/scenario/injects",{ id:CURRENT_ACTIVATION_ID||undefined, title:document.getElementById("iTitle").value, phase_code:document.getElementById("iPhase").value, kind:document.getElementById("iKind").value, source_type:document.getElementById("iSource").value, severity:document.getElementById("iSeverity").value, audience_type:document.getElementById("iAudienceType").value, audience_value:document.getElementById("iAudienceValue").value, release_offset_min:document.getElementById("iOffsetMin").value, status:document.getElementById("iStatus").value, author:document.getElementById("iAuthor").value, body:document.getElementById("iBody").value }); activationFormClear(); await reloadAll(); alert("Activation salvata."); });
 document.getElementById("reloadInjectsBtn").addEventListener("click", reloadAll);
 document.getElementById("reloadActionsBtn").addEventListener("click", loadActions);
-document.getElementById("toggleActionsBtn").addEventListener("click", async ()=>{
-  ACTIONS_SHOW_ALL = !ACTIONS_SHOW_ALL;
-  await loadActions();
-});
-
-(async function init(){
-  await reloadAll();
-  activationFormClear();
-})();
-</script>
-</body>
-</html>
+document.getElementById("toggleActionsBtn").addEventListener("click", async()=>{ ACTIONS_SHOW_ALL=!ACTIONS_SHOW_ALL; await loadActions(); });
+(async function init(){ await reloadAll(); activationFormClear(); })();
+</script></body></html>
