@@ -1,419 +1,56 @@
 <!doctype html>
-<html lang="it">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SimIA — Player Workspace</title>
-  <link rel="stylesheet" href="/assets/styles.css" />
-  <style>
-    .sev{font-weight:800}
-    .sev.INFO{border-color:rgba(59,130,246,.7)}
-    .sev.AMBER{border-color:rgba(245,158,11,.8)}
-    .sev.RED{border-color:rgba(239,68,68,.85)}
-    .kind{opacity:.9}
-    .btn[disabled]{opacity:.6;cursor:not-allowed}
-    .feed-item.unread{border-left:4px solid rgba(245,158,11,.85)}
-    .feed-item.read{border-left:4px solid rgba(34,197,94,.7)}
-    .context-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
-    .workspace-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px}
-    @media (max-width: 980px){ .workspace-grid{grid-template-columns:1fr} }
-    .task-line{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08)}
-    .monoish{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
-  </style>
-</head>
-<body>
-  <header class="topbar">
-    <div class="brand">
-      <div class="logo" id="brandLogo">SI</div>
-      <div>
-        <div class="brand-title" id="brandTitle">SimIA</div>
-        <div class="brand-sub" id="subline">Player Workspace</div>
-      </div>
-    </div>
-    <div class="session">
-      <a class="btn ghost" href="/index.html">Home</a>
-      <a class="btn ghost" href="/access.html">Access</a>
-      <span class="pill mono" id="who">—</span>
-      <span class="pill mono" id="phaseBadge">PHASE-—</span>
-      <button class="btn ghost" id="refreshBtn">Refresh</button>
-    </div>
-  </header>
-
-  <main class="layout layout-wide">
-    <section class="content">
-      <div class="grid">
-
-        <div class="card span12">
-          <div class="card-title">Exercise Context</div>
-          <div class="card-body">
-            <div class="context-grid">
-              <div class="item">
-                <div class="lbl">Role / Team</div>
-                <div class="h" id="ctxWho">—</div>
-              </div>
-              <div class="item">
-                <div class="lbl">Current phase</div>
-                <div class="h" id="ctxPhase">—</div>
-              </div>
-              <div class="item">
-                <div class="lbl">Audience</div>
-                <div class="h" id="ctxAudience">—</div>
-              </div>
-              <div class="item">
-                <div class="lbl">Feed items</div>
-                <div class="h" id="ctxCount">0</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card span12">
-          <div class="card-body">
-            <div class="workspace-grid">
-              <div>
-                <div class="card" style="margin-bottom:16px">
-                  <div class="card-title">Situation Feed</div>
-                  <div class="card-body">
-                    <div id="pidWarn" class="notice" style="display:none;margin-bottom:12px">
-                      <div class="h">Link non personalizzato</div>
-                      <div class="small">Manca <span class="mono">pid</span>. Il tasto “LETTO” non sarà disponibile. Usa il link generato dalla Console Admin.</div>
-                    </div>
-                    <div id="feed" class="stack"></div>
-                  </div>
-                </div>
-
-                <div class="card">
-                  <div class="card-title">Submit Output</div>
-                  <div class="card-body">
-                    <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end">
-                      <div style="min-width:220px;flex:1">
-                        <label class="lbl">Output type</label>
-                        <select class="input" id="outType">
-                          <option>NOTE</option>
-                          <option>INDICATORS</option>
-                          <option>ACH</option>
-                          <option>SUMMARY</option>
-                          <option>CP1</option>
-                          <option>CP2</option>
-                          <option>CP3</option>
-                          <option>CP4</option>
-                        </select>
-                      </div>
-                      <div style="min-width:220px;flex:2">
-                        <label class="lbl">Title</label>
-                        <input class="input" id="outTitle" placeholder="Titolo..." />
-                      </div>
-                      <div class="row" style="gap:8px;flex-wrap:wrap">
-                        <button class="btn primary" id="outSaveBtn">Salva</button>
-                        <button class="btn ghost" id="outReloadBtn">Ricarica storico</button>
-                      </div>
-                      <span class="pill mono" id="outPhase">PHASE-—</span>
-                    </div>
-
-                    <div class="sep"></div>
-                    <label class="lbl">Content</label>
-                    <textarea class="input" id="outContent" rows="8" placeholder="Scrivi qui il tuo output analitico..."></textarea>
-
-                    <div class="sep"></div>
-                    <div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-                      <div>
-                        <div class="h">Storico output</div>
-                        <div class="small">Ultimi output del team nella fase corrente.</div>
-                      </div>
-                      <span class="pill mono" id="outCount">—</span>
-                    </div>
-                    <div class="sep"></div>
-                    <div id="outList" class="stack"></div>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <div class="card" style="margin-bottom:16px">
-                  <div class="card-title">Task / Priorità</div>
-                  <div class="card-body">
-                    <div class="small">Mostra task, alert e item non letti utili all’azione immediata.</div>
-                    <div class="sep"></div>
-                    <div id="taskList" class="stack"></div>
-                  </div>
-                </div>
-
-                <div class="card">
-                  <div class="card-title">Reference</div>
-                  <div class="card-body">
-                    <div class="item">
-                      <div class="lbl">Nota operativa</div>
-                      <div class="small">Usa il feed per seguire gli inject. Usa il workspace per produrre output analitici. Marca “LETTO” gli eventi gestiti.</div>
-                    </div>
-                    <div class="sep"></div>
-                    <div class="item">
-                      <div class="lbl">Sessione</div>
-                      <div class="small monoish" id="sessionInfo">—</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section>
-  </main>
-
-<script src="/assets/theme.js"></script>
-<script src="/assets/branding.js"></script>
+<html lang="it"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>SimIA — Player Workspace</title><link rel="stylesheet" href="/assets/styles.css"/>
+<style>
+.feed-item.unread{border-left:4px solid rgba(245,158,11,.85)}
+.feed-item.read{border-left:4px solid rgba(34,197,94,.7)}
+.context-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.workspace-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+@media (max-width:980px){.workspace-grid{grid-template-columns:1fr}}
+.task-line{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.monoish{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.green-check{color:#22c55e;font-weight:800;margin-left:6px}
+</style></head><body>
+<header class="topbar"><div class="brand"><div class="logo" id="brandLogo">SI</div><div><div class="brand-title" id="brandTitle">SimIA</div><div class="brand-sub" id="subline">Player Workspace</div></div></div><div class="session"><a class="btn ghost" href="/index.html">Home</a><a class="btn ghost" href="/access.html">Access</a><span class="pill mono" id="who">—</span><span class="pill mono" id="phaseBadge">PHASE-—</span><span class="pill mono">AUTO 10s</span><button class="btn ghost" id="refreshBtn">Refresh</button></div></header>
+<main class="layout layout-wide"><section class="content"><div class="grid">
+<div class="card span12"><div class="card-title">Exercise Context</div><div class="card-body"><div class="context-grid"><div class="item"><div class="lbl">Role / Team</div><div class="h" id="ctxWho">—</div></div><div class="item"><div class="lbl">Current phase</div><div class="h" id="ctxPhase">—</div></div><div class="item"><div class="lbl">Audience</div><div class="h" id="ctxAudience">—</div></div><div class="item"><div class="lbl">Feed items</div><div class="h" id="ctxCount">0</div></div></div></div></div>
+<div class="card span12"><div class="card-body"><div class="workspace-grid"><div>
+<div class="card" style="margin-bottom:16px"><div class="card-title">Situation Feed</div><div class="card-body"><div id="pidWarn" class="notice" style="display:none;margin-bottom:12px"><div class="h">Link non personalizzato</div><div class="small">Manca <span class="mono">pid</span>. Il tasto “LETTO” non sarà disponibile.</div></div><div id="feed" class="stack"></div></div></div>
+<div class="card"><div class="card-title">Submit Output</div><div class="card-body">
+<div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end"><div style="min-width:220px;flex:1"><label class="lbl">Output type</label><select class="input" id="outType"><option>NOTE</option><option>INDICATORS</option><option>ACH</option><option>SUMMARY</option><option>CP1</option><option>CP2</option><option>CP3</option><option>CP4</option></select></div><div style="min-width:220px;flex:2"><label class="lbl">Title</label><input class="input" id="outTitle" placeholder="Titolo..."/></div><div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn primary" id="outSaveBtn">Salva</button><button class="btn ghost" id="outReloadBtn">Ricarica storico</button></div><span class="pill mono" id="outPhase">PHASE-—</span></div>
+<div class="sep"></div><label class="lbl">Content</label><textarea class="input" id="outContent" rows="8" placeholder="Scrivi qui il tuo output analitico..."></textarea>
+<div class="sep"></div><div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div><div class="h">Storico output</div><div class="small">Ultimi output del team nella fase corrente.</div></div><span class="pill mono" id="outCount">—</span></div><div class="sep"></div><div id="outList" class="stack"></div>
+</div></div></div>
+<div><div class="card" style="margin-bottom:16px"><div class="card-title">Task / Priorità</div><div class="card-body"><div class="small">Mostra task, alert e item non letti utili all’azione immediata.</div><div class="sep"></div><div id="taskList" class="stack"></div></div></div><div class="card"><div class="card-title">Reference</div><div class="card-body"><div class="item"><div class="lbl">Nota operativa</div><div class="small">Usa il feed per seguire gli inject. Usa il workspace per produrre output analitici.</div></div><div class="sep"></div><div class="item"><div class="lbl">Sessione</div><div class="small monoish" id="sessionInfo">—</div></div></div></div></div>
+</div></div></div>
+</div></section></main>
+<script src="/assets/theme.js"></script><script src="/assets/branding.js"></script>
 <script>
-function esc(s){
-  return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;").replaceAll("'","&#39;");
-}
-function getParam(name, def){
-  const u = new URL(location.href);
-  return (u.searchParams.get(name) || def || "").toString();
-}
-async function jget(url){
-  const r = await fetch(url, { headers: { "Accept":"application/json" } });
-  const t = await r.text();
-  let j; try{ j = JSON.parse(t); } catch { j = { raw: t }; }
-  if(!r.ok) throw new Error(j?.error || ("HTTP "+r.status));
-  return j;
-}
-async function jpost(url, body){
-  const r = await fetch(url, {
-    method:"POST",
-    headers:{ "Content-Type":"application/json", "Accept":"application/json" },
-    body: JSON.stringify(body)
-  });
-  const t = await r.text();
-  let j; try{ j = JSON.parse(t); } catch { j = { raw: t }; }
-  if(!r.ok) throw new Error(j?.error || ("HTTP "+r.status));
-  return j;
-}
-
-const TEAM = (getParam("team","ALL") || "ALL").trim().toUpperCase();
-const ROLE = (getParam("role","PLAYER") || "PLAYER").trim().toUpperCase();
-const PID  = (getParam("pid","") || "").trim();
-
-document.getElementById("who").textContent = `${ROLE} / TEAM:${TEAM}${PID ? " / "+PID : ""}`;
-document.getElementById("subline").textContent = `Player Workspace — ${ROLE} — Team ${TEAM}`;
-document.getElementById("ctxWho").textContent = `${ROLE} / TEAM:${TEAM}`;
-document.getElementById("ctxAudience").textContent = `ALL • TEAM:${TEAM} • ROLE:${ROLE}`;
-document.getElementById("sessionInfo").textContent = PID ? `PID ${PID}` : `anonymous session`;
-
-const warn = document.getElementById("pidWarn");
-if(warn) warn.style.display = PID ? "none" : "";
-
-let CURRENT_PHASE = null;
-let ACKED = loadAcked();
-
-function ackKey(){ return PID ? `simia.ack.${PID}` : "simia.ack.anonymous"; }
-function loadAcked(){
-  try{
-    const raw = localStorage.getItem(ackKey());
-    const arr = raw ? JSON.parse(raw) : [];
-    return new Set(Array.isArray(arr) ? arr : []);
-  }catch(e){ return new Set(); }
-}
-function saveAcked(set){
-  try{ localStorage.setItem(ackKey(), JSON.stringify(Array.from(set))); }catch(e){}
-}
-
-function renderTasks(events){
-  const box = document.getElementById("taskList");
-  const arr = (events || []).filter(ev => {
-    const kind = String(ev.kind||"").toUpperCase();
-    return kind === "TASK" || kind === "ALERT" || !ACKED.has(ev.id);
-  }).slice(0,8);
-
-  if(!arr.length){
-    box.innerHTML = '<div class="item"><div class="small">Nessuna priorità immediata.</div></div>';
-    return;
-  }
-
-  box.innerHTML = "";
-  arr.forEach(ev=>{
-    const kind = String(ev.kind||"BROADCAST").toUpperCase();
-    const sev = String(ev.severity||"INFO").toUpperCase();
-    const div = document.createElement("div");
-    div.className = "task-line";
-    div.innerHTML = `<div class="h">${esc(ev.title || kind)}</div>
-      <div class="small" style="margin-top:4px">
-        <span class="pill mono">${esc(kind)}</span>
-        <span class="pill mono">${esc(sev)}</span>
-        ${ev.phase ? `<span class="pill mono">${esc(ev.phase)}</span>` : ""}
-      </div>`;
-    box.appendChild(div);
-  });
-}
-
-function renderFeed(events){
-  const box = document.getElementById("feed");
-  const arr = Array.isArray(events) ? events : [];
-  document.getElementById("ctxCount").textContent = String(arr.length);
-
-  if(!arr.length){
-    box.innerHTML = `<div class="item"><div class="h">Nessun evento</div><div class="small">In attesa di Broadcast/Inject…</div></div>`;
-    return;
-  }
-
-  box.innerHTML = "";
-  for(const ev of arr){
-    const sev = String(ev.severity||"INFO").toUpperCase();
-    const kind = String(ev.kind||"BROADCAST").toUpperCase();
-    const aud = String(ev.audience||"ALL").toUpperCase();
-    const isAcked = ACKED.has(ev.id);
-
-    const div = document.createElement("div");
-    div.className = "item feed-item " + (isAcked ? "read" : "unread");
-    div.innerHTML = `
-      <div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">
-        <div style="flex:1;min-width:260px">
-          <div class="h">${esc(ev.title || (kind==="INJECT" ? "Inject" : "Broadcast"))}
-            ${isAcked ? `<span class="pill mono">✓ LETTO</span>` : ``}
-          </div>
-          <div class="small" style="margin-top:6px">
-            <span class="pill mono kind">${esc(kind)}</span>
-            <span class="pill mono sev ${esc(sev)}">${esc(sev)}</span>
-            <span class="pill mono">${esc(aud)}</span>
-            ${ev.phase ? `<span class="pill mono">${esc(ev.phase)}</span>` : ``}
-            <span class="pill mono">${esc(ev.ts)}</span>
-          </div>
-          <div style="margin-top:10px;white-space:pre-wrap">${esc(ev.body || "")}</div>
-        </div>
-
-        <div class="row" style="gap:8px;flex-wrap:wrap;justify-content:flex-end">
-          <button class="btn ghost" data-copy>Copy</button>
-          <button class="btn primary" data-ack ${PID ? "" : "disabled"} ${isAcked ? "disabled" : ""}>LETTO</button>
-        </div>
-      </div>
-    `;
-
-    div.querySelector("[data-copy]")?.addEventListener("click", async ()=>{
-      const txt = `[${ev.ts}] ${kind}/${sev} ${aud}${ev.phase?(" "+ev.phase):""}\n${ev.title||""}\n${ev.body||""}`.trim();
-      try{ await navigator.clipboard.writeText(txt); } catch {}
-      alert("Copiato.");
-    });
-
-    div.querySelector("[data-ack]")?.addEventListener("click", async ()=>{
-      if(!PID){ alert("Manca pid nel link: impossibile registrare LETTO."); return; }
-      if(ACKED.has(ev.id)){ alert("Già marcato come LETTO."); return; }
-      try{
-        await jpost("/api/scenario/ack", {
-          event_id: ev.id,
-          participant_id: PID,
-          team: TEAM,
-          role: ROLE
-        });
-        ACKED.add(ev.id);
-        saveAcked(ACKED);
-        alert("Registrato: LETTO.");
-        refresh().catch(()=>{});
-      }catch(e){
-        alert("Errore ACK: " + e);
-      }
-    });
-
-    box.appendChild(div);
-  }
-}
-
-function renderOutputs(items){
-  const box = document.getElementById("outList");
-  const cnt = document.getElementById("outCount");
-  const arr = Array.isArray(items) ? items : [];
-  if(cnt) cnt.textContent = `${arr.length} items`;
-
-  if(!arr.length){
-    box.innerHTML = `<div class="item"><div class="h">Nessun output</div><div class="small">Salva il primo output dal workspace.</div></div>`;
-    return;
-  }
-
-  box.innerHTML = "";
-  for(const it of arr){
-    const div = document.createElement("div");
-    div.className = "item";
-    div.innerHTML = `
-      <div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">
-        <div style="flex:1;min-width:280px">
-          <div class="h">${esc(it.title || it.output_type || "Output")}</div>
-          <div class="small" style="margin-top:6px">
-            <span class="pill mono">${esc(it.output_type || "")}</span>
-            <span class="pill mono">${esc(it.team || "")}</span>
-            ${it.phase ? `<span class="pill mono">${esc(it.phase)}</span>` : ``}
-            <span class="pill mono">${esc(it.ts || "")}</span>
-          </div>
-          <div style="margin-top:10px;white-space:pre-wrap">${esc(it.content || "")}</div>
-        </div>
-        <div class="row" style="gap:8px;flex-wrap:wrap;justify-content:flex-end">
-          <button class="btn ghost" data-copy>Copy</button>
-        </div>
-      </div>
-    `;
-    div.querySelector("[data-copy]")?.addEventListener("click", async ()=>{
-      const txt = `[${it.ts}] ${it.output_type} ${it.team} ${it.phase||""}\n${it.title||""}\n${it.content||""}`.trim();
-      try{ await navigator.clipboard.writeText(txt); } catch {}
-      alert("Copiato.");
-    });
-    box.appendChild(div);
-  }
-}
-
-async function loadOutputs(){
-  const type = (document.getElementById("outType")?.value || "NOTE").toUpperCase();
-  const phase = CURRENT_PHASE || "";
-  const url = `/api/outputs?team=${encodeURIComponent(TEAM)}&phase=${encodeURIComponent(phase)}&type=${encodeURIComponent(type)}&limit=50`;
-  const box = document.getElementById("outList");
-  if(box) box.innerHTML = `<div class="item"><div class="h">Loading…</div><div class="small">Caricamento storico.</div></div>`;
-  const j = await jget(url);
-  renderOutputs(j.items || []);
-}
-
-async function saveOutput(){
-  const type = (document.getElementById("outType")?.value || "NOTE").toUpperCase();
-  const title = (document.getElementById("outTitle")?.value || "").trim();
-  const content = (document.getElementById("outContent")?.value || "").trim();
-  if(!content){ alert("Inserisci un contenuto."); return; }
-
-  await jpost("/api/outputs", {
-    session: "player",
-    phase: CURRENT_PHASE || "",
-    team: TEAM,
-    role: ROLE,
-    participant_id: PID || null,
-    output_type: type,
-    title,
-    content
-  });
-
-  document.getElementById("outContent").value = "";
-  await loadOutputs();
-  alert("Output salvato.");
-}
-
-async function refreshPhaseAndFeed(){
-  const j = await jget(`/api/scenario/feed?team=${encodeURIComponent(TEAM)}&role=${encodeURIComponent(ROLE)}`);
-  if(j.current_phase) CURRENT_PHASE = String(j.current_phase).toUpperCase();
-  document.getElementById("phaseBadge").textContent = CURRENT_PHASE || "PHASE-—";
-  document.getElementById("ctxPhase").textContent = CURRENT_PHASE || "—";
-  document.getElementById("outPhase").textContent = CURRENT_PHASE || "PHASE-—";
-  renderFeed(j.events || []);
-  renderTasks(j.events || []);
-}
-
-async function refresh(){
-  await refreshPhaseAndFeed();
-  await loadOutputs();
-}
-
+function esc(s){ return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;"); }
+function getParam(name, def){ const u=new URL(location.href); return (u.searchParams.get(name)||def||"").toString(); }
+async function jget(url){ const r=await fetch(url,{headers:{Accept:"application/json"}}); const t=await r.text(); let j; try{j=JSON.parse(t)}catch{j={raw:t}} if(!r.ok) throw new Error(j?.error||("HTTP "+r.status)); return j; }
+async function jpost(url, body){ const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(body)}); const t=await r.text(); let j; try{j=JSON.parse(t)}catch{j={raw:t}} if(!r.ok) throw new Error(j?.error||("HTTP "+r.status)); return j; }
+const TEAM=(getParam("team","ALL")||"ALL").trim().toUpperCase(), ROLE=(getParam("role","PLAYER")||"PLAYER").trim().toUpperCase(), PID=(getParam("pid","")||"").trim();
+document.getElementById("who").textContent=`${ROLE} / TEAM:${TEAM}${PID?" / "+PID:""}`;
+document.getElementById("subline").textContent=`Player Workspace — ${ROLE} — Team ${TEAM}`;
+document.getElementById("ctxWho").textContent=`${ROLE} / TEAM:${TEAM}`;
+document.getElementById("ctxAudience").textContent=`ALL • TEAM:${TEAM} • ROLE:${ROLE}`;
+document.getElementById("sessionInfo").textContent=PID?`PID ${PID}`:`anonymous session`;
+document.getElementById("pidWarn").style.display=PID?"none":"";
+let CURRENT_PHASE=null; let ACKED=loadAcked();
+function ackKey(){ return PID?`simia.ack.${PID}`:"simia.ack.anonymous"; }
+function loadAcked(){ try{ const raw=localStorage.getItem(ackKey()); const arr=raw?JSON.parse(raw):[]; return new Set(Array.isArray(arr)?arr:[]);}catch(e){return new Set();} }
+function saveAcked(set){ try{ localStorage.setItem(ackKey(), JSON.stringify(Array.from(set))); }catch(e){} }
+function renderTasks(events){ const box=document.getElementById("taskList"); const arr=(events||[]).filter(ev=>{ const kind=String(ev.kind||"").toUpperCase(); return kind==="TASK"||kind==="ALERT"||!ACKED.has(ev.id); }).slice(0,8); if(!arr.length){ box.innerHTML='<div class="item"><div class="small">Nessuna priorità immediata.</div></div>'; return; } box.innerHTML=""; arr.forEach(ev=>{ const kind=String(ev.kind||"BROADCAST").toUpperCase(), sev=String(ev.severity||"INFO").toUpperCase(); const div=document.createElement("div"); div.className="task-line"; div.innerHTML=`<div class="h">${esc(ev.title||kind)}</div><div class="small" style="margin-top:4px"><span class="pill mono">${esc(kind)}</span><span class="pill mono">${esc(sev)}</span>${ev.phase?`<span class="pill mono">${esc(ev.phase)}</span>`:""}</div>`; box.appendChild(div); }); }
+function renderFeed(events){ const box=document.getElementById("feed"); const arr=Array.isArray(events)?events:[]; document.getElementById("ctxCount").textContent=String(arr.length); if(!arr.length){ box.innerHTML='<div class="item"><div class="h">Nessun evento</div><div class="small">In attesa di Broadcast/Inject…</div></div>'; return; } box.innerHTML=""; for(const ev of arr){ const sev=String(ev.severity||"INFO").toUpperCase(), kind=String(ev.kind||"BROADCAST").toUpperCase(), aud=String(ev.audience||"ALL").toUpperCase(), isAcked=ACKED.has(ev.id); const div=document.createElement("div"); div.className="item feed-item "+(isAcked?"read":"unread"); div.innerHTML=`<div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap"><div style="flex:1;min-width:260px"><div class="h">${esc(ev.title||(kind==="INJECT"?"Inject":"Broadcast"))}${isAcked?` <span class="pill mono">✓ LETTO</span>`:""}</div><div class="small" style="margin-top:6px"><span class="pill mono">${esc(kind)}</span><span class="pill mono">${esc(sev)}</span><span class="pill mono">${esc(aud)}</span>${ev.phase?`<span class="pill mono">${esc(ev.phase)}</span>`:""}<span class="pill mono">${esc(ev.ts)}</span></div><div style="margin-top:10px;white-space:pre-wrap">${esc(ev.body||"")}</div></div><div class="row" style="gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="btn ghost" data-copy>Copy</button><button class="btn primary" data-ack ${PID?"":"disabled"} ${isAcked?"disabled":""}>LETTO</button></div></div>`; div.querySelector("[data-copy]").addEventListener("click", async()=>{ const txt=`[${ev.ts}] ${kind}/${sev} ${aud}${ev.phase?(" "+ev.phase):""}\n${ev.title||""}\n${ev.body||""}`.trim(); try{await navigator.clipboard.writeText(txt);}catch(e){} alert("Copiato."); }); div.querySelector("[data-ack]").addEventListener("click", async()=>{ if(!PID){ alert("Manca pid nel link: impossibile registrare LETTO."); return;} if(ACKED.has(ev.id)){ alert("Già marcato come LETTO."); return;} try{ await jpost("/api/scenario/ack",{event_id:ev.id,participant_id:PID,team:TEAM,role:ROLE}); ACKED.add(ev.id); saveAcked(ACKED); alert("Registrato: LETTO."); refresh().catch(()=>{});}catch(e){ alert("Errore ACK: "+e);} }); box.appendChild(div);} }
+function renderOutputs(items){ const box=document.getElementById("outList"), cnt=document.getElementById("outCount"); const arr=Array.isArray(items)?items:[]; cnt.textContent=`${arr.length} items`; if(!arr.length){ box.innerHTML='<div class="item"><div class="h">Nessun output</div><div class="small">Salva il primo output dal workspace.</div></div>'; return; } box.innerHTML=""; for(const it of arr){ const div=document.createElement("div"); div.className="item"; div.innerHTML=`<div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap"><div style="flex:1;min-width:280px"><div class="h">${esc(it.title||it.output_type||"Output")}<span class="green-check">✓</span></div><div class="small" style="margin-top:6px"><span class="pill mono">${esc(it.output_type||"")}</span><span class="pill mono">${esc(it.team||"")}</span>${it.phase?`<span class="pill mono">${esc(it.phase)}</span>`:""}<span class="pill mono">${esc(it.ts||"")}</span></div><div style="margin-top:10px;white-space:pre-wrap">${esc(it.content||"")}</div></div><div class="row" style="gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="btn ghost" data-copy>Copy</button></div></div>`; div.querySelector("[data-copy]").addEventListener("click", async()=>{ const txt=`[${it.ts}] ${it.output_type} ${it.team} ${it.phase||""}\n${it.title||""}\n${it.content||""}`.trim(); try{ await navigator.clipboard.writeText(txt);}catch(e){} alert("Copiato."); }); box.appendChild(div);} }
+async function loadOutputs(){ const type=(document.getElementById("outType").value||"NOTE").toUpperCase(), phase=CURRENT_PHASE||""; const j=await jget(`/api/outputs?team=${encodeURIComponent(TEAM)}&phase=${encodeURIComponent(phase)}&type=${encodeURIComponent(type)}&limit=50`); renderOutputs(j.items||[]); }
+async function saveOutput(){ const type=(document.getElementById("outType").value||"NOTE").toUpperCase(), title=(document.getElementById("outTitle").value||"").trim(), content=(document.getElementById("outContent").value||"").trim(); if(!content){ alert("Inserisci un contenuto."); return; } await jpost("/api/outputs",{session:"player",phase:CURRENT_PHASE||"",team:TEAM,role:ROLE,participant_id:PID||null,output_type:type,title,content}); document.getElementById("outContent").value=""; await loadOutputs(); alert("Output salvato."); }
+async function refreshPhaseAndFeed(){ const j=await jget(`/api/scenario/feed?team=${encodeURIComponent(TEAM)}&role=${encodeURIComponent(ROLE)}&pid=${encodeURIComponent(PID)}`); if(j.current_phase) CURRENT_PHASE=String(j.current_phase).toUpperCase(); document.getElementById("phaseBadge").textContent=CURRENT_PHASE||"PHASE-—"; document.getElementById("ctxPhase").textContent=CURRENT_PHASE||"—"; document.getElementById("outPhase").textContent=CURRENT_PHASE||"PHASE-—"; renderFeed(j.events||[]); renderTasks(j.events||[]); }
+async function refresh(){ await refreshPhaseAndFeed(); await loadOutputs(); }
 document.getElementById("refreshBtn").addEventListener("click", ()=>refresh().catch(e=>alert(String(e))));
 document.getElementById("outSaveBtn").addEventListener("click", ()=>saveOutput().catch(e=>alert(String(e))));
 document.getElementById("outReloadBtn").addEventListener("click", ()=>loadOutputs().catch(e=>alert(String(e))));
 document.getElementById("outType").addEventListener("change", ()=>loadOutputs().catch(e=>alert(String(e))));
-
-refresh().catch(e=>{
-  document.getElementById("feed").innerHTML = `<div class="item"><div class="h">Errore</div><div class="small">${esc(String(e))}</div></div>`;
-});
-</script>
-</body>
-</html>
+refresh().catch(e=>{ document.getElementById("feed").innerHTML=`<div class="item"><div class="h">Errore</div><div class="small">${esc(String(e))}</div></div>`; });
+setInterval(()=>{ refresh().catch(()=>{}); },10000);
+</script></body></html>
