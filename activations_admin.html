@@ -21,384 +21,114 @@
 .phase-active{border-left:4px solid #16a34a;background:rgba(22,163,74,.08)}
 .phase-completed{border-left:4px solid #b91c1c;background:rgba(185,28,28,.08)}
 .phase-status-pill{font-weight:600}
-.phase-progress{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.phase-progress-step{padding:8px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12)}
-.phase-progress-step.active{background:rgba(22,163,74,.12);border-color:rgba(22,163,74,.45)}
-.phase-progress-step.completed{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.45)}
-.phase-progress-step.upcoming{background:rgba(107,114,128,.10)}
-.phase-progress-arrow{opacity:.55}
 .sent-check{color:#22c55e;font-weight:800;margin-right:6px}
 .phase-bar-wrap{display:flex;flex-direction:column;gap:8px}
 .phase-bar{display:flex;gap:6px;align-items:stretch;width:100%}
-.phase-seg{position:relative;min-height:28px;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.12);background:rgba(107,114,128,.14);flex:1}
+.phase-seg{position:relative;min-height:34px;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.12);background:rgba(107,114,128,.14);flex:1}
 .phase-seg.future{background:rgba(107,114,128,.14)}
 .phase-seg.done{background:rgba(185,28,28,.16);border-color:rgba(185,28,28,.35)}
 .phase-seg.active{background:rgba(22,163,74,.10);border-color:rgba(22,163,74,.45)}
-.phase-fill{position:absolute;left:0;top:0;bottom:0;width:0%}
+.phase-fill{position:absolute;left:0;top:0;bottom:0;width:0%;transition:width 0.9s ease-in-out}
 .phase-seg.done .phase-fill{width:100%;background:rgba(185,28,28,.75)}
 .phase-seg.active .phase-fill{background:rgba(22,163,74,.82)}
-.phase-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 8px;font-size:12px;font-weight:700;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
-.phase-meta{display:flex;gap:8px;flex-wrap:wrap}
-.phase-pill{padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12)}
-.phase-pill.active{background:rgba(22,163,74,.12);border-color:rgba(22,163,74,.45)}
-.phase-pill.done{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.35)}
-.phase-pill.future{background:rgba(107,114,128,.12)}
+.phase-label{
+  position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:0 8px; font-size:11px; font-weight:700; line-height:1.1; text-align:center; overflow:hidden
+}
+.phase-label .code{font-size:12px;font-weight:800}
+.phase-label .state{font-size:10px;opacity:.9}
 </style>
 </head>
 <body>
 <header class="topbar">
-  <div class="brand">
-    <div class="logo" id="brandLogo">SI</div>
-    <div>
-      <div class="brand-title" id="brandTitle">SimIA</div>
-      <div class="brand-sub" id="brandSub">Activations</div>
-    </div>
-  </div>
-  <div class="session">
-    <a class="btn ghost" href="/index.html">Home</a>
-    <a class="btn ghost" href="/admin.html#scenario_phases">Admin</a>
-    <a class="btn ghost" href="/activations_admin.html">Activations</a>
-    <a class="btn ghost" href="/outputs_admin.html">Outputs</a>
-  </div>
+  <div class="brand"><div class="logo" id="brandLogo">SI</div><div><div class="brand-title" id="brandTitle">SimIA</div><div class="brand-sub" id="brandSub">Activations</div></div></div>
+  <div class="session"><a class="btn ghost" href="/index.html">Home</a><a class="btn ghost" href="/admin.html#scenario_phases">Admin</a><a class="btn ghost" href="/activations_admin.html">Activations</a><a class="btn ghost" href="/outputs_admin.html">Outputs</a></div>
 </header>
 
-<main class="layout layout-wide">
-<section class="content">
-<div class="grid">
-
-<div class="card span12">
-  <div class="card-title">Activations</div>
-  <div class="card-body">
-    <div class="tabs-mini">
-      <a href="#" class="tab-mini active" data-tab="setup">Setup</a>
-      <a href="#" class="tab-mini" data-tab="monitoring">Monitoring</a>
-    </div>
-  </div>
-</div>
+<main class="layout layout-wide"><section class="content"><div class="grid">
+<div class="card span12"><div class="card-title">Activations</div><div class="card-body"><div class="tabs-mini"><a href="#" class="tab-mini active" data-tab="setup">Setup</a><a href="#" class="tab-mini" data-tab="monitoring">Monitoring</a></div></div></div>
 
 <div class="panel" data-panel="setup">
-  <div class="card span12">
-    <div class="card-title">Setup</div>
-    <div class="card-body">
-      <div class="notice">
-        <div class="h">Activation editor</div>
-        <div class="small">Configura fase, T+, audience e contenuto. La fase è selezionabile solo tra quelle già definite nello Scenario.</div>
-      </div>
-      <div class="sep"></div>
+<div class="card span12"><div class="card-title">Setup</div><div class="card-body">
+<div class="notice"><div class="h">Activation editor</div><div class="small">Configura fase, T+, audience e contenuto. La fase è selezionabile solo tra quelle già definite nello Scenario.</div></div>
+<div class="sep"></div>
+<div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end">
+  <div style="min-width:180px;flex:2"><label class="lbl">Title</label><input class="input" id="iTitle"></div>
+  <div style="min-width:240px;flex:1"><label class="lbl">Phase</label><select class="input" id="iPhase"></select></div>
+  <div style="min-width:140px;flex:1"><label class="lbl">Kind</label><select class="input" id="iKind"><option>INJECT</option><option>BROADCAST</option><option>UPDATE</option><option>ALERT</option><option>TASK</option></select></div>
+  <div style="min-width:140px;flex:1"><label class="lbl">Source</label><select class="input" id="iSource"><option>OSINT</option><option>MEDIA</option><option>HUMINT</option><option>SIGINT</option><option>GEOINT</option><option>GOV</option><option>SOCIAL</option><option>INTERNAL</option></select></div>
+  <div style="min-width:120px;flex:1"><label class="lbl">Severity</label><select class="input" id="iSeverity"><option>INFO</option><option>AMBER</option><option>RED</option></select></div>
+</div>
+<div class="row" style="margin-top:10px;gap:10px;flex-wrap:wrap;align-items:flex-end">
+  <div style="min-width:140px;flex:1"><label class="lbl">Audience type</label><select class="input" id="iAudienceType"><option>ALL</option><option>TEAM</option><option>ROLE</option><option>USER</option></select></div>
+  <div style="min-width:180px;flex:1"><label class="lbl">Audience value</label><input class="input mono" id="iAudienceValue" value="ALL"></div>
+  <div style="min-width:140px;flex:1"><label class="lbl">T+ minutes</label><input class="input mono" id="iOffsetMin" value="0"></div>
+  <div style="min-width:140px;flex:1"><label class="lbl">Status</label><select class="input" id="iStatus"><option>draft</option><option>scheduled</option><option>queued</option><option>released</option><option>cancelled</option></select></div>
+  <div style="min-width:160px;flex:1"><label class="lbl">Author</label><input class="input" id="iAuthor" value="admin"></div>
+</div>
+<div style="margin-top:10px"><label class="lbl">Body</label><textarea class="input" id="iBody" style="min-height:110px"></textarea></div>
+<div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap"><button class="btn primary" id="saveInjectBtn">Save Activation</button><button class="btn ghost" id="refreshSetupBtn">Refresh Data</button><span class="pill mono" id="activationEditorState">NEW ACTIVATION</span></div>
+</div></div>
 
-      <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end">
-        <div style="min-width:180px;flex:2"><label class="lbl">Title</label><input class="input" id="iTitle"></div>
-        <div style="min-width:240px;flex:1"><label class="lbl">Phase</label><select class="input" id="iPhase"></select></div>
-        <div style="min-width:140px;flex:1"><label class="lbl">Kind</label><select class="input" id="iKind"><option>INJECT</option><option>BROADCAST</option><option>UPDATE</option><option>ALERT</option><option>TASK</option></select></div>
-        <div style="min-width:140px;flex:1"><label class="lbl">Source</label><select class="input" id="iSource"><option>OSINT</option><option>MEDIA</option><option>HUMINT</option><option>SIGINT</option><option>GEOINT</option><option>GOV</option><option>SOCIAL</option><option>INTERNAL</option></select></div>
-        <div style="min-width:120px;flex:1"><label class="lbl">Severity</label><select class="input" id="iSeverity"><option>INFO</option><option>AMBER</option><option>RED</option></select></div>
-      </div>
-
-      <div class="row" style="margin-top:10px;gap:10px;flex-wrap:wrap;align-items:flex-end">
-        <div style="min-width:140px;flex:1"><label class="lbl">Audience type</label><select class="input" id="iAudienceType"><option>ALL</option><option>TEAM</option><option>ROLE</option><option>USER</option></select></div>
-        <div style="min-width:180px;flex:1"><label class="lbl">Audience value</label><input class="input mono" id="iAudienceValue" value="ALL"></div>
-        <div style="min-width:140px;flex:1"><label class="lbl">T+ minutes</label><input class="input mono" id="iOffsetMin" value="0"></div>
-        <div style="min-width:140px;flex:1"><label class="lbl">Status</label><select class="input" id="iStatus"><option>draft</option><option>scheduled</option><option>queued</option><option>released</option><option>cancelled</option></select></div>
-        <div style="min-width:160px;flex:1"><label class="lbl">Author</label><input class="input" id="iAuthor" value="admin"></div>
-      </div>
-
-      <div style="margin-top:10px">
-        <label class="lbl">Body</label>
-        <textarea class="input" id="iBody" style="min-height:110px"></textarea>
-      </div>
-
-      <div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">
-        <button class="btn primary" id="saveInjectBtn">Save Activation</button>
-        <button class="btn ghost" id="refreshSetupBtn">Refresh Data</button>
-        <span class="pill mono" id="activationEditorState">NEW ACTIVATION</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="card span12">
-    <div class="card-title">Activation Registry</div>
-    <div class="card-body">
-      <div id="injectsList" class="stack"></div>
-    </div>
-  </div>
+<div class="card span12"><div class="card-title">Activation Registry</div><div class="card-body"><div id="injectsList" class="stack"></div></div></div>
 </div>
 
 <div class="panel" data-panel="monitoring" style="display:none">
-  <div class="card span12">
-    <div class="card-title">Phase Progress Bar</div>
-    <div class="card-body">
-      <div class="phase-bar-wrap">
-        <div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
-          <div class="small" id="phaseTimingInfo">—</div>
-          <span class="pill mono">AUTO REFRESH 15s</span>
-        </div>
-        <div id="phaseBar" class="phase-bar"></div>
-        <div id="phaseMeta" class="phase-meta"></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card span12">
-    <div class="card-title">Phase Progress</div>
-    <div class="card-body">
-      <div class="phase-progress" id="phaseProgress"></div>
-    </div>
-  </div>
-
-  <div class="card span12">
-    <div class="card-title">Timeline</div>
-    <div class="card-body">
-      <div class="notice">
-        <div class="h">Minimal view</div>
-        <div class="small">Colorazione per stato fase. La spunta verde indica activation già inviata.</div>
-      </div>
-      <div class="sep"></div>
-      <div id="timelineBoard" class="row" style="gap:12px;align-items:flex-start;overflow-x:auto;flex-wrap:nowrap"></div>
-    </div>
-  </div>
-
-  <div class="card span12">
-    <div class="card-title">White Cell Log</div>
-    <div class="card-body">
-      <div class="row" style="gap:8px;flex-wrap:wrap">
-        <button class="btn ghost" id="reloadActionsBtn">Reload log</button>
-        <button class="btn" id="toggleActionsBtn">Show all</button>
-        <span class="pill mono" id="actionsModePill">LAST 5</span>
-      </div>
-      <div class="sep"></div>
-      <div id="actionsList" class="stack"></div>
-    </div>
-  </div>
+<div class="card span12"><div class="card-title">Phase Progress Bar</div><div class="card-body">
+<div class="phase-bar-wrap">
+  <div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center"><div class="small" id="phaseTimingInfo">—</div><span class="pill mono">AUTO REFRESH 15s</span></div>
+  <div id="phaseBar" class="phase-bar"></div>
 </div>
+</div></div>
 
+<div class="card span12"><div class="card-title">Timeline</div><div class="card-body">
+<div class="notice"><div class="h">Minimal view</div><div class="small">Colorazione per stato fase. La spunta verde indica activation già inviata.</div></div>
+<div class="sep"></div><div id="timelineBoard" class="row" style="gap:12px;align-items:flex-start;overflow-x:auto;flex-wrap:nowrap"></div>
+</div></div>
+
+<div class="card span12"><div class="card-title">White Cell Log</div><div class="card-body"><div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn ghost" id="reloadActionsBtn">Reload log</button><button class="btn" id="toggleActionsBtn">Show all</button><span class="pill mono" id="actionsModePill">LAST 5</span></div><div class="sep"></div><div id="actionsList" class="stack"></div></div></div>
 </div>
-</section>
-</main>
+</div></section></main>
 
-<div class="modal-backdrop" id="activationModal">
-  <div class="modal-card">
-    <div class="row" style="justify-content:space-between;gap:10px;align-items:center">
-      <div>
-        <div class="h" id="mTitle">Activation</div>
-        <div class="small" id="mSubtitle"></div>
-      </div>
-      <button class="btn ghost" id="closeModalBtn">Close</button>
-    </div>
-    <div class="sep"></div>
-    <div class="small-grid" id="mMeta"></div>
-    <div class="sep"></div>
-    <div>
-      <div class="lbl">Body</div>
-      <div id="mBody" style="white-space:pre-wrap"></div>
-    </div>
-    <div class="sep"></div>
-    <div class="row" style="gap:8px;flex-wrap:wrap">
-      <button class="btn" id="mReleaseBtn">Release now</button>
-      <button class="btn ghost" id="mDelayBtn">Delay only +5</button>
-      <button class="btn ghost" id="mShiftBtn">Shift subsequent +5</button>
-      <button class="btn ghost" id="mRetargetBtn">Retarget</button>
-      <button class="btn danger" id="mCancelBtn">Cancel</button>
-      <button class="btn danger" id="mDeleteBtn">Delete</button>
-    </div>
-  </div>
-</div>
+<div class="modal-backdrop" id="activationModal"><div class="modal-card"><div class="row" style="justify-content:space-between;gap:10px;align-items:center"><div><div class="h" id="mTitle">Activation</div><div class="small" id="mSubtitle"></div></div><button class="btn ghost" id="closeModalBtn">Close</button></div><div class="sep"></div><div class="small-grid" id="mMeta"></div><div class="sep"></div><div><div class="lbl">Body</div><div id="mBody" style="white-space:pre-wrap"></div></div><div class="sep"></div><div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn" id="mReleaseBtn">Release now</button><button class="btn ghost" id="mDelayBtn">Delay only +5</button><button class="btn ghost" id="mShiftBtn">Shift subsequent +5</button><button class="btn ghost" id="mRetargetBtn">Retarget</button><button class="btn danger" id="mCancelBtn">Cancel</button><button class="btn danger" id="mDeleteBtn">Delete</button></div></div></div>
 
-<script src="/assets/theme.js"></script>
-<script src="/assets/branding.js"></script>
+<script src="/assets/theme.js"></script><script src="/assets/branding.js"></script>
 <script>
 function esc(s){ return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;"); }
 async function jget(url){ const r=await fetch(url,{headers:{Accept:"application/json"}}); const t=await r.text(); let j; try{j=JSON.parse(t)}catch{j={raw:t}} if(!r.ok) throw new Error(j?.error||("HTTP "+r.status)); return j; }
 async function jpost(url,body){ const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(body)}); const t=await r.text(); let j; try{j=JSON.parse(t)}catch{j={raw:t}} if(!r.ok) throw new Error(j?.error||("HTTP "+r.status)); return j; }
 async function jdel(url){ const r=await fetch(url,{method:"DELETE"}); const t=await r.text(); let j; try{j=JSON.parse(t)}catch{j={raw:t}} if(!r.ok) throw new Error(j?.error||("HTTP "+r.status)); return j; }
-
-let CURRENT_ACTIVATION_ID = "";
-let PHASES = [];
-let ACTIVATIONS = [];
-let ACTIONS_SHOW_ALL = false;
-let MODAL_ACTIVATION = null;
-let CURRENT_TAB = "setup";
-let SCENARIO_START_AT = null;
-
+let CURRENT_ACTIVATION_ID="", PHASES=[], ACTIVATIONS=[], ACTIONS_SHOW_ALL=false, MODAL_ACTIVATION=null, CURRENT_TAB="setup", SCENARIO_START_AT=null;
 function phaseLabel(p){ return (p.phase_code||"") + (p.title ? " — " + p.title : ""); }
 function phaseCss(status){ const s=String(status||"").toLowerCase(); if(s==="active") return "phase-active"; if(s==="closed"||s==="completed") return "phase-completed"; return "phase-upcoming"; }
-function phaseStatusText(status){ const s=String(status||"").toLowerCase(); if(s==="active") return "ACTIVE"; if(s==="closed"||s==="completed") return "COMPLETED"; return "UPCOMING"; }
 function setTab(name){ CURRENT_TAB=name; document.querySelectorAll(".tab-mini").forEach(t=>t.classList.toggle("active", t.dataset.tab===name)); document.querySelectorAll(".panel").forEach(p=>p.style.display=p.dataset.panel===name?"":"none"); }
 document.querySelectorAll(".tab-mini").forEach(t=>t.addEventListener("click", e=>{ e.preventDefault(); setTab(t.dataset.tab); }));
-
-function buildPhaseWindows(phases){
-  let cursor=0;
-  return phases.map(p=>{
-    const dur=Math.max(1, Number(p.duration_min||1));
-    const start=cursor;
-    const end=cursor+dur;
-    cursor=end;
-    return {...p, start_offset:start, end_offset:end, duration_calc:dur};
-  });
-}
-function currentElapsedMin(){
-  if(!SCENARIO_START_AT) return null;
-  const ms = Date.parse(SCENARIO_START_AT);
-  if(!Number.isFinite(ms)) return null;
-  return Math.floor((Date.now()-ms)/60000);
-}
-function renderPhaseBar(phases){
-  const bar=document.getElementById("phaseBar");
-  const meta=document.getElementById("phaseMeta");
-  const info=document.getElementById("phaseTimingInfo");
-  bar.innerHTML=""; meta.innerHTML="";
-  if(!phases.length){ info.textContent="Nessuna fase disponibile."; return; }
-  const elapsed=currentElapsedMin();
-  const windows=buildPhaseWindows(phases);
-  let remainText = elapsed===null ? "Exercise not started" : `Elapsed T+${elapsed} min`;
-  windows.forEach(p=>{
-    const state=String(p.status||"").toLowerCase();
-    const seg=document.createElement("div");
-    seg.className="phase-seg "+(state==="active"?"active":((state==="closed"||state==="completed")?"done":"future"));
-    seg.style.flex=String(p.duration_calc);
-    const fill=document.createElement("div");
-    fill.className="phase-fill";
-    if(state==="active" && elapsed!==null){
-      const progress=Math.max(0, Math.min(1, (elapsed-p.start_offset)/p.duration_calc));
-      fill.style.width=(progress*100).toFixed(1)+"%";
-      const remaining=Math.max(0, p.end_offset-elapsed);
-      remainText=`${p.phase_code} • ${remaining} min remaining`;
-    }
-    seg.appendChild(fill);
-    const label=document.createElement("div");
-    label.className="phase-label";
-    label.textContent=p.phase_code||"";
-    seg.appendChild(label);
-    bar.appendChild(seg);
-
-    const pill=document.createElement("div");
-    pill.className="phase-pill "+(state==="active"?"active":((state==="closed"||state==="completed")?"done":"future"));
-    pill.textContent=`${p.phase_code} • ${String(state||"pending").toUpperCase()}`;
-    meta.appendChild(pill);
-  });
-  info.textContent=remainText;
-}
-
-function activationFormClear(){
-  CURRENT_ACTIVATION_ID="";
-  document.getElementById("iTitle").value="";
-  if(PHASES.length) document.getElementById("iPhase").value=PHASES[0].phase_code||"";
-  document.getElementById("iKind").value="INJECT";
-  document.getElementById("iSource").value="OSINT";
-  document.getElementById("iSeverity").value="INFO";
-  document.getElementById("iAudienceType").value="ALL";
-  document.getElementById("iAudienceValue").value="ALL";
-  document.getElementById("iOffsetMin").value="0";
-  document.getElementById("iStatus").value="draft";
-  document.getElementById("iAuthor").value="admin";
-  document.getElementById("iBody").value="";
-  document.getElementById("activationEditorState").textContent="NEW ACTIVATION";
-}
-function activationFormSet(i){
-  CURRENT_ACTIVATION_ID=i.id||"";
-  document.getElementById("iTitle").value=i.title||"";
-  document.getElementById("iPhase").value=i.phase_code||"";
-  document.getElementById("iKind").value=i.kind||"INJECT";
-  document.getElementById("iSource").value=i.source_type||"OSINT";
-  document.getElementById("iSeverity").value=i.severity||"INFO";
-  document.getElementById("iAudienceType").value=i.audience_type||"ALL";
-  document.getElementById("iAudienceValue").value=i.audience_value||"ALL";
-  document.getElementById("iOffsetMin").value=i.release_offset_min||0;
-  document.getElementById("iStatus").value=i.status||"draft";
-  document.getElementById("iAuthor").value=i.author||"admin";
-  document.getElementById("iBody").value=i.body||"";
-  document.getElementById("activationEditorState").textContent="EDITING: "+(i.title||"");
-  setTab("setup");
-}
-function fillPhaseSelect(){
-  const sel=document.getElementById("iPhase"); const current=sel.value||""; sel.innerHTML="";
-  if(!PHASES.length){ const o=document.createElement("option"); o.value=""; o.textContent="No phases available"; sel.appendChild(o); sel.disabled=true; return; }
-  sel.disabled=false;
-  PHASES.forEach(p=>{ const o=document.createElement("option"); o.value=p.phase_code||""; o.textContent=phaseLabel(p); sel.appendChild(o); });
-  if(current && Array.from(sel.options).some(o=>o.value===current)) sel.value=current; else sel.value=PHASES[0].phase_code||"";
-}
-async function controlAction(payload, successMessage){
-  const res=await jpost("/api/scenario/control",payload);
-  await reloadAll();
-  if(res.clamped) alert(successMessage+"\\n\\nCorrezione automatica fase: offset finale T+"+res.final_offset);
-  else alert(successMessage);
-}
-function openModal(act){
-  MODAL_ACTIVATION=act;
-  const phase=PHASES.find(p=>String(p.phase_code||"")===String(act.phase_code||""));
-  document.getElementById("mTitle").textContent=act.title||"Activation";
-  document.getElementById("mSubtitle").textContent=phase?phaseLabel(phase):(act.phase_code||"");
-  document.getElementById("mMeta").innerHTML=`<div><div class="lbl">T+</div><div>${esc(act.release_offset_min||0)} min</div></div><div><div class="lbl">Kind</div><div>${esc(act.kind||"")}</div></div><div><div class="lbl">Source</div><div>${esc(act.source_type||"")}</div></div><div><div class="lbl">Severity</div><div>${esc(act.severity||"")}</div></div><div><div class="lbl">Audience</div><div>${esc(act.audience_type||"")}:${esc(act.audience_value||"")}</div></div><div><div class="lbl">Status</div><div>${esc(act.status||"")}</div></div>`;
-  document.getElementById("mBody").textContent=act.body||"";
-  document.getElementById("activationModal").classList.add("show");
-}
+function buildPhaseWindows(phases){ let cursor=0; return phases.map(p=>{ const dur=Math.max(1,Number(p.duration_min||1)); const start=cursor; const end=cursor+dur; cursor=end; return {...p, start_offset:start, end_offset:end, duration_calc:dur}; }); }
+function currentElapsedMin(){ if(!SCENARIO_START_AT) return null; const ms=Date.parse(SCENARIO_START_AT); if(!Number.isFinite(ms)) return null; return Math.floor((Date.now()-ms)/60000); }
+function renderPhaseBar(phases){ const bar=document.getElementById("phaseBar"); const info=document.getElementById("phaseTimingInfo"); bar.innerHTML=""; if(!phases.length){ info.textContent="Nessuna fase disponibile."; return; } const elapsed=currentElapsedMin(); const windows=buildPhaseWindows(phases); let remainText=elapsed===null?"Exercise not started":`Elapsed T+${elapsed} min`; windows.forEach(p=>{ const state=String(p.status||"").toLowerCase(); const seg=document.createElement("div"); seg.className="phase-seg "+(state==="active"?"active":((state==="closed"||state==="completed")?"done":"future")); seg.style.flex=String(p.duration_calc); const fill=document.createElement("div"); fill.className="phase-fill"; if(state==="active"&&elapsed!==null){ const progress=Math.max(0,Math.min(1,(elapsed-p.start_offset)/p.duration_calc)); fill.style.width=(progress*100).toFixed(1)+"%"; const remaining=Math.max(0,p.end_offset-elapsed); remainText=`${p.phase_code} • ${remaining} min remaining`; } seg.appendChild(fill); const label=document.createElement("div"); label.className="phase-label"; label.innerHTML=`<div class="code">${esc(p.phase_code||"")}</div><div class="state">${esc(state.toUpperCase())}</div>`; seg.appendChild(label); bar.appendChild(seg); }); info.textContent=remainText; }
+function activationFormClear(){ CURRENT_ACTIVATION_ID=""; document.getElementById("iTitle").value=""; if(PHASES.length) document.getElementById("iPhase").value=PHASES[0].phase_code||""; document.getElementById("iKind").value="INJECT"; document.getElementById("iSource").value="OSINT"; document.getElementById("iSeverity").value="INFO"; document.getElementById("iAudienceType").value="ALL"; document.getElementById("iAudienceValue").value="ALL"; document.getElementById("iOffsetMin").value="0"; document.getElementById("iStatus").value="draft"; document.getElementById("iAuthor").value="admin"; document.getElementById("iBody").value=""; document.getElementById("activationEditorState").textContent="NEW ACTIVATION"; }
+function activationFormSet(i){ CURRENT_ACTIVATION_ID=i.id||""; document.getElementById("iTitle").value=i.title||""; document.getElementById("iPhase").value=i.phase_code||""; document.getElementById("iKind").value=i.kind||"INJECT"; document.getElementById("iSource").value=i.source_type||"OSINT"; document.getElementById("iSeverity").value=i.severity||"INFO"; document.getElementById("iAudienceType").value=i.audience_type||"ALL"; document.getElementById("iAudienceValue").value=i.audience_value||"ALL"; document.getElementById("iOffsetMin").value=i.release_offset_min||0; document.getElementById("iStatus").value=i.status||"draft"; document.getElementById("iAuthor").value=i.author||"admin"; document.getElementById("iBody").value=i.body||""; document.getElementById("activationEditorState").textContent="EDITING: "+(i.title||""); setTab("setup"); }
+function fillPhaseSelect(){ const sel=document.getElementById("iPhase"); const current=sel.value||""; sel.innerHTML=""; if(!PHASES.length){ const o=document.createElement("option"); o.value=""; o.textContent="No phases available"; sel.appendChild(o); sel.disabled=true; return; } sel.disabled=false; PHASES.forEach(p=>{ const o=document.createElement("option"); o.value=p.phase_code||""; o.textContent=phaseLabel(p); sel.appendChild(o); }); if(current && Array.from(sel.options).some(o=>o.value===current)) sel.value=current; else sel.value=PHASES[0].phase_code||""; }
+async function controlAction(payload, successMessage){ const res=await jpost("/api/scenario/control",payload); await reloadAll(); if(res.clamped) alert(successMessage+"\\n\\nCorrezione automatica fase: offset finale T+"+res.final_offset); else alert(successMessage); }
+function openModal(act){ MODAL_ACTIVATION=act; const phase=PHASES.find(p=>String(p.phase_code||"")===String(act.phase_code||"")); document.getElementById("mTitle").textContent=act.title||"Activation"; document.getElementById("mSubtitle").textContent=phase?phaseLabel(phase):(act.phase_code||""); document.getElementById("mMeta").innerHTML=`<div><div class="lbl">T+</div><div>${esc(act.release_offset_min||0)} min</div></div><div><div class="lbl">Kind</div><div>${esc(act.kind||"")}</div></div><div><div class="lbl">Source</div><div>${esc(act.source_type||"")}</div></div><div><div class="lbl">Severity</div><div>${esc(act.severity||"")}</div></div><div><div class="lbl">Audience</div><div>${esc(act.audience_type||"")}:${esc(act.audience_value||"")}</div></div><div><div class="lbl">Status</div><div>${esc(act.status||"")}</div></div>`; document.getElementById("mBody").textContent=act.body||""; document.getElementById("activationModal").classList.add("show"); }
 function closeModal(){ document.getElementById("activationModal").classList.remove("show"); MODAL_ACTIVATION=null; }
-document.getElementById("closeModalBtn").addEventListener("click", closeModal);
-document.getElementById("activationModal").addEventListener("click", e=>{ if(e.target.id==="activationModal") closeModal(); });
+document.getElementById("closeModalBtn").addEventListener("click", closeModal); document.getElementById("activationModal").addEventListener("click", e=>{ if(e.target.id==="activationModal") closeModal(); });
 document.getElementById("mReleaseBtn").addEventListener("click", async()=>{ if(!MODAL_ACTIVATION) return; await controlAction({action:"release_now",inject_id:MODAL_ACTIVATION.id,actor:"white-cell"},"Activation rilasciata."); closeModal(); });
 document.getElementById("mDelayBtn").addEventListener("click", async()=>{ if(!MODAL_ACTIVATION) return; await controlAction({action:"delay",inject_id:MODAL_ACTIVATION.id,delay_min:5,actor:"white-cell"},"Activation ritardata di 5 minuti."); closeModal(); });
 document.getElementById("mShiftBtn").addEventListener("click", async()=>{ if(!MODAL_ACTIVATION) return; await controlAction({action:"shift_subsequent",inject_id:MODAL_ACTIVATION.id,delay_min:5,actor:"white-cell"},"Timeline successiva spostata di 5 minuti."); closeModal(); });
 document.getElementById("mRetargetBtn").addEventListener("click", async()=>{ if(!MODAL_ACTIVATION) return; const audience_type=prompt("Nuovo audience_type (ALL / TEAM / ROLE / USER)", MODAL_ACTIVATION.audience_type||"TEAM"); if(!audience_type) return; const audience_value=prompt("Nuovo audience_value", MODAL_ACTIVATION.audience_value||"A"); if(!audience_value) return; await controlAction({action:"retarget",inject_id:MODAL_ACTIVATION.id,audience_type,audience_value,actor:"white-cell"},"Activation retargeted."); closeModal(); });
 document.getElementById("mCancelBtn").addEventListener("click", async()=>{ if(!MODAL_ACTIVATION) return; if(!confirm("Cancellare questa activation?")) return; await controlAction({action:"cancel",inject_id:MODAL_ACTIVATION.id,actor:"white-cell"},"Activation cancellata."); closeModal(); });
 document.getElementById("mDeleteBtn").addEventListener("click", async()=>{ if(!MODAL_ACTIVATION) return; if(!confirm("Eliminare questa activation?")) return; await jdel("/api/scenario/injects?id="+encodeURIComponent(MODAL_ACTIVATION.id)); closeModal(); await reloadAll(); });
-
-function renderPhaseProgress(){
-  const box=document.getElementById("phaseProgress"); box.innerHTML="";
-  if(!PHASES.length){ box.innerHTML='<div class="small">Nessuna fase disponibile.</div>'; return; }
-  PHASES.forEach((p,idx)=>{ const state=String(p.status||"").toLowerCase()==="active"?"active":((String(p.status||"").toLowerCase()==="closed"||String(p.status||"").toLowerCase()==="completed")?"completed":"upcoming"); const step=document.createElement("div"); step.className="phase-progress-step "+state; step.innerHTML=`<div class="small mono">${esc(p.phase_code||"")}</div><div class="small">${esc(phaseStatusText(p.status))}</div>`; box.appendChild(step); if(idx<PHASES.length-1){ const arrow=document.createElement("div"); arrow.className="phase-progress-arrow"; arrow.textContent="→"; box.appendChild(arrow); } });
-}
-function renderTimelineBoard(){
-  const box=document.getElementById("timelineBoard"); box.innerHTML="";
-  if(!PHASES.length){ box.innerHTML='<div class="item timeline-col"><div class="small">Nessuna fase disponibile.</div></div>'; return; }
-  PHASES.forEach(p=>{
-    const col=document.createElement("div"); col.className="item timeline-col "+phaseCss(p.status);
-    const acts=ACTIVATIONS.filter(a=>String(a.phase_code||"")===String(p.phase_code||"")).sort((a,b)=>Number(a.release_offset_min||0)-Number(b.release_offset_min||0));
-    const lines=acts.length?acts.map(a=>`<div class="timeline-line"><div><div class="timeline-time">T+${esc(a.release_offset_min||0)}</div><div>${esc(a.title||"")}</div></div><div class="row" style="gap:6px;align-items:center">${String(a.status||"").toLowerCase()==="released"?`<span class="sent-check">✓</span>`:""}<button class="btn ghost icon-btn" data-open="${esc(a.id)}" title="Dettagli">ⓘ</button></div></div>`).join(""):'<div class="small" style="margin-top:8px">Nessuna activation.</div>';
-    col.innerHTML=`<div class="h">${esc(phaseLabel(p))}</div><div class="small" style="margin-top:6px"><span class="pill mono phase-status-pill">${esc(phaseStatusText(p.status))}</span></div><div style="margin-top:8px">${lines}</div>`;
-    box.appendChild(col);
-  });
-  box.querySelectorAll("[data-open]").forEach(btn=>btn.addEventListener("click", ()=>{ const act=ACTIVATIONS.find(a=>String(a.id)===String(btn.getAttribute("data-open"))); if(act) openModal(act); }));
-}
-async function loadScenarioMeta(){
-  try{
-    const j = await jget("/api/scenario/manage");
-    SCENARIO_START_AT = j.current?.start_at || null;
-  }catch(e){
-    SCENARIO_START_AT = null;
-  }
-}
-async function loadPhases(){ const j=await jget("/api/scenario/phases"); PHASES=j.phases||[]; fillPhaseSelect(); renderPhaseProgress(); renderPhaseBar(PHASES); }
-async function loadInjects(){
-  const j=await jget("/api/scenario/injects");
-  ACTIVATIONS=j.injects||[];
-  const box=document.getElementById("injectsList"); box.innerHTML="";
-  if(!ACTIVATIONS.length){ box.innerHTML='<div class="item"><div class="small">Nessuna activation configurata.</div></div>'; renderTimelineBoard(); return; }
-  ACTIVATIONS.forEach(i=>{
-    const phase=PHASES.find(p=>String(p.phase_code||"")===String(i.phase_code||""));
-    const div=document.createElement("div"); div.className="item";
-    div.innerHTML=`<div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap"><div style="flex:1"><div class="h">${esc(i.title)}</div><div class="small" style="margin-top:6px"><span class="pill mono">${esc(phase?phaseLabel(phase):(i.phase_code||""))}</span><span class="pill mono">T+${esc(i.release_offset_min||0)}</span><span class="pill mono">${esc(i.status||"")}</span></div></div><div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn" data-edit>Edit</button><button class="btn ghost" data-open>Details</button><button class="btn danger" data-del>Delete</button></div></div>`;
-    div.querySelector("[data-edit]").addEventListener("click", ()=>activationFormSet(i));
-    div.querySelector("[data-open]").addEventListener("click", ()=>openModal(i));
-    div.querySelector("[data-del]").addEventListener("click", async()=>{ if(!confirm("Eliminare questa activation?")) return; await jdel("/api/scenario/injects?id="+encodeURIComponent(i.id)); if(CURRENT_ACTIVATION_ID===i.id) activationFormClear(); await reloadAll(); });
-    box.appendChild(div);
-  });
-  renderTimelineBoard();
-}
-async function loadActions(){
-  const limit=ACTIONS_SHOW_ALL?100:5;
-  const j=await jget("/api/scenario/actions?limit="+limit);
-  const box=document.getElementById("actionsList"); box.innerHTML="";
-  document.getElementById("actionsModePill").textContent=ACTIONS_SHOW_ALL?"ALL LOGS":"LAST 5";
-  document.getElementById("toggleActionsBtn").textContent=ACTIONS_SHOW_ALL?"Show last 5":"Show all";
-  const rows=j.actions||[];
-  if(!rows.length){ box.innerHTML='<div class="item"><div class="small">Nessuna azione registrata.</div></div>'; return; }
-  rows.forEach(a=>{ const div=document.createElement("div"); div.className="item"; div.innerHTML=`<div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap"><div><div class="h">${esc(a.action_type)}</div><div class="small">${esc(a.notes||"")}</div></div><div class="small mono">${esc(a.actor||"admin")} • ${esc(a.ts||"")}</div></div>`; box.appendChild(div); });
-}
+function renderTimelineBoard(){ const box=document.getElementById("timelineBoard"); box.innerHTML=""; if(!PHASES.length){ box.innerHTML='<div class="item timeline-col"><div class="small">Nessuna fase disponibile.</div></div>'; return; } PHASES.forEach(p=>{ const col=document.createElement("div"); col.className="item timeline-col "+phaseCss(p.status); const acts=ACTIVATIONS.filter(a=>String(a.phase_code||"")===String(p.phase_code||"")).sort((a,b)=>Number(a.release_offset_min||0)-Number(b.release_offset_min||0)); const lines=acts.length?acts.map(a=>`<div class="timeline-line"><div><div class="timeline-time">T+${esc(a.release_offset_min||0)}</div><div>${esc(a.title||"")}</div></div><div class="row" style="gap:6px;align-items:center">${String(a.status||"").toLowerCase()==="released"?`<span class="sent-check">✓</span>`:""}<button class="btn ghost icon-btn" data-open="${esc(a.id)}" title="Dettagli">ⓘ</button></div></div>`).join(""):'<div class="small" style="margin-top:8px">Nessuna activation.</div>'; col.innerHTML=`<div class="h">${esc(phaseLabel(p))}</div><div class="small" style="margin-top:6px"><span class="pill mono">${esc(String(p.status||"").toUpperCase())}</span></div><div style="margin-top:8px">${lines}</div>`; box.appendChild(col); }); box.querySelectorAll("[data-open]").forEach(btn=>btn.addEventListener("click", ()=>{ const act=ACTIVATIONS.find(a=>String(a.id)===String(btn.getAttribute("data-open"))); if(act) openModal(act); })); }
+async function loadScenarioMeta(){ try{ const j=await jget("/api/scenario/manage"); SCENARIO_START_AT=j.current?.start_at||null; }catch(e){ SCENARIO_START_AT=null; } }
+async function loadPhases(){ const j=await jget("/api/scenario/phases"); PHASES=j.phases||[]; fillPhaseSelect(); renderPhaseBar(PHASES); }
+async function loadInjects(){ const j=await jget("/api/scenario/injects"); ACTIVATIONS=j.injects||[]; const box=document.getElementById("injectsList"); box.innerHTML=""; if(!ACTIVATIONS.length){ box.innerHTML='<div class="item"><div class="small">Nessuna activation configurata.</div></div>'; renderTimelineBoard(); return; } ACTIVATIONS.forEach(i=>{ const phase=PHASES.find(p=>String(p.phase_code||"")===String(i.phase_code||"")); const div=document.createElement("div"); div.className="item"; div.innerHTML=`<div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap"><div style="flex:1"><div class="h">${esc(i.title)}</div><div class="small" style="margin-top:6px"><span class="pill mono">${esc(phase?phaseLabel(phase):(i.phase_code||""))}</span><span class="pill mono">T+${esc(i.release_offset_min||0)}</span><span class="pill mono">${esc(i.status||"")}</span></div></div><div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn" data-edit>Edit</button><button class="btn ghost" data-open>Details</button><button class="btn danger" data-del>Delete</button></div></div>`; div.querySelector("[data-edit]").addEventListener("click", ()=>activationFormSet(i)); div.querySelector("[data-open]").addEventListener("click", ()=>openModal(i)); div.querySelector("[data-del]").addEventListener("click", async()=>{ if(!confirm("Eliminare questa activation?")) return; await jdel("/api/scenario/injects?id="+encodeURIComponent(i.id)); if(CURRENT_ACTIVATION_ID===i.id) activationFormClear(); await reloadAll(); }); box.appendChild(div); }); renderTimelineBoard(); }
+async function loadActions(){ const limit=ACTIONS_SHOW_ALL?100:5; const j=await jget("/api/scenario/actions?limit="+limit); const box=document.getElementById("actionsList"); box.innerHTML=""; document.getElementById("actionsModePill").textContent=ACTIONS_SHOW_ALL?"ALL LOGS":"LAST 5"; document.getElementById("toggleActionsBtn").textContent=ACTIONS_SHOW_ALL?"Show last 5":"Show all"; const rows=j.actions||[]; if(!rows.length){ box.innerHTML='<div class="item"><div class="small">Nessuna azione registrata.</div></div>'; return; } rows.forEach(a=>{ const div=document.createElement("div"); div.className="item"; div.innerHTML=`<div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap"><div><div class="h">${esc(a.action_type)}</div><div class="small">${esc(a.notes||"")}</div></div><div class="small mono">${esc(a.actor||"admin")} • ${esc(a.ts||"")}</div></div>`; box.appendChild(div); }); }
 async function reloadAll(){ await loadScenarioMeta(); await loadPhases(); await loadInjects(); await loadActions(); }
 document.getElementById("saveInjectBtn").addEventListener("click", async()=>{ await jpost("/api/scenario/injects",{ id:CURRENT_ACTIVATION_ID||undefined, title:document.getElementById("iTitle").value, phase_code:document.getElementById("iPhase").value, kind:document.getElementById("iKind").value, source_type:document.getElementById("iSource").value, severity:document.getElementById("iSeverity").value, audience_type:document.getElementById("iAudienceType").value, audience_value:document.getElementById("iAudienceValue").value, release_offset_min:document.getElementById("iOffsetMin").value, status:document.getElementById("iStatus").value, author:document.getElementById("iAuthor").value, body:document.getElementById("iBody").value }); activationFormClear(); await reloadAll(); alert("Activation salvata."); });
 document.getElementById("refreshSetupBtn").addEventListener("click", reloadAll);
 document.getElementById("reloadActionsBtn").addEventListener("click", loadActions);
 document.getElementById("toggleActionsBtn").addEventListener("click", async()=>{ ACTIONS_SHOW_ALL=!ACTIONS_SHOW_ALL; await loadActions(); });
-
 (async function init(){ setTab("setup"); await reloadAll(); activationFormClear(); setInterval(async()=>{ if(CURRENT_TAB==="monitoring"){ try{ await reloadAll(); }catch(e){} } },15000); })();
 </script>
 </body>
