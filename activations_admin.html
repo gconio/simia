@@ -28,6 +28,21 @@
 .phase-progress-step.upcoming{background:rgba(107,114,128,.10)}
 .phase-progress-arrow{opacity:.55}
 .sent-check{color:#22c55e;font-weight:800;margin-right:6px}
+.phase-bar-wrap{display:flex;flex-direction:column;gap:8px}
+.phase-bar{display:flex;gap:6px;align-items:stretch;width:100%}
+.phase-seg{position:relative;min-height:28px;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.12);background:rgba(107,114,128,.14);flex:1}
+.phase-seg.future{background:rgba(107,114,128,.14)}
+.phase-seg.done{background:rgba(185,28,28,.16);border-color:rgba(185,28,28,.35)}
+.phase-seg.active{background:rgba(22,163,74,.10);border-color:rgba(22,163,74,.45)}
+.phase-fill{position:absolute;left:0;top:0;bottom:0;width:0%}
+.phase-seg.done .phase-fill{width:100%;background:rgba(185,28,28,.75)}
+.phase-seg.active .phase-fill{background:rgba(22,163,74,.82)}
+.phase-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 8px;font-size:12px;font-weight:700;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.phase-meta{display:flex;gap:8px;flex-wrap:wrap}
+.phase-pill{padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12)}
+.phase-pill.active{background:rgba(22,163,74,.12);border-color:rgba(22,163,74,.45)}
+.phase-pill.done{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.35)}
+.phase-pill.future{background:rgba(107,114,128,.12)}
 </style>
 </head>
 <body>
@@ -110,12 +125,23 @@
 
 <div class="panel" data-panel="monitoring" style="display:none">
   <div class="card span12">
+    <div class="card-title">Phase Progress Bar</div>
+    <div class="card-body">
+      <div class="phase-bar-wrap">
+        <div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
+          <div class="small" id="phaseTimingInfo">—</div>
+          <span class="pill mono">AUTO REFRESH 15s</span>
+        </div>
+        <div id="phaseBar" class="phase-bar"></div>
+        <div id="phaseMeta" class="phase-meta"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card span12">
     <div class="card-title">Phase Progress</div>
     <div class="card-body">
-      <div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap">
-        <div class="phase-progress" id="phaseProgress"></div>
-        <span class="pill mono">AUTO REFRESH 15s</span>
-      </div>
+      <div class="phase-progress" id="phaseProgress"></div>
     </div>
   </div>
 
@@ -191,12 +217,66 @@ let ACTIVATIONS = [];
 let ACTIONS_SHOW_ALL = false;
 let MODAL_ACTIVATION = null;
 let CURRENT_TAB = "setup";
+let SCENARIO_START_AT = null;
 
 function phaseLabel(p){ return (p.phase_code||"") + (p.title ? " — " + p.title : ""); }
 function phaseCss(status){ const s=String(status||"").toLowerCase(); if(s==="active") return "phase-active"; if(s==="closed"||s==="completed") return "phase-completed"; return "phase-upcoming"; }
 function phaseStatusText(status){ const s=String(status||"").toLowerCase(); if(s==="active") return "ACTIVE"; if(s==="closed"||s==="completed") return "COMPLETED"; return "UPCOMING"; }
 function setTab(name){ CURRENT_TAB=name; document.querySelectorAll(".tab-mini").forEach(t=>t.classList.toggle("active", t.dataset.tab===name)); document.querySelectorAll(".panel").forEach(p=>p.style.display=p.dataset.panel===name?"":"none"); }
 document.querySelectorAll(".tab-mini").forEach(t=>t.addEventListener("click", e=>{ e.preventDefault(); setTab(t.dataset.tab); }));
+
+function buildPhaseWindows(phases){
+  let cursor=0;
+  return phases.map(p=>{
+    const dur=Math.max(1, Number(p.duration_min||1));
+    const start=cursor;
+    const end=cursor+dur;
+    cursor=end;
+    return {...p, start_offset:start, end_offset:end, duration_calc:dur};
+  });
+}
+function currentElapsedMin(){
+  if(!SCENARIO_START_AT) return null;
+  const ms = Date.parse(SCENARIO_START_AT);
+  if(!Number.isFinite(ms)) return null;
+  return Math.floor((Date.now()-ms)/60000);
+}
+function renderPhaseBar(phases){
+  const bar=document.getElementById("phaseBar");
+  const meta=document.getElementById("phaseMeta");
+  const info=document.getElementById("phaseTimingInfo");
+  bar.innerHTML=""; meta.innerHTML="";
+  if(!phases.length){ info.textContent="Nessuna fase disponibile."; return; }
+  const elapsed=currentElapsedMin();
+  const windows=buildPhaseWindows(phases);
+  let remainText = elapsed===null ? "Exercise not started" : `Elapsed T+${elapsed} min`;
+  windows.forEach(p=>{
+    const state=String(p.status||"").toLowerCase();
+    const seg=document.createElement("div");
+    seg.className="phase-seg "+(state==="active"?"active":((state==="closed"||state==="completed")?"done":"future"));
+    seg.style.flex=String(p.duration_calc);
+    const fill=document.createElement("div");
+    fill.className="phase-fill";
+    if(state==="active" && elapsed!==null){
+      const progress=Math.max(0, Math.min(1, (elapsed-p.start_offset)/p.duration_calc));
+      fill.style.width=(progress*100).toFixed(1)+"%";
+      const remaining=Math.max(0, p.end_offset-elapsed);
+      remainText=`${p.phase_code} • ${remaining} min remaining`;
+    }
+    seg.appendChild(fill);
+    const label=document.createElement("div");
+    label.className="phase-label";
+    label.textContent=p.phase_code||"";
+    seg.appendChild(label);
+    bar.appendChild(seg);
+
+    const pill=document.createElement("div");
+    pill.className="phase-pill "+(state==="active"?"active":((state==="closed"||state==="completed")?"done":"future"));
+    pill.textContent=`${p.phase_code} • ${String(state||"pending").toUpperCase()}`;
+    meta.appendChild(pill);
+  });
+  info.textContent=remainText;
+}
 
 function activationFormClear(){
   CURRENT_ACTIVATION_ID="";
@@ -230,12 +310,8 @@ function activationFormSet(i){
   setTab("setup");
 }
 function fillPhaseSelect(){
-  const sel=document.getElementById("iPhase");
-  const current=sel.value||"";
-  sel.innerHTML="";
-  if(!PHASES.length){
-    const o=document.createElement("option"); o.value=""; o.textContent="No phases available"; sel.appendChild(o); sel.disabled=true; return;
-  }
+  const sel=document.getElementById("iPhase"); const current=sel.value||""; sel.innerHTML="";
+  if(!PHASES.length){ const o=document.createElement("option"); o.value=""; o.textContent="No phases available"; sel.appendChild(o); sel.disabled=true; return; }
   sel.disabled=false;
   PHASES.forEach(p=>{ const o=document.createElement("option"); o.value=p.phase_code||""; o.textContent=phaseLabel(p); sel.appendChild(o); });
   if(current && Array.from(sel.options).some(o=>o.value===current)) sel.value=current; else sel.value=PHASES[0].phase_code||"";
@@ -243,7 +319,7 @@ function fillPhaseSelect(){
 async function controlAction(payload, successMessage){
   const res=await jpost("/api/scenario/control",payload);
   await reloadAll();
-  if(res.clamped) alert(successMessage+"\n\nCorrezione automatica fase: offset finale T+"+res.final_offset);
+  if(res.clamped) alert(successMessage+"\\n\\nCorrezione automatica fase: offset finale T+"+res.final_offset);
   else alert(successMessage);
 }
 function openModal(act){
@@ -282,7 +358,15 @@ function renderTimelineBoard(){
   });
   box.querySelectorAll("[data-open]").forEach(btn=>btn.addEventListener("click", ()=>{ const act=ACTIVATIONS.find(a=>String(a.id)===String(btn.getAttribute("data-open"))); if(act) openModal(act); }));
 }
-async function loadPhases(){ const j=await jget("/api/scenario/phases"); PHASES=j.phases||[]; fillPhaseSelect(); renderPhaseProgress(); }
+async function loadScenarioMeta(){
+  try{
+    const j = await jget("/api/scenario/manage");
+    SCENARIO_START_AT = j.current?.start_at || null;
+  }catch(e){
+    SCENARIO_START_AT = null;
+  }
+}
+async function loadPhases(){ const j=await jget("/api/scenario/phases"); PHASES=j.phases||[]; fillPhaseSelect(); renderPhaseProgress(); renderPhaseBar(PHASES); }
 async function loadInjects(){
   const j=await jget("/api/scenario/injects");
   ACTIVATIONS=j.injects||[];
@@ -309,7 +393,7 @@ async function loadActions(){
   if(!rows.length){ box.innerHTML='<div class="item"><div class="small">Nessuna azione registrata.</div></div>'; return; }
   rows.forEach(a=>{ const div=document.createElement("div"); div.className="item"; div.innerHTML=`<div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap"><div><div class="h">${esc(a.action_type)}</div><div class="small">${esc(a.notes||"")}</div></div><div class="small mono">${esc(a.actor||"admin")} • ${esc(a.ts||"")}</div></div>`; box.appendChild(div); });
 }
-async function reloadAll(){ await loadPhases(); await loadInjects(); await loadActions(); }
+async function reloadAll(){ await loadScenarioMeta(); await loadPhases(); await loadInjects(); await loadActions(); }
 document.getElementById("saveInjectBtn").addEventListener("click", async()=>{ await jpost("/api/scenario/injects",{ id:CURRENT_ACTIVATION_ID||undefined, title:document.getElementById("iTitle").value, phase_code:document.getElementById("iPhase").value, kind:document.getElementById("iKind").value, source_type:document.getElementById("iSource").value, severity:document.getElementById("iSeverity").value, audience_type:document.getElementById("iAudienceType").value, audience_value:document.getElementById("iAudienceValue").value, release_offset_min:document.getElementById("iOffsetMin").value, status:document.getElementById("iStatus").value, author:document.getElementById("iAuthor").value, body:document.getElementById("iBody").value }); activationFormClear(); await reloadAll(); alert("Activation salvata."); });
 document.getElementById("refreshSetupBtn").addEventListener("click", reloadAll);
 document.getElementById("reloadActionsBtn").addEventListener("click", loadActions);
