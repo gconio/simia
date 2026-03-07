@@ -1,19 +1,30 @@
-SimIA v3.3.3 — Fix publish to player feed
+SimIA v3.4 — Scheduler engine
 
-Confirmed root cause
-- Release now was not populating events
-- Player feed reads only from events
-- The issue was a mismatch between SQL placeholders and bind parameters
-
-Fix
-- functions/api/scenario/control.js now uses:
-  VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
+What this update adds
+- New API:
+  - functions/api/scenario/run_scheduler.js
+- New Instructor control:
+  - Run Scheduler
+- Scheduler logic:
+  - reads currentScenarioId
+  - requires scenario status = live
+  - calculates elapsed minutes from start_at
+  - auto-releases all due activations with release_offset_min <= elapsed
+  - publishes them into events
+  - updates scenario_injects to released
+  - writes scenario_actions logs
 
 Install
-1) Replace functions/api/scenario/control.js
-2) Commit + Push
+1) Add functions/api/scenario/run_scheduler.js
+2) Replace instructor.html
+3) Commit + Push
 
-Verification
-1) Use Release now on an activation with audience ALL or TEAM:A
-2) Check events table
-3) Reload player.html?team=A&role=PLAYER&pid=testA1
+Recommended test
+1) Reset + seed structured scenario
+2) Start Exercise in Instructor
+3) Wait until T+ offset is due or use a low T+ activation
+4) Press Run Scheduler
+5) Verify:
+   - events populated
+   - player feed updated
+   - scenario_injects status = released
