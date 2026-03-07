@@ -1,3 +1,13 @@
+const state = await env.DB.prepare(`
+SELECT status FROM simulation_state WHERE id = 1
+`).first();
+
+if (!state || state.status !== "running") {
+  return new Response(JSON.stringify({
+    ok: true,
+    message: "scheduler paused"
+  }), { headers: { "content-type": "application/json" }});
+}
 function uuidv4(){ if (crypto && crypto.randomUUID) return crypto.randomUUID(); return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => { const r=(Math.random()*16)|0, v=c==="x"?r:(r&0x3)|0x8; return v.toString(16); }); }
 function nowIso(){ return new Date().toISOString(); }
 
