@@ -1,30 +1,29 @@
-SimIA v3.4 — Scheduler engine
+SimIA v3.5 — Auto scheduler + phase progression + ALL audience fix
 
 What this update adds
-- New API:
-  - functions/api/scenario/run_scheduler.js
-- New Instructor control:
-  - Run Scheduler
-- Scheduler logic:
-  - reads currentScenarioId
-  - requires scenario status = live
-  - calculates elapsed minutes from start_at
-  - auto-releases all due activations with release_offset_min <= elapsed
-  - publishes them into events
-  - updates scenario_injects to released
-  - writes scenario_actions logs
+- functions/api/scenario/run_scheduler.js
+  - updates current phase automatically based on elapsed time
+  - updates scenario_phases statuses: pending / active / closed
+  - updates scenarios.current_phase
+  - updates simulation_state.current_phase
+  - auto-releases due activations into events
+- functions/api/scenario/feed.js
+  - explicit ALL audience handling
+- instructor.html
+  - Auto Scheduler ON/OFF toggle
+  - scheduler polling every 15 seconds when enabled
 
 Install
-1) Add functions/api/scenario/run_scheduler.js
-2) Replace instructor.html
-3) Commit + Push
+1) Replace functions/api/scenario/run_scheduler.js
+2) Replace functions/api/scenario/feed.js
+3) Replace instructor.html
+4) Commit + Push
 
 Recommended test
-1) Reset + seed structured scenario
-2) Start Exercise in Instructor
-3) Wait until T+ offset is due or use a low T+ activation
-4) Press Run Scheduler
+1) Reset + seed scenario
+2) Start Exercise
+3) Enable Auto Scheduler
+4) Wait for T+ due activations
 5) Verify:
-   - events populated
-   - player feed updated
-   - scenario_injects status = released
+   - phases change status/color over time
+   - ALL and TEAM:A messages appear in Team A player feed
