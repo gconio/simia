@@ -1,21 +1,28 @@
-SimIA v3.1.1 — Timeline colored by phase status
+SimIA v3.2 — Instructor Start Control
 
-What changes
-- Monitoring timeline is now colored by phase status:
-  - active = green
-  - completed/closed = crimson
-  - upcoming/pending = neutral
-- Added Phase Progress bar at the top of Monitoring
-- Timeline remains minimal:
-  - phase
-  - activation
-  - T+ time
-- Details remain available in modal
+What this update adds
+- instructor.html now includes an Exercise Control panel
+- Added button:
+  - Start Exercise
+- Start uses scenario manage API:
+  action = start_live_now
+- Instructor page now shows:
+  - scenario name
+  - subtitle
+  - status
+  - current phase
+  - start time
+  - readiness check
+  - recent White Cell log
+
+Expected effect
+- pressing Start fixes the real T0 of the exercise
+- all T+ activations become synchronized to the actual start time
 
 Files included
-- activations_admin.html
+- instructor.html
 - README.txt
 
 Install
-1) Replace activations_admin.html
+1) Replace instructor.html
 2) Commit + Push
