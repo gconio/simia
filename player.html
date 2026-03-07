@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SimIA — Player</title>
+  <title>SimIA — Player Workspace</title>
   <link rel="stylesheet" href="/assets/styles.css" />
   <style>
     .sev{font-weight:800}
@@ -12,18 +12,27 @@
     .sev.RED{border-color:rgba(239,68,68,.85)}
     .kind{opacity:.9}
     .btn[disabled]{opacity:.6;cursor:not-allowed}
+    .feed-item.unread{border-left:4px solid rgba(245,158,11,.85)}
+    .feed-item.read{border-left:4px solid rgba(34,197,94,.7)}
+    .context-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+    .workspace-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+    @media (max-width: 980px){ .workspace-grid{grid-template-columns:1fr} }
+    .task-line{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+    .monoish{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
   </style>
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
-      <div class="logo">S</div>
+      <div class="logo" id="brandLogo">SI</div>
       <div>
-        <div class="brand-title">SimIA</div>
-        <div class="brand-sub" id="subline">Player</div>
+        <div class="brand-title" id="brandTitle">SimIA</div>
+        <div class="brand-sub" id="subline">Player Workspace</div>
       </div>
     </div>
     <div class="session">
+      <a class="btn ghost" href="/index.html">Home</a>
+      <a class="btn ghost" href="/access.html">Access</a>
       <span class="pill mono" id="who">—</span>
       <span class="pill mono" id="phaseBadge">PHASE-—</span>
       <button class="btn ghost" id="refreshBtn">Refresh</button>
@@ -35,77 +44,116 @@
       <div class="grid">
 
         <div class="card span12">
-          <div class="card-title">Live Feed</div>
+          <div class="card-title">Exercise Context</div>
           <div class="card-body">
-            <div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-              <div class="small">
-                Audience: <span class="mono">ALL</span>,
-                <span class="mono" id="audTeam">TEAM:—</span>,
-                <span class="mono" id="audRole">ROLE:—</span>
+            <div class="context-grid">
+              <div class="item">
+                <div class="lbl">Role / Team</div>
+                <div class="h" id="ctxWho">—</div>
               </div>
-              <span class="pill mono" id="count">—</span>
+              <div class="item">
+                <div class="lbl">Current phase</div>
+                <div class="h" id="ctxPhase">—</div>
+              </div>
+              <div class="item">
+                <div class="lbl">Audience</div>
+                <div class="h" id="ctxAudience">—</div>
+              </div>
+              <div class="item">
+                <div class="lbl">Feed items</div>
+                <div class="h" id="ctxCount">0</div>
+              </div>
             </div>
-
-            <div class="sep"></div>
-
-            <div id="pidWarn" class="notice" style="display:none;margin-bottom:12px">
-              <div class="h">Link non personalizzato</div>
-              <div class="small">Manca <span class="mono">pid</span>. Il tasto “LETTO” non sarà disponibile. Usa il link generato dalla Console Admin.</div>
-            </div>
-
-            <div id="feed" class="stack"></div>
           </div>
         </div>
 
         <div class="card span12">
-          <div class="card-title">Workspace (Output analitici)</div>
           <div class="card-body">
-
-            <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end">
-              <div style="min-width:220px;flex:1">
-                <label class="lbl">Output type</label>
-                <select class="input" id="outType">
-                  <option>NOTE</option>
-                  <option>INDICATORS</option>
-                  <option>ACH</option>
-                  <option>SUMMARY</option>
-                  <option>CP1</option>
-                  <option>CP2</option>
-                  <option>CP3</option>
-                  <option>CP4</option>
-                </select>
-              </div>
-
-              <div style="min-width:220px;flex:2">
-                <label class="lbl">Title (opzionale)</label>
-                <input class="input" id="outTitle" placeholder="Titolo..." />
-              </div>
-
-              <div class="row" style="gap:8px;flex-wrap:wrap">
-                <button class="btn primary" id="outSaveBtn">Salva</button>
-                <button class="btn ghost" id="outReloadBtn">Ricarica storico</button>
-              </div>
-
-              <span class="pill mono" id="outPhase">PHASE-—</span>
-            </div>
-
-            <div class="sep"></div>
-
-            <label class="lbl">Content</label>
-            <textarea class="input" id="outContent" rows="8" placeholder="Scrivi qui il tuo output analitico..."></textarea>
-
-            <div class="sep"></div>
-
-            <div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+            <div class="workspace-grid">
               <div>
-                <div class="h">Storico (team + fase corrente)</div>
-                <div class="small">Mostra gli ultimi output salvati per questo team e questa fase.</div>
-              </div>
-              <span class="pill mono" id="outCount">—</span>
-            </div>
+                <div class="card" style="margin-bottom:16px">
+                  <div class="card-title">Situation Feed</div>
+                  <div class="card-body">
+                    <div id="pidWarn" class="notice" style="display:none;margin-bottom:12px">
+                      <div class="h">Link non personalizzato</div>
+                      <div class="small">Manca <span class="mono">pid</span>. Il tasto “LETTO” non sarà disponibile. Usa il link generato dalla Console Admin.</div>
+                    </div>
+                    <div id="feed" class="stack"></div>
+                  </div>
+                </div>
 
-            <div class="sep"></div>
-            <div id="outList" class="stack"></div>
+                <div class="card">
+                  <div class="card-title">Submit Output</div>
+                  <div class="card-body">
+                    <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end">
+                      <div style="min-width:220px;flex:1">
+                        <label class="lbl">Output type</label>
+                        <select class="input" id="outType">
+                          <option>NOTE</option>
+                          <option>INDICATORS</option>
+                          <option>ACH</option>
+                          <option>SUMMARY</option>
+                          <option>CP1</option>
+                          <option>CP2</option>
+                          <option>CP3</option>
+                          <option>CP4</option>
+                        </select>
+                      </div>
+                      <div style="min-width:220px;flex:2">
+                        <label class="lbl">Title</label>
+                        <input class="input" id="outTitle" placeholder="Titolo..." />
+                      </div>
+                      <div class="row" style="gap:8px;flex-wrap:wrap">
+                        <button class="btn primary" id="outSaveBtn">Salva</button>
+                        <button class="btn ghost" id="outReloadBtn">Ricarica storico</button>
+                      </div>
+                      <span class="pill mono" id="outPhase">PHASE-—</span>
+                    </div>
+
+                    <div class="sep"></div>
+                    <label class="lbl">Content</label>
+                    <textarea class="input" id="outContent" rows="8" placeholder="Scrivi qui il tuo output analitico..."></textarea>
+
+                    <div class="sep"></div>
+                    <div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+                      <div>
+                        <div class="h">Storico output</div>
+                        <div class="small">Ultimi output del team nella fase corrente.</div>
+                      </div>
+                      <span class="pill mono" id="outCount">—</span>
+                    </div>
+                    <div class="sep"></div>
+                    <div id="outList" class="stack"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div class="card" style="margin-bottom:16px">
+                  <div class="card-title">Task / Priorità</div>
+                  <div class="card-body">
+                    <div class="small">Mostra task, alert e item non letti utili all’azione immediata.</div>
+                    <div class="sep"></div>
+                    <div id="taskList" class="stack"></div>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <div class="card-title">Reference</div>
+                  <div class="card-body">
+                    <div class="item">
+                      <div class="lbl">Nota operativa</div>
+                      <div class="small">Usa il feed per seguire gli inject. Usa il workspace per produrre output analitici. Marca “LETTO” gli eventi gestiti.</div>
+                    </div>
+                    <div class="sep"></div>
+                    <div class="item">
+                      <div class="lbl">Sessione</div>
+                      <div class="small monoish" id="sessionInfo">—</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -113,17 +161,17 @@
     </section>
   </main>
 
+<script src="/assets/theme.js"></script>
+<script src="/assets/branding.js"></script>
 <script>
 function esc(s){
   return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
     .replaceAll('"',"&quot;").replaceAll("'","&#39;");
 }
-
 function getParam(name, def){
   const u = new URL(location.href);
   return (u.searchParams.get(name) || def || "").toString();
 }
-
 async function jget(url){
   const r = await fetch(url, { headers: { "Accept":"application/json" } });
   const t = await r.text();
@@ -131,7 +179,6 @@ async function jget(url){
   if(!r.ok) throw new Error(j?.error || ("HTTP "+r.status));
   return j;
 }
-
 async function jpost(url, body){
   const r = await fetch(url, {
     method:"POST",
@@ -149,17 +196,17 @@ const ROLE = (getParam("role","PLAYER") || "PLAYER").trim().toUpperCase();
 const PID  = (getParam("pid","") || "").trim();
 
 document.getElementById("who").textContent = `${ROLE} / TEAM:${TEAM}${PID ? " / "+PID : ""}`;
-document.getElementById("subline").textContent = `Player — ${ROLE} — Team ${TEAM}`;
-document.getElementById("audTeam").textContent = `TEAM:${TEAM}`;
-document.getElementById("audRole").textContent = `ROLE:${ROLE}`;
+document.getElementById("subline").textContent = `Player Workspace — ${ROLE} — Team ${TEAM}`;
+document.getElementById("ctxWho").textContent = `${ROLE} / TEAM:${TEAM}`;
+document.getElementById("ctxAudience").textContent = `ALL • TEAM:${TEAM} • ROLE:${ROLE}`;
+document.getElementById("sessionInfo").textContent = PID ? `PID ${PID}` : `anonymous session`;
 
 const warn = document.getElementById("pidWarn");
 if(warn) warn.style.display = PID ? "none" : "";
 
 let CURRENT_PHASE = null;
-let lastSig = "";
+let ACKED = loadAcked();
 
-// ACK local state (UX)
 function ackKey(){ return PID ? `simia.ack.${PID}` : "simia.ack.anonymous"; }
 function loadAcked(){
   try{
@@ -171,30 +218,39 @@ function loadAcked(){
 function saveAcked(set){
   try{ localStorage.setItem(ackKey(), JSON.stringify(Array.from(set))); }catch(e){}
 }
-let ACKED = loadAcked();
 
-function signature(events){
-  return (events || []).slice(0,30).map(e=>e.id).join("|");
-}
+function renderTasks(events){
+  const box = document.getElementById("taskList");
+  const arr = (events || []).filter(ev => {
+    const kind = String(ev.kind||"").toUpperCase();
+    return kind === "TASK" || kind === "ALERT" || !ACKED.has(ev.id);
+  }).slice(0,8);
 
-async function refreshPhaseAndFeed(){
-  const j = await jget(`/api/scenario/feed?team=${encodeURIComponent(TEAM)}&role=${encodeURIComponent(ROLE)}`);
-  if(j.current_phase) CURRENT_PHASE = String(j.current_phase).toUpperCase();
+  if(!arr.length){
+    box.innerHTML = '<div class="item"><div class="small">Nessuna priorità immediata.</div></div>';
+    return;
+  }
 
-  const pb = document.getElementById("phaseBadge");
-  if(pb && CURRENT_PHASE) pb.textContent = CURRENT_PHASE;
-
-  const op = document.getElementById("outPhase");
-  if(op && CURRENT_PHASE) op.textContent = CURRENT_PHASE;
-
-  return j;
+  box.innerHTML = "";
+  arr.forEach(ev=>{
+    const kind = String(ev.kind||"BROADCAST").toUpperCase();
+    const sev = String(ev.severity||"INFO").toUpperCase();
+    const div = document.createElement("div");
+    div.className = "task-line";
+    div.innerHTML = `<div class="h">${esc(ev.title || kind)}</div>
+      <div class="small" style="margin-top:4px">
+        <span class="pill mono">${esc(kind)}</span>
+        <span class="pill mono">${esc(sev)}</span>
+        ${ev.phase ? `<span class="pill mono">${esc(ev.phase)}</span>` : ""}
+      </div>`;
+    box.appendChild(div);
+  });
 }
 
 function renderFeed(events){
   const box = document.getElementById("feed");
-  const count = document.getElementById("count");
   const arr = Array.isArray(events) ? events : [];
-  count.textContent = `${arr.length} events`;
+  document.getElementById("ctxCount").textContent = String(arr.length);
 
   if(!arr.length){
     box.innerHTML = `<div class="item"><div class="h">Nessun evento</div><div class="small">In attesa di Broadcast/Inject…</div></div>`;
@@ -209,7 +265,7 @@ function renderFeed(events){
     const isAcked = ACKED.has(ev.id);
 
     const div = document.createElement("div");
-    div.className = "item";
+    div.className = "item feed-item " + (isAcked ? "read" : "unread");
     div.innerHTML = `
       <div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">
         <div style="flex:1;min-width:260px">
@@ -262,7 +318,6 @@ function renderFeed(events){
   }
 }
 
-// Outputs (workspace)
 function renderOutputs(items){
   const box = document.getElementById("outList");
   const cnt = document.getElementById("outCount");
@@ -308,10 +363,8 @@ async function loadOutputs(){
   const type = (document.getElementById("outType")?.value || "NOTE").toUpperCase();
   const phase = CURRENT_PHASE || "";
   const url = `/api/outputs?team=${encodeURIComponent(TEAM)}&phase=${encodeURIComponent(phase)}&type=${encodeURIComponent(type)}&limit=50`;
-
   const box = document.getElementById("outList");
   if(box) box.innerHTML = `<div class="item"><div class="h">Loading…</div><div class="small">Caricamento storico.</div></div>`;
-
   const j = await jget(url);
   renderOutputs(j.items || []);
 }
@@ -319,63 +372,48 @@ async function loadOutputs(){
 async function saveOutput(){
   const type = (document.getElementById("outType")?.value || "NOTE").toUpperCase();
   const title = (document.getElementById("outTitle")?.value || "").trim();
-  const content = (document.getElementById("outContent")?.value || "").toString();
+  const content = (document.getElementById("outContent")?.value || "").trim();
+  if(!content){ alert("Inserisci un contenuto."); return; }
 
-  if(!content.trim()){
-    alert("Inserisci Content.");
-    return;
-  }
-
-  const payload = {
+  await jpost("/api/outputs", {
+    session: "player",
+    phase: CURRENT_PHASE || "",
     team: TEAM,
     role: ROLE,
     participant_id: PID || null,
-    phase: CURRENT_PHASE || null,
     output_type: type,
     title,
     content
-  };
+  });
 
-  await jpost("/api/outputs", payload);
-
-  document.getElementById("outTitle").value = "";
   document.getElementById("outContent").value = "";
-
   await loadOutputs();
   alert("Output salvato.");
 }
 
-function bindWorkspace(){
-  document.getElementById("outSaveBtn")?.addEventListener("click", () => saveOutput().catch(e => alert("Errore save: " + e)));
-  document.getElementById("outReloadBtn")?.addEventListener("click", () => loadOutputs().catch(e => alert("Errore load: " + e)));
-  document.getElementById("outType")?.addEventListener("change", () => loadOutputs().catch(()=>{}));
+async function refreshPhaseAndFeed(){
+  const j = await jget(`/api/scenario/feed?team=${encodeURIComponent(TEAM)}&role=${encodeURIComponent(ROLE)}`);
+  if(j.current_phase) CURRENT_PHASE = String(j.current_phase).toUpperCase();
+  document.getElementById("phaseBadge").textContent = CURRENT_PHASE || "PHASE-—";
+  document.getElementById("ctxPhase").textContent = CURRENT_PHASE || "—";
+  document.getElementById("outPhase").textContent = CURRENT_PHASE || "PHASE-—";
+  renderFeed(j.events || []);
+  renderTasks(j.events || []);
 }
 
-// main refresh loop
 async function refresh(){
-  try{
-    const j = await refreshPhaseAndFeed();
-    const events = Array.isArray(j.events) ? j.events : [];
-    const sig = signature(events);
-    if(sig !== lastSig){
-      lastSig = sig;
-      renderFeed(events);
-    } else {
-      document.getElementById("count").textContent = `${events.length} events`;
-    }
-  }catch(e){
-    document.getElementById("feed").innerHTML =
-      `<div class="item"><div class="h">Errore</div><div class="small mono">${esc(String(e))}</div></div>`;
-  }
+  await refreshPhaseAndFeed();
+  await loadOutputs();
 }
 
-document.getElementById("refreshBtn").addEventListener("click", refresh);
+document.getElementById("refreshBtn").addEventListener("click", ()=>refresh().catch(e=>alert(String(e))));
+document.getElementById("outSaveBtn").addEventListener("click", ()=>saveOutput().catch(e=>alert(String(e))));
+document.getElementById("outReloadBtn").addEventListener("click", ()=>loadOutputs().catch(e=>alert(String(e))));
+document.getElementById("outType").addEventListener("change", ()=>loadOutputs().catch(e=>alert(String(e))));
 
-bindWorkspace();
-refresh().then(loadOutputs).catch(()=>{});
-setInterval(refresh, 10000);
+refresh().catch(e=>{
+  document.getElementById("feed").innerHTML = `<div class="item"><div class="h">Errore</div><div class="small">${esc(String(e))}</div></div>`;
+});
 </script>
-<script src="/assets/theme.js"></script>
-<script src="/assets/branding.js"></script>
 </body>
 </html>

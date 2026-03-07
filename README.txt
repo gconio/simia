@@ -1,28 +1,22 @@
-SimIA v3.2 — Instructor Start Control
+SimIA v3.3 — Player Workspace Foundation
 
-What this update adds
-- instructor.html now includes an Exercise Control panel
-- Added button:
-  - Start Exercise
-- Start uses scenario manage API:
-  action = start_live_now
-- Instructor page now shows:
-  - scenario name
-  - subtitle
-  - status
-  - current phase
-  - start time
-  - readiness check
-  - recent White Cell log
-
-Expected effect
-- pressing Start fixes the real T0 of the exercise
-- all T+ activations become synchronized to the actual start time
+What changes
+- player.html redesigned as a workspace
+- Added:
+  - Exercise Context header
+  - Situation Feed
+  - Task / Priorità side panel
+  - Submit Output workspace
+  - Output history
+- Preserved:
+  - ACK / LETTO
+  - Outputs API integration
+  - Scenario feed integration
 
 Files included
-- instructor.html
+- player.html
 - README.txt
 
 Install
-1) Replace instructor.html
+1) Replace player.html
 2) Commit + Push
