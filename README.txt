@@ -1,16 +1,15 @@
-SimIA v3.6.3 — Alternating activation markers on phase bar
+SimIA v3.6.4 — Marker direction + phase-clamped positioning
 
 Files included
 - activations_admin.html
 - README.txt
 
-What changes
-- Adds activation markers on the phase progress bar in Activations / Monitoring
-- Markers are labeled A1, A2, A3...
-- Odd activations are shown above the bar
-- Even activations are shown below the bar
-- Marker colors reflect status:
-  - green = released
-  - neutral = scheduled/queued
-  - red = cancelled
-- Clicking a marker opens the activation detail modal
+Fixes
+- Bottom markers (A2, A4, ...) now point upward toward the phase bar
+- Activation markers are now clamped inside their own phase window
+- Marker position respects the phase assigned to the activation
+- Click on marker still opens the activation modal
+
+Install
+1) Replace activations_admin.html
+2) Commit + Push

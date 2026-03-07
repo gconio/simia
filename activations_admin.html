@@ -39,7 +39,7 @@
 .marker-layer.bottom{bottom:0;height:28px}
 .act-marker{position:absolute;transform:translateX(-50%);pointer-events:auto;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
 .marker-layer.top .act-marker{bottom:0}
-.marker-layer.bottom .act-marker{top:0}
+.marker-layer.bottom .act-marker{top:0;flex-direction:column-reverse}
 .act-marker .tag{font-size:11px;font-weight:800;line-height:1;padding:3px 6px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(17,17,17,.92)}
 .act-marker .stem{width:2px;height:14px;background:rgba(255,255,255,.55)}
 .act-marker.released .tag{color:#22c55e;border-color:rgba(34,197,94,.45)}
@@ -121,33 +121,80 @@ function esc(s){ return String(s||"").replaceAll("&","&amp;").replaceAll("<","&l
 async function jget(url){ const r=await fetch(url,{headers:{Accept:"application/json"}}); const t=await r.text(); let j; try{j=JSON.parse(t)}catch{j={raw:t}} if(!r.ok) throw new Error(j?.error||("HTTP "+r.status)); return j; }
 async function jpost(url,body){ const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(body)}); const t=await r.text(); let j; try{j=JSON.parse(t)}catch{j={raw:t}} if(!r.ok) throw new Error(j?.error||("HTTP "+r.status)); return j; }
 async function jdel(url){ const r=await fetch(url,{method:"DELETE"}); const t=await r.text(); let j; try{j=JSON.parse(t)}catch{j={raw:t}} if(!r.ok) throw new Error(j?.error||("HTTP "+r.status)); return j; }
+
 let CURRENT_ACTIVATION_ID="", PHASES=[], ACTIVATIONS=[], ACTIONS_SHOW_ALL=false, MODAL_ACTIVATION=null, CURRENT_TAB="setup", SCENARIO_START_AT=null;
+
 function phaseLabel(p){ return (p.phase_code||"") + (p.title ? " — " + p.title : ""); }
 function phaseCss(status){ const s=String(status||"").toLowerCase(); if(s==="active") return "phase-active"; if(s==="closed"||s==="completed") return "phase-completed"; return "phase-upcoming"; }
 function setTab(name){ CURRENT_TAB=name; document.querySelectorAll(".tab-mini").forEach(t=>t.classList.toggle("active", t.dataset.tab===name)); document.querySelectorAll(".panel").forEach(p=>p.style.display=p.dataset.panel===name?"":"none"); }
 document.querySelectorAll(".tab-mini").forEach(t=>t.addEventListener("click", e=>{ e.preventDefault(); setTab(t.dataset.tab); }));
-function buildPhaseWindows(phases){ let cursor=0; return phases.map(p=>{ const dur=Math.max(1,Number(p.duration_min||1)); const start=cursor; const end=cursor+dur; cursor=end; return {...p, start_offset:start, end_offset:end, duration_calc:dur}; }); }
+
+function buildPhaseWindows(phases){
+  let cursor=0;
+  return phases.map(p=>{
+    const dur=Math.max(1,Number(p.duration_min||1));
+    const start=cursor;
+    const end=cursor+dur;
+    cursor=end;
+    return {...p, start_offset:start, end_offset:end, duration_calc:dur};
+  });
+}
 function totalDuration(phases){ return buildPhaseWindows(phases).reduce((m,p)=>Math.max(m,p.end_offset),0) || 1; }
 function currentElapsedMin(){ if(!SCENARIO_START_AT) return null; const ms=Date.parse(SCENARIO_START_AT); if(!Number.isFinite(ms)) return null; return Math.floor((Date.now()-ms)/60000); }
+
+function phaseWindowForActivation(act, windows){
+  const phase = windows.find(p=>String(p.phase_code||"")===String(act.phase_code||""));
+  if(!phase) return null;
+  return phase;
+}
+
+function activationPositionPct(act, windows, total){
+  const phase = phaseWindowForActivation(act, windows);
+  if(!phase){
+    return Math.max(0, Math.min(100, (Number(act.release_offset_min||0) / total) * 100));
+  }
+  const raw = Number(act.release_offset_min || 0);
+  const clamped = Math.max(phase.start_offset, Math.min(phase.end_offset, raw));
+  return Math.max(0, Math.min(100, (clamped / total) * 100));
+}
+
 function renderPhaseBar(phases){
   const bar=document.getElementById("phaseBar"), info=document.getElementById("phaseTimingInfo"), top=document.getElementById("markerTop"), bottom=document.getElementById("markerBottom");
   bar.innerHTML=""; top.innerHTML=""; bottom.innerHTML="";
   if(!phases.length){ info.textContent="Nessuna fase disponibile."; return; }
-  const elapsed=currentElapsedMin(); const windows=buildPhaseWindows(phases); const total=totalDuration(phases);
+
+  const elapsed=currentElapsedMin();
+  const windows=buildPhaseWindows(phases);
+  const total=totalDuration(phases);
   let remainText=elapsed===null?"Exercise not started":`Elapsed T+${elapsed} min`;
+
   windows.forEach(p=>{
     const state=String(p.status||"").toLowerCase();
-    const seg=document.createElement("div"); seg.className="phase-seg "+(state==="active"?"active":((state==="closed"||state==="completed")?"done":"future")); seg.style.flex=String(p.duration_calc);
-    const fill=document.createElement("div"); fill.className="phase-fill";
-    if(state==="active"&&elapsed!==null){ const progress=Math.max(0,Math.min(1,(elapsed-p.start_offset)/p.duration_calc)); fill.style.width=(progress*100).toFixed(1)+"%"; const remaining=Math.max(0,p.end_offset-elapsed); remainText=`${p.phase_code} • ${remaining} min remaining`; }
+    const seg=document.createElement("div");
+    seg.className="phase-seg "+(state==="active"?"active":((state==="closed"||state==="completed")?"done":"future"));
+    seg.style.flex=String(p.duration_calc);
+
+    const fill=document.createElement("div");
+    fill.className="phase-fill";
+    if(state==="active"&&elapsed!==null){
+      const progress=Math.max(0,Math.min(1,(elapsed-p.start_offset)/p.duration_calc));
+      fill.style.width=(progress*100).toFixed(1)+"%";
+      const remaining=Math.max(0,p.end_offset-elapsed);
+      remainText=`${p.phase_code} • ${remaining} min remaining`;
+    }
     seg.appendChild(fill);
-    const label=document.createElement("div"); label.className="phase-label"; label.innerHTML=`<div class="code">${esc(p.phase_code||"")}</div><div class="state">${esc(state.toUpperCase())}</div>`; seg.appendChild(label);
+
+    const label=document.createElement("div");
+    label.className="phase-label";
+    label.innerHTML=`<div class="code">${esc(p.phase_code||"")}</div><div class="state">${esc(state.toUpperCase())}</div>`;
+    seg.appendChild(label);
     bar.appendChild(seg);
   });
   info.textContent=remainText;
+
   const ordered=[...ACTIVATIONS].sort((a,b)=>Number(a.release_offset_min||0)-Number(b.release_offset_min||0)||String(a.id).localeCompare(String(b.id)));
   ordered.forEach((a, idx)=>{
-    const pos=Math.max(0, Math.min(100, (Number(a.release_offset_min||0)/total)*100 ));
+    const pos=activationPositionPct(a, windows, total);
     const layer = idx % 2 === 0 ? top : bottom;
     const st=String(a.status||"").toLowerCase();
     const cls = st==="released" ? "released" : (st==="cancelled" ? "cancelled" : "scheduled");
@@ -155,11 +202,12 @@ function renderPhaseBar(phases){
     mk.className="act-marker "+cls;
     mk.style.left=pos+"%";
     mk.innerHTML=`<div class="tag">A${idx+1}</div><div class="stem"></div>`;
-    mk.title=`A${idx+1} • ${a.title||""} • T+${a.release_offset_min||0}`;
+    mk.title=`A${idx+1} • ${a.title||""} • ${a.phase_code||""} • T+${a.release_offset_min||0}`;
     mk.addEventListener("click", ()=>openModal(a));
     layer.appendChild(mk);
   });
 }
+
 function activationFormClear(){ CURRENT_ACTIVATION_ID=""; document.getElementById("iTitle").value=""; if(PHASES.length) document.getElementById("iPhase").value=PHASES[0].phase_code||""; document.getElementById("iKind").value="INJECT"; document.getElementById("iSource").value="OSINT"; document.getElementById("iSeverity").value="INFO"; document.getElementById("iAudienceType").value="ALL"; document.getElementById("iAudienceValue").value="ALL"; document.getElementById("iOffsetMin").value="0"; document.getElementById("iStatus").value="draft"; document.getElementById("iAuthor").value="admin"; document.getElementById("iBody").value=""; document.getElementById("activationEditorState").textContent="NEW ACTIVATION"; }
 function activationFormSet(i){ CURRENT_ACTIVATION_ID=i.id||""; document.getElementById("iTitle").value=i.title||""; document.getElementById("iPhase").value=i.phase_code||""; document.getElementById("iKind").value=i.kind||"INJECT"; document.getElementById("iSource").value=i.source_type||"OSINT"; document.getElementById("iSeverity").value=i.severity||"INFO"; document.getElementById("iAudienceType").value=i.audience_type||"ALL"; document.getElementById("iAudienceValue").value=i.audience_value||"ALL"; document.getElementById("iOffsetMin").value=i.release_offset_min||0; document.getElementById("iStatus").value=i.status||"draft"; document.getElementById("iAuthor").value=i.author||"admin"; document.getElementById("iBody").value=i.body||""; document.getElementById("activationEditorState").textContent="EDITING: "+(i.title||""); setTab("setup"); }
 function fillPhaseSelect(){ const sel=document.getElementById("iPhase"); const current=sel.value||""; sel.innerHTML=""; if(!PHASES.length){ const o=document.createElement("option"); o.value=""; o.textContent="No phases available"; sel.appendChild(o); sel.disabled=true; return; } sel.disabled=false; PHASES.forEach(p=>{ const o=document.createElement("option"); o.value=p.phase_code||""; o.textContent=phaseLabel(p); sel.appendChild(o); }); if(current && Array.from(sel.options).some(o=>o.value===current)) sel.value=current; else sel.value=PHASES[0].phase_code||""; }
@@ -173,6 +221,7 @@ document.getElementById("mShiftBtn").addEventListener("click", async()=>{ if(!MO
 document.getElementById("mRetargetBtn").addEventListener("click", async()=>{ if(!MODAL_ACTIVATION) return; const audience_type=prompt("Nuovo audience_type (ALL / TEAM / ROLE / USER)", MODAL_ACTIVATION.audience_type||"TEAM"); if(!audience_type) return; const audience_value=prompt("Nuovo audience_value", MODAL_ACTIVATION.audience_value||"A"); if(!audience_value) return; await controlAction({action:"retarget",inject_id:MODAL_ACTIVATION.id,audience_type,audience_value,actor:"white-cell"},"Activation retargeted."); closeModal(); });
 document.getElementById("mCancelBtn").addEventListener("click", async()=>{ if(!MODAL_ACTIVATION) return; if(!confirm("Cancellare questa activation?")) return; await controlAction({action:"cancel",inject_id:MODAL_ACTIVATION.id,actor:"white-cell"},"Activation cancellata."); closeModal(); });
 document.getElementById("mDeleteBtn").addEventListener("click", async()=>{ if(!MODAL_ACTIVATION) return; if(!confirm("Eliminare questa activation?")) return; await jdel("/api/scenario/injects?id="+encodeURIComponent(MODAL_ACTIVATION.id)); closeModal(); await reloadAll(); });
+
 function renderTimelineBoard(){ const box=document.getElementById("timelineBoard"); box.innerHTML=""; if(!PHASES.length){ box.innerHTML='<div class="item timeline-col"><div class="small">Nessuna fase disponibile.</div></div>'; return; } PHASES.forEach(p=>{ const col=document.createElement("div"); col.className="item timeline-col "+phaseCss(p.status); const acts=ACTIVATIONS.filter(a=>String(a.phase_code||"")===String(p.phase_code||"")).sort((a,b)=>Number(a.release_offset_min||0)-Number(b.release_offset_min||0)); const lines=acts.length?acts.map(a=>`<div class="timeline-line"><div><div class="timeline-time">T+${esc(a.release_offset_min||0)}</div><div>${esc(a.title||"")}</div></div><div class="row" style="gap:6px;align-items:center">${String(a.status||"").toLowerCase()==="released"?`<span class="sent-check">✓</span>`:""}<button class="btn ghost icon-btn" data-open="${esc(a.id)}" title="Dettagli">ⓘ</button></div></div>`).join(""):'<div class="small" style="margin-top:8px">Nessuna activation.</div>'; col.innerHTML=`<div class="h">${esc(phaseLabel(p))}</div><div class="small" style="margin-top:6px"><span class="pill mono">${esc(String(p.status||"").toUpperCase())}</span></div><div style="margin-top:8px">${lines}</div>`; box.appendChild(col); }); box.querySelectorAll("[data-open]").forEach(btn=>btn.addEventListener("click", ()=>{ const act=ACTIVATIONS.find(a=>String(a.id)===String(btn.getAttribute("data-open"))); if(act) openModal(act); })); }
 async function loadScenarioMeta(){ try{ const j=await jget("/api/scenario/manage"); SCENARIO_START_AT=j.current?.start_at||null; }catch(e){ SCENARIO_START_AT=null; } }
 async function loadPhases(){ const j=await jget("/api/scenario/phases"); PHASES=j.phases||[]; fillPhaseSelect(); renderPhaseBar(PHASES); }
