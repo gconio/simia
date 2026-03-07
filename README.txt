@@ -1,15 +1,16 @@
-SimIA v3.1 — Activations split: Setup + Monitoring
+SimIA v3.1.1 — Timeline colored by phase status
 
 What changes
-- Activations page is split into:
-  - Setup
-  - Monitoring
-- Timeline is simplified and shows only:
+- Monitoring timeline is now colored by phase status:
+  - active = green
+  - completed/closed = crimson
+  - upcoming/pending = neutral
+- Added Phase Progress bar at the top of Monitoring
+- Timeline remains minimal:
   - phase
   - activation
-  - time (T+)
-- Details are opened on demand in a modal
-- White Cell controls are available inside the detail modal
+  - T+ time
+- Details remain available in modal
 
 Files included
 - activations_admin.html

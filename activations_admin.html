@@ -9,7 +9,7 @@
 .tabs-mini{display:flex;gap:8px;flex-wrap:wrap}
 .tab-mini{padding:8px 12px;border:1px solid rgba(255,255,255,.15);border-radius:10px;cursor:pointer;text-decoration:none}
 .tab-mini.active{outline:2px solid rgba(255,255,255,.18)}
-.timeline-col{min-width:280px}
+.timeline-col{min-width:280px;border-left:4px solid #6b7280}
 .timeline-line{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08)}
 .timeline-time{font-family:ui-monospace, SFMono-Regular, Menlo, monospace;white-space:nowrap}
 .icon-btn{min-width:auto;padding:6px 10px}
@@ -17,6 +17,16 @@
 .modal-backdrop.show{display:flex}
 .modal-card{width:min(760px,92vw);max-height:85vh;overflow:auto;background:#111;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:16px}
 .small-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.phase-upcoming{border-left:4px solid #6b7280}
+.phase-active{border-left:4px solid #16a34a;background:rgba(22,163,74,.08)}
+.phase-completed{border-left:4px solid #b91c1c;background:rgba(185,28,28,.08)}
+.phase-status-pill{font-weight:600}
+.phase-progress{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.phase-progress-step{padding:8px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12)}
+.phase-progress-step.active{background:rgba(22,163,74,.12);border-color:rgba(22,163,74,.45)}
+.phase-progress-step.completed{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.45)}
+.phase-progress-step.upcoming{background:rgba(107,114,128,.10)}
+.phase-progress-arrow{opacity:.55}
 </style>
 </head>
 <body>
@@ -99,11 +109,18 @@
 
 <div class="panel" data-panel="monitoring" style="display:none">
   <div class="card span12">
+    <div class="card-title">Phase Progress</div>
+    <div class="card-body">
+      <div class="phase-progress" id="phaseProgress"></div>
+    </div>
+  </div>
+
+  <div class="card span12">
     <div class="card-title">Timeline</div>
     <div class="card-body">
       <div class="notice">
         <div class="h">Minimal view</div>
-        <div class="small">Mostra solo fase, attivazione e tempo. Apri il dettaglio con l’icona dedicata.</div>
+        <div class="small">Colorazione per stato fase: verde attiva, cremisi conclusa, neutro futura.</div>
       </div>
       <div class="sep"></div>
       <div id="timelineBoard" class="row" style="gap:12px;align-items:flex-start;overflow-x:auto;flex-wrap:nowrap"></div>
@@ -171,6 +188,18 @@ let ACTIONS_SHOW_ALL = false;
 let MODAL_ACTIVATION = null;
 
 function phaseLabel(p){ return (p.phase_code||"") + (p.title ? " — " + p.title : ""); }
+function phaseCss(status){
+  const s = String(status||"").toLowerCase();
+  if(s==="active") return "phase-active";
+  if(s==="closed" || s==="completed") return "phase-completed";
+  return "phase-upcoming";
+}
+function phaseStatusText(status){
+  const s = String(status||"").toLowerCase();
+  if(s==="active") return "ACTIVE";
+  if(s==="closed" || s==="completed") return "COMPLETED";
+  return "UPCOMING";
+}
 function setTab(name){
   document.querySelectorAll(".tab-mini").forEach(t=>t.classList.toggle("active", t.dataset.tab===name));
   document.querySelectorAll(".panel").forEach(p=>p.style.display = p.dataset.panel===name ? "" : "none");
@@ -263,6 +292,27 @@ document.getElementById("mRetargetBtn").addEventListener("click", async ()=>{ if
 document.getElementById("mCancelBtn").addEventListener("click", async ()=>{ if(!MODAL_ACTIVATION) return; if(!confirm("Cancellare questa activation?")) return; await controlAction({action:"cancel", inject_id:MODAL_ACTIVATION.id, actor:"white-cell"}, "Activation cancellata."); closeModal(); });
 document.getElementById("mDeleteBtn").addEventListener("click", async ()=>{ if(!MODAL_ACTIVATION) return; if(!confirm("Eliminare questa activation?")) return; await jdel("/api/scenario/injects?id=" + encodeURIComponent(MODAL_ACTIVATION.id)); closeModal(); await reloadAll(); });
 
+function renderPhaseProgress(){
+  const box = document.getElementById("phaseProgress");
+  box.innerHTML = "";
+  if(!PHASES.length){
+    box.innerHTML = '<div class="small">Nessuna fase disponibile.</div>';
+    return;
+  }
+  PHASES.forEach((p, idx)=>{
+    const step = document.createElement("div");
+    step.className = "phase-progress-step " + (String(p.status||"").toLowerCase()==="active" ? "active" : (String(p.status||"").toLowerCase()==="closed" ? "completed" : "upcoming"));
+    step.innerHTML = `<div class="small mono">${esc(p.phase_code || "")}</div><div class="small">${esc(phaseStatusText(p.status))}</div>`;
+    box.appendChild(step);
+    if(idx < PHASES.length-1){
+      const arrow = document.createElement("div");
+      arrow.className = "phase-progress-arrow";
+      arrow.textContent = "→";
+      box.appendChild(arrow);
+    }
+  });
+}
+
 function renderTimelineBoard(){
   const box=document.getElementById("timelineBoard");
   box.innerHTML="";
@@ -272,7 +322,7 @@ function renderTimelineBoard(){
   }
   PHASES.forEach(p=>{
     const col=document.createElement("div");
-    col.className="item timeline-col";
+    col.className="item timeline-col " + phaseCss(p.status);
     const acts = ACTIVATIONS.filter(a=>String(a.phase_code||"")===String(p.phase_code||"")).sort((a,b)=>Number(a.release_offset_min||0)-Number(b.release_offset_min||0));
     const lines = acts.length ? acts.map(a=>`
       <div class="timeline-line">
@@ -283,7 +333,7 @@ function renderTimelineBoard(){
         <button class="btn ghost icon-btn" data-open="${esc(a.id)}" title="Dettagli">ⓘ</button>
       </div>
     `).join("") : '<div class="small" style="margin-top:8px">Nessuna activation.</div>';
-    col.innerHTML = `<div class="h">${esc(phaseLabel(p))}</div><div style="margin-top:8px">${lines}</div>`;
+    col.innerHTML = `<div class="h">${esc(phaseLabel(p))}</div><div class="small" style="margin-top:6px"><span class="pill mono phase-status-pill">${esc(phaseStatusText(p.status))}</span></div><div style="margin-top:8px">${lines}</div>`;
     box.appendChild(col);
   });
   box.querySelectorAll("[data-open]").forEach(btn=>btn.addEventListener("click", ()=>{
@@ -291,7 +341,7 @@ function renderTimelineBoard(){
     if(act) openModal(act);
   }));
 }
-async function loadPhases(){ const j=await jget("/api/scenario/phases"); PHASES=j.phases||[]; fillPhaseSelect(); }
+async function loadPhases(){ const j=await jget("/api/scenario/phases"); PHASES=j.phases||[]; fillPhaseSelect(); renderPhaseProgress(); }
 async function loadInjects(){
   const j=await jget("/api/scenario/injects");
   ACTIVATIONS=j.injects||[];
