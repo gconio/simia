@@ -1,31 +1,20 @@
-SimIA v3.0 — Clean modular build
+SimIA v3.1 — Activations split: Setup + Monitoring
 
-Structure
-- index.html
-- admin.html
+What changes
+- Activations page is split into:
+  - Setup
+  - Monitoring
+- Timeline is simplified and shows only:
+  - phase
+  - activation
+  - time (T+)
+- Details are opened on demand in a modal
+- White Cell controls are available inside the detail modal
+
+Files included
 - activations_admin.html
-- outputs_admin.html
-- access.html
-- player.html
-- observer.html
-- instructor.html
-- assets/
-- functions/
+- README.txt
 
-Conceptual modules
-- Core platform (admin, roles, teams, participants, branding)
-- Scenario & Phases (inside admin.html tab)
-- Activations (dedicated page)
-- White Cell controls (inside Activations)
-- Outputs (dedicated page)
-
-Notes
-- exercise_admin.html is kept only as a compatibility redirect to admin.html#scenario_phases
-- obsolete test pages and patch fragments removed
-- all operational pages are reachable by menu
-
-Primary pages
-- /index.html
-- /admin.html
-- /activations_admin.html
-- /outputs_admin.html
+Install
+1) Replace activations_admin.html
+2) Commit + Push
