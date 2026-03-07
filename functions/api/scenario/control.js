@@ -51,7 +51,7 @@ async function publishInjectAsEvent(env, injectRow){
   await env.DB.prepare(
     `INSERT INTO events
      (id, ts, kind, phase, audience, title, body, severity, author, is_published)
-     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, 1)`
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)`
   ).bind(
     event_id,
     ts,

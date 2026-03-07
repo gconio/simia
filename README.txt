@@ -1,28 +1,19 @@
-SimIA v3.3.2 — Publish player feed on Release now
+SimIA v3.3.3 — Fix publish to player feed
 
-Problem fixed
-- White Cell action 'Release now' was only updating scenario_injects.status='released'
-- It was NOT publishing an item into events
-- Player feed reads from /api/scenario/feed -> events table
-- Result: released activations were not visible to players
+Confirmed root cause
+- Release now was not populating events
+- Player feed reads only from events
+- The issue was a mismatch between SQL placeholders and bind parameters
 
 Fix
-- functions/api/scenario/control.js now publishes an event into events
-  when Release now is used
-- Audience mapping:
-  - ALL -> ALL
-  - TEAM + A -> TEAM:A
-  - ROLE + PLAYER -> ROLE:PLAYER
-  - USER + X -> USER:X
+- functions/api/scenario/control.js now uses:
+  VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
 
 Install
 1) Replace functions/api/scenario/control.js
 2) Commit + Push
 
-Test
-1) Open Activations / Monitoring
-2) Use Release now on:
-   - one activation ALL
-   - one activation TEAM:A
-3) Open player.html?team=A&role=PLAYER&pid=testA1
-4) Feed should populate
+Verification
+1) Use Release now on an activation with audience ALL or TEAM:A
+2) Check events table
+3) Reload player.html?team=A&role=PLAYER&pid=testA1
