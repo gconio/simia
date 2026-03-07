@@ -1,7 +1,17 @@
-SimIA v3.6 — Pause / Resume / Stop controls
+SimIA v3.6.1 — Phase Progress Bar
 
 Files included
-- functions/api/scenario/run_scheduler.js
-- functions/api/scenario/simulation_control.js
 - instructor.html
 - README.txt
+
+What changes
+- Adds a colored segmented progress bar for phases
+- Segment width reflects phase duration
+- Completed phases = crimson
+- Active phase = green with internal fill based on elapsed time
+- Future phases = neutral
+- Shows remaining time for active phase
+
+Install
+1) Replace instructor.html
+2) Commit + Push

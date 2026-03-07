@@ -5,6 +5,23 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>SimIA — Instructor</title>
 <link rel="stylesheet" href="/assets/styles.css"/>
+<style>
+.phase-bar-wrap{display:flex;flex-direction:column;gap:8px}
+.phase-bar{display:flex;gap:6px;align-items:stretch;width:100%}
+.phase-seg{position:relative;min-height:28px;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.12);background:rgba(107,114,128,.14);flex:1}
+.phase-seg.future{background:rgba(107,114,128,.14)}
+.phase-seg.done{background:rgba(185,28,28,.16);border-color:rgba(185,28,28,.35)}
+.phase-seg.active{background:rgba(22,163,74,.10);border-color:rgba(22,163,74,.45)}
+.phase-fill{position:absolute;left:0;top:0;bottom:0;width:0%}
+.phase-seg.done .phase-fill{width:100%;background:rgba(185,28,28,.75)}
+.phase-seg.active .phase-fill{background:rgba(22,163,74,.82)}
+.phase-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 8px;font-size:12px;font-weight:700;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.phase-meta{display:flex;gap:8px;flex-wrap:wrap}
+.phase-pill{padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12)}
+.phase-pill.active{background:rgba(22,163,74,.12);border-color:rgba(22,163,74,.45)}
+.phase-pill.done{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.35)}
+.phase-pill.future{background:rgba(107,114,128,.12)}
+</style>
 </head>
 <body>
 <header class="topbar">
@@ -24,6 +41,18 @@
   <div class="item" style="min-width:220px;flex:1"><div class="lbl">Start time</div><div class="h mono" id="scStartAt">not started</div></div>
   <div class="item" style="min-width:160px;flex:1"><div class="lbl">Elapsed</div><div class="h mono" id="elapsedInfo">—</div></div>
 </div>
+
+<div class="sep"></div>
+<div class="phase-bar-wrap">
+  <div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
+    <div class="h">Phase Progress Bar</div>
+    <div class="small" id="phaseTimingInfo">—</div>
+  </div>
+  <div id="phaseBar" class="phase-bar"></div>
+  <div id="phaseMeta" class="phase-meta"></div>
+</div>
+
+<div class="sep"></div>
 <div class="row" style="margin-top:12px;gap:8px;flex-wrap:wrap">
   <button class="btn primary" id="startExerciseBtn">Start Exercise</button>
   <button class="btn ghost" id="pauseBtn">Pause</button>
@@ -34,6 +63,7 @@
   <button class="btn ghost" id="refreshBtn">Refresh</button>
   <span class="pill mono" id="schedulerResultPill">SCHEDULER IDLE</span>
 </div>
+
 <div class="sep"></div><div id="startWarnings" class="stack"></div>
 </div></div>
 
@@ -55,13 +85,17 @@
 function esc(s){ return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;"); }
 async function jget(url){ const r=await fetch(url,{headers:{Accept:"application/json"}}); const t=await r.text(); let j; try{j=JSON.parse(t)}catch{j={raw:t}} if(!r.ok) throw new Error(j?.error||("HTTP "+r.status)); return j; }
 async function jpost(url, body){ const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(body||{})}); const t=await r.text(); let j; try{j=JSON.parse(t)}catch{j={raw:t}} if(!r.ok) throw new Error(j?.error||("HTTP "+r.status)); return j; }
-let CURRENT_SCENARIO=null, CURRENT_SCENARIO_ID="", AUTO_ON=false, AUTO_TIMER=null, SIM_STATUS="running";
+
+let CURRENT_SCENARIO=null, CURRENT_SCENARIO_ID="", AUTO_ON=false, AUTO_TIMER=null, SIM_STATUS="running", PHASES=[];
+
 function setWarnings(items){ const box=document.getElementById("startWarnings"); box.innerHTML=""; if(!items.length){ box.innerHTML='<div class="item"><div class="small">Nessun warning. La simulazione può essere avviata.</div></div>'; return; } items.forEach(x=>{ const d=document.createElement("div"); d.className="item"; d.innerHTML='<div class="small">'+esc(x)+'</div>'; box.appendChild(d); }); }
 function setReadinessList(phases, activations){ const box=document.getElementById("readinessList"); box.innerHTML=""; if(!phases.length){ box.innerHTML='<div class="item"><div class="small">Nessuna fase configurata.</div></div>'; return; } phases.forEach(p=>{ const acts=activations.filter(a=>String(a.phase_code||"")===String(p.phase_code||"")).sort((a,b)=>Number(a.release_offset_min||0)-Number(b.release_offset_min||0)); const html=acts.length?acts.map(a=>'<div class="small">T+'+esc(a.release_offset_min||0)+' — '+esc(a.title||"")+' <span class="pill mono">'+esc(a.status||"")+'</span></div>').join(""):'<div class="small">Nessuna activation per questa fase.</div>'; const div=document.createElement("div"); div.className="item"; div.innerHTML='<div class="h">'+esc((p.phase_code||"")+(p.title?" — "+p.title:""))+'</div><div class="small" style="margin-top:6px"><span class="pill mono">'+esc(p.status||"")+'</span>'+(p.duration_min?' <span class="pill mono">'+esc(p.duration_min)+' min</span>':'')+'</div><div style="margin-top:8px">'+html+'</div>'; box.appendChild(div); }); }
-function updateElapsed(){ const el=document.getElementById("elapsedInfo"); const start=CURRENT_SCENARIO&&CURRENT_SCENARIO.start_at; if(!start){ el.textContent="—"; return; } const ms=Date.parse(start); if(!Number.isFinite(ms)){ el.textContent="—"; return; } el.textContent="T+"+String(Math.floor((Date.now()-ms)/60000))+" min"; }
+function updateElapsed(){ const el=document.getElementById("elapsedInfo"); const start=CURRENT_SCENARIO&&CURRENT_SCENARIO.start_at; if(!start){ el.textContent="—"; return null; } const ms=Date.parse(start); if(!Number.isFinite(ms)){ el.textContent="—"; return null; } const elapsed=Math.floor((Date.now()-ms)/60000); el.textContent="T+"+String(elapsed)+" min"; return elapsed; }
 async function loadSimulationStatus(){ try{ const j=await jget("/api/scenario/simulation_control"); SIM_STATUS=String(j.status||"running").toLowerCase(); }catch(e){ SIM_STATUS="running"; } document.getElementById("simStatus").textContent=SIM_STATUS.toUpperCase(); }
 async function loadScenario(){ const j=await jget("/api/scenario/manage"); CURRENT_SCENARIO=j.current||null; CURRENT_SCENARIO_ID=j.currentScenarioId || (CURRENT_SCENARIO&&CURRENT_SCENARIO.id) || ""; document.getElementById("scName").textContent=(CURRENT_SCENARIO&&CURRENT_SCENARIO.name)||"—"; document.getElementById("scSubtitle").textContent=(CURRENT_SCENARIO&&CURRENT_SCENARIO.subtitle)||""; document.getElementById("scStatus").textContent=(CURRENT_SCENARIO&&CURRENT_SCENARIO.status)||"—"; document.getElementById("scCurrentPhase").textContent=(CURRENT_SCENARIO&&CURRENT_SCENARIO.current_phase)||"—"; document.getElementById("scStartAt").textContent=(CURRENT_SCENARIO&&CURRENT_SCENARIO.start_at)||"not started"; updateElapsed(); }
-async function loadReadiness(){ const results=await Promise.all([jget("/api/scenario/phases"), jget("/api/scenario/injects")]); const phases=results[0].phases||[], activations=results[1].injects||[]; document.getElementById("phasesCount").textContent=String(phases.length); document.getElementById("activationsCount").textContent=String(activations.length); document.getElementById("scheduledCount").textContent=String(activations.filter(x=>["scheduled","queued"].includes(String(x.status||"").toLowerCase())).length); document.getElementById("releasedCount").textContent=String(activations.filter(x=>String(x.status||"").toLowerCase()==="released").length); const warnings=[], scStatus=String((CURRENT_SCENARIO&&CURRENT_SCENARIO.status)||"").toLowerCase(); if(!CURRENT_SCENARIO_ID) warnings.push("Nessuno scenario corrente selezionato."); if(!(CURRENT_SCENARIO&&CURRENT_SCENARIO.name)) warnings.push("Scenario non configurato."); if(scStatus!=="ready" && scStatus!=="live" && scStatus!=="completed") warnings.push("Lo scenario non è in stato READY/LIVE."); if(!phases.length) warnings.push("Non ci sono fasi configurate."); if(!activations.length) warnings.push("Non ci sono activations configurate."); setWarnings(warnings); setReadinessList(phases,activations); }
+function buildPhaseWindows(phases){ let cursor=0; return phases.map(p=>{ const dur=Number(p.duration_min||0); const start=cursor; const end=dur>0 ? cursor+dur : cursor; cursor=end; return {...p, start_offset:start, end_offset:end}; }); }
+function renderPhaseBar(phases){ const bar=document.getElementById("phaseBar"); const meta=document.getElementById("phaseMeta"); const info=document.getElementById("phaseTimingInfo"); bar.innerHTML=""; meta.innerHTML=""; if(!phases.length){ info.textContent="—"; return; } const elapsed=updateElapsed(); const windows=buildPhaseWindows(phases); const total=Math.max(1, windows.reduce((a,p)=>a+Math.max(1,Number(p.duration_min||1)),0)); let activePhase=null, remainText=""; windows.forEach(p=>{ const dur=Math.max(1,Number(p.duration_min||1)); const state=String(p.status||"").toLowerCase(); const seg=document.createElement("div"); seg.className="phase-seg "+(state==="active"?"active":((state==="closed"||state==="completed")?"done":"future")); seg.style.flex=String(dur); const fill=document.createElement("div"); fill.className="phase-fill"; if(state==="active" && elapsed!==null){ const progress=Math.max(0,Math.min(1,(elapsed-p.start_offset)/dur)); fill.style.width=(progress*100).toFixed(1)+"%"; const remaining=Math.max(0,p.end_offset-elapsed); remainText=`${p.phase_code} • ${remaining} min remaining`; activePhase=p; } seg.innerHTML='<div class="phase-label">'+esc(p.phase_code||"")+'</div>'; seg.prepend(fill); bar.appendChild(seg); const pill=document.createElement("div"); pill.className="phase-pill "+(state==="active"?"active":((state==="closed"||state==="completed")?"done":"future")); pill.textContent=`${p.phase_code} • ${String(state||"pending").toUpperCase()}`; meta.appendChild(pill); }); if(elapsed===null) info.textContent="Exercise not started"; else info.textContent=remainText || `Elapsed T+${elapsed} min`; }
+async function loadReadiness(){ const results=await Promise.all([jget("/api/scenario/phases"), jget("/api/scenario/injects")]); PHASES=results[0].phases||[]; const activations=results[1].injects||[]; document.getElementById("phasesCount").textContent=String(PHASES.length); document.getElementById("activationsCount").textContent=String(activations.length); document.getElementById("scheduledCount").textContent=String(activations.filter(x=>["scheduled","queued"].includes(String(x.status||"").toLowerCase())).length); document.getElementById("releasedCount").textContent=String(activations.filter(x=>String(x.status||"").toLowerCase()==="released").length); renderPhaseBar(PHASES); const warnings=[], scStatus=String((CURRENT_SCENARIO&&CURRENT_SCENARIO.status)||"").toLowerCase(); if(!CURRENT_SCENARIO_ID) warnings.push("Nessuno scenario corrente selezionato."); if(!(CURRENT_SCENARIO&&CURRENT_SCENARIO.name)) warnings.push("Scenario non configurato."); if(scStatus!=="ready" && scStatus!=="live" && scStatus!=="completed") warnings.push("Lo scenario non è in stato READY/LIVE."); if(!PHASES.length) warnings.push("Non ci sono fasi configurate."); if(!activations.length) warnings.push("Non ci sono activations configurate."); setWarnings(warnings); setReadinessList(PHASES,activations); }
 async function loadActions(){ const j=await jget("/api/scenario/actions?limit=10"); const box=document.getElementById("actionsList"); box.innerHTML=""; const rows=j.actions||[]; if(!rows.length){ box.innerHTML='<div class="item"><div class="small">Nessuna azione registrata.</div></div>'; return; } rows.forEach(a=>{ const div=document.createElement("div"); div.className="item"; div.innerHTML='<div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap"><div><div class="h">'+esc(a.action_type)+'</div><div class="small">'+esc(a.notes||"")+'</div></div><div class="small mono">'+esc(a.actor||"admin")+' • '+esc(a.ts||"")+'</div></div>'; box.appendChild(div); }); }
 async function reloadAll(){ await loadSimulationStatus(); await loadScenario(); await loadReadiness(); await loadActions(); }
 async function runSchedulerOnce(silent){ try{ const res=await jpost("/api/scenario/run_scheduler",{}); document.getElementById("schedulerResultPill").textContent=res.message?String(res.message).toUpperCase():("RELEASED: "+String(res.released_count||0)); await reloadAll(); if(!silent) alert(res.message?res.message:("Scheduler eseguito. Activations rilasciate: "+String(res.released_count||0))); }catch(e){ document.getElementById("schedulerResultPill").textContent="SCHEDULER ERROR"; if(!silent) alert(String(e)); } }
@@ -75,7 +109,7 @@ document.getElementById("runSchedulerBtn").addEventListener("click", ()=>runSche
 document.getElementById("toggleAutoBtn").addEventListener("click", ()=>setAuto(!AUTO_ON));
 document.getElementById("refreshBtn").addEventListener("click", reloadAll);
 document.getElementById("reloadLogBtn").addEventListener("click", loadActions);
-reloadAll(); setInterval(updateElapsed,15000);
+reloadAll(); setInterval(async()=>{ updateElapsed(); renderPhaseBar(PHASES); },15000);
 </script>
 </body>
 </html>
