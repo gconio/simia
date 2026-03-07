@@ -1,6 +1,7 @@
-SimIA v3.5.2 — Full files for phase refresh and player auto refresh
+SimIA v3.6 — Pause / Resume / Stop controls
 
 Files included
-- activations_admin.html
-- player.html
+- functions/api/scenario/run_scheduler.js
+- functions/api/scenario/simulation_control.js
+- instructor.html
 - README.txt
