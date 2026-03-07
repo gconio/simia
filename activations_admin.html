@@ -93,7 +93,7 @@
       <span><span class="dot g"></span>Released</span>
       <span><span class="dot n"></span>Scheduled</span>
       <span><span class="dot r"></span>Cancelled</span>
-      <span class="pill mono">AUTO REFRESH 15s</span>
+      <span class="pill mono">Distribuzione visiva per fase</span>
     </div>
   </div>
   <div class="phase-marker-wrap">
@@ -139,24 +139,7 @@ function buildPhaseWindows(phases){
     return {...p, start_offset:start, end_offset:end, duration_calc:dur};
   });
 }
-function totalDuration(phases){ return buildPhaseWindows(phases).reduce((m,p)=>Math.max(m,p.end_offset),0) || 1; }
 function currentElapsedMin(){ if(!SCENARIO_START_AT) return null; const ms=Date.parse(SCENARIO_START_AT); if(!Number.isFinite(ms)) return null; return Math.floor((Date.now()-ms)/60000); }
-
-function phaseWindowForActivation(act, windows){
-  const phase = windows.find(p=>String(p.phase_code||"")===String(act.phase_code||""));
-  if(!phase) return null;
-  return phase;
-}
-
-function activationPositionPct(act, windows, total){
-  const phase = phaseWindowForActivation(act, windows);
-  if(!phase){
-    return Math.max(0, Math.min(100, (Number(act.release_offset_min||0) / total) * 100));
-  }
-  const raw = Number(act.release_offset_min || 0);
-  const clamped = Math.max(phase.start_offset, Math.min(phase.end_offset, raw));
-  return Math.max(0, Math.min(100, (clamped / total) * 100));
-}
 
 function renderPhaseBar(phases){
   const bar=document.getElementById("phaseBar"), info=document.getElementById("phaseTimingInfo"), top=document.getElementById("markerTop"), bottom=document.getElementById("markerBottom");
@@ -165,7 +148,6 @@ function renderPhaseBar(phases){
 
   const elapsed=currentElapsedMin();
   const windows=buildPhaseWindows(phases);
-  const total=totalDuration(phases);
   let remainText=elapsed===null?"Exercise not started":`Elapsed T+${elapsed} min`;
 
   windows.forEach(p=>{
@@ -192,19 +174,40 @@ function renderPhaseBar(phases){
   });
   info.textContent=remainText;
 
-  const ordered=[...ACTIVATIONS].sort((a,b)=>Number(a.release_offset_min||0)-Number(b.release_offset_min||0)||String(a.id).localeCompare(String(b.id)));
-  ordered.forEach((a, idx)=>{
-    const pos=activationPositionPct(a, windows, total);
-    const layer = idx % 2 === 0 ? top : bottom;
-    const st=String(a.status||"").toLowerCase();
-    const cls = st==="released" ? "released" : (st==="cancelled" ? "cancelled" : "scheduled");
-    const mk=document.createElement("div");
-    mk.className="act-marker "+cls;
-    mk.style.left=pos+"%";
-    mk.innerHTML=`<div class="tag">A${idx+1}</div><div class="stem"></div>`;
-    mk.title=`A${idx+1} • ${a.title||""} • ${a.phase_code||""} • T+${a.release_offset_min||0}`;
-    mk.addEventListener("click", ()=>openModal(a));
-    layer.appendChild(mk);
+  const phaseMap = new Map();
+  PHASES.forEach(p => phaseMap.set(String(p.phase_code||""), []));
+  ACTIVATIONS.forEach(a => {
+    const code = String(a.phase_code||"");
+    if(!phaseMap.has(code)) phaseMap.set(code, []);
+    phaseMap.get(code).push(a);
+  });
+
+  let seq = 1;
+  windows.forEach(phase => {
+    const items = (phaseMap.get(String(phase.phase_code||"")) || []).sort((a,b)=>
+      Number(a.release_offset_min||0)-Number(b.release_offset_min||0) || String(a.id).localeCompare(String(b.id))
+    );
+    const n = items.length;
+    if(!n) return;
+
+    items.forEach((a, idx) => {
+      const frac = (idx + 1) / (n + 1);   // distribuzione uniforme dentro la fase
+      const offset = phase.start_offset + frac * phase.duration_calc;
+      const total = windows[windows.length - 1].end_offset || 1;
+      const pos = Math.max(0, Math.min(100, (offset / total) * 100));
+      const layer = (seq % 2 === 1) ? top : bottom;
+      const st = String(a.status||"").toLowerCase();
+      const cls = st==="released" ? "released" : (st==="cancelled" ? "cancelled" : "scheduled");
+
+      const mk = document.createElement("div");
+      mk.className = "act-marker " + cls;
+      mk.style.left = pos + "%";
+      mk.innerHTML = `<div class="tag">A${seq}</div><div class="stem"></div>`;
+      mk.title = `A${seq} • ${a.title||""} • ${a.phase_code||""} • T+${a.release_offset_min||0}`;
+      mk.addEventListener("click", ()=>openModal(a));
+      layer.appendChild(mk);
+      seq += 1;
+    });
   });
 }
 

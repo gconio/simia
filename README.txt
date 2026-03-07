@@ -1,14 +1,15 @@
-SimIA v3.6.4 — Marker direction + phase-clamped positioning
+SimIA v3.6.5 — Visual distribution by phase
 
 Files included
 - activations_admin.html
 - README.txt
 
-Fixes
-- Bottom markers (A2, A4, ...) now point upward toward the phase bar
-- Activation markers are now clamped inside their own phase window
-- Marker position respects the phase assigned to the activation
-- Click on marker still opens the activation modal
+What changes
+- Bottom markers now point toward the phase bar
+- Activation markers are distributed visually inside their own phase segment
+- Marker placement is no longer tied rigidly to raw temporal offset for display
+- Distribution is even within each phase, preserving phase meaning and visual clarity
+- Sequence A1, A2, A3... remains global and clickable
 
 Install
 1) Replace activations_admin.html
