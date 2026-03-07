@@ -1,0 +1,1 @@
+export async function onRequestGet(){ return new Response(JSON.stringify({ok:true,scenario:null,phases:[],injects:[],events:[],simulation_status:'running',current_phase:'PHASE-1'}), {headers:{'Content-Type':'application/json'}}); }
