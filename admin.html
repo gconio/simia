@@ -16,11 +16,10 @@
     </div>
   </div>
   <div class="session">
-<a class="btn ghost" href="/index.html">Home</a>
-<a class="btn ghost" href="/admin.html">Admin</a>
-<a class="btn ghost" href="/exercise_admin.html">Exercise / Scenario</a>
-<a class="btn ghost" href="/activations_admin.html">Activations</a>
-<a class="btn ghost" href="/outputs_admin.html">Outputs</a>
+    <a class="btn ghost" href="/index.html">Home</a>
+    <a class="btn ghost" href="/admin.html">Admin</a>
+    <a class="btn ghost" href="/activations_admin.html">Activations</a>
+    <a class="btn ghost" href="/outputs_admin.html">Outputs</a>
   </div>
 </header>
 
@@ -30,7 +29,7 @@
       <a class="tab active" data-tab="setup" href="#">Setup</a>
       <a class="tab" data-tab="roles_teams" href="#">Roles / Teams</a>
       <a class="tab" data-tab="participants" href="#">Participants</a>
-      <a class="tab" data-tab="scenario" href="#">Scenario</a>
+      <a class="tab" data-tab="scenario" href="#">Scenario &amp; Phases</a>
       <a class="tab" data-tab="system" href="#">System</a>
     </div>
 
@@ -236,14 +235,118 @@
         </div>
       </div>
 
+      
       <div class="panel" data-panel="scenario" style="display:none">
         <div class="card span12">
-          <div class="card-title">Scenario</div>
+          <div class="card-title">Scenario &amp; Phases</div>
           <div class="card-body">
-            <div class="small">Ne parliamo successivamente.</div>
+            <div class="notice">
+              <div class="h">Exercise / Scenario</div>
+              <div class="small">Questa sezione centralizza Exercise configuration e Phases. Le Activations sono gestite separatamente.</div>
+            </div>
+            <div class="sep"></div>
+
+            <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end">
+              <div style="min-width:220px;flex:2">
+                <label class="lbl">Exercise Name</label>
+                <input class="input" id="scName"/>
+              </div>
+              <div style="min-width:220px;flex:2">
+                <label class="lbl">Scenario Title</label>
+                <input class="input" id="scSubtitle"/>
+              </div>
+              <div style="min-width:160px;flex:1">
+                <label class="lbl">Status</label>
+                <select class="input" id="scStatus">
+                  <option value="draft">draft</option>
+                  <option value="ready">ready</option>
+                  <option value="live">live</option>
+                  <option value="paused">paused</option>
+                  <option value="completed">completed</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="margin-top:10px">
+              <label class="lbl">Background</label>
+              <textarea class="input" id="scDescription" style="min-height:100px"></textarea>
+            </div>
+
+            <div class="row" style="margin-top:10px;gap:10px;flex-wrap:wrap;align-items:flex-end">
+              <div style="min-width:180px;flex:1">
+                <label class="lbl">Current phase</label>
+                <input class="input mono" id="scCurrentPhase" placeholder="PHASE-1"/>
+              </div>
+              <div style="min-width:220px;flex:1">
+                <label class="lbl">Start at</label>
+                <input class="input mono" id="scStartAt" placeholder="2026-03-06T10:00:00Z"/>
+              </div>
+              <div class="row" style="gap:8px;flex-wrap:wrap">
+                <button class="btn primary" id="saveScenarioBtn">Save scenario</button>
+                <button class="btn ghost" id="setCurrentScenarioBtn">Set current</button>
+                <button class="btn" id="reloadScenarioBtn">Refresh data</button>
+              </div>
+            </div>
+
+            <div class="sep"></div>
+            <div id="scenarioList" class="stack"></div>
+          </div>
+        </div>
+
+        <div class="card span12">
+          <div class="card-title">Phases Configuration</div>
+          <div class="card-body">
+            <div class="notice">
+              <div class="h">Synchronization layer</div>
+              <div class="small">Le fasi appartengono allo Scenario e vengono poi selezionate nel modulo Activations.</div>
+            </div>
+            <div class="sep"></div>
+
+            <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end">
+              <div style="min-width:150px;flex:1">
+                <label class="lbl">Phase code</label>
+                <input class="input mono" id="spCode" placeholder="PHASE-1"/>
+              </div>
+              <div style="min-width:220px;flex:2">
+                <label class="lbl">Title</label>
+                <input class="input" id="spTitle"/>
+              </div>
+              <div style="min-width:220px;flex:2">
+                <label class="lbl">Description</label>
+                <input class="input" id="spDescription"/>
+              </div>
+            </div>
+
+            <div class="row" style="margin-top:10px;gap:10px;flex-wrap:wrap;align-items:flex-end">
+              <div style="min-width:120px;flex:1">
+                <label class="lbl">Order</label>
+                <input class="input mono" id="spOrder" value="1"/>
+              </div>
+              <div style="min-width:140px;flex:1">
+                <label class="lbl">Duration min</label>
+                <input class="input mono" id="spDuration"/>
+              </div>
+              <div style="min-width:140px;flex:1">
+                <label class="lbl">Status</label>
+                <select class="input" id="spStatus">
+                  <option value="pending">pending</option>
+                  <option value="active">active</option>
+                  <option value="closed">closed</option>
+                </select>
+              </div>
+              <div class="row" style="gap:8px;flex-wrap:wrap">
+                <button class="btn primary" id="saveScenarioPhaseBtn">Save phase</button>
+                <button class="btn ghost" id="reloadScenarioPhasesBtn">Reload</button>
+                <span class="pill mono" id="scenarioPhaseEditorState">NEW PHASE</span>
+              </div>
+            </div>
+
+            <div class="sep"></div>
+            <div id="scenarioPhasesList" class="stack"></div>
           </div>
         </div>
       </div>
+
 
       <div class="panel" data-panel="system" style="display:none">
         <div class="card span12">
@@ -625,6 +728,170 @@ function bindParticipants(){
   document.getElementById("pReloadBtn").addEventListener("click", ()=>loadParticipants().catch(e=>alert(e)));
   document.getElementById("pExportCsvBtn").addEventListener("click", ()=>{ downloadText(participantCsv(), "simia_participants_credentials.csv", "text/csv"); });
 }
+
+let CURRENT_SCENARIO = null;
+let CURRENT_SCENARIO_PHASE_ID = "";
+
+function scenarioFormSet(s){
+  CURRENT_SCENARIO = s || null;
+  document.getElementById("scName").value = s?.name || "";
+  document.getElementById("scSubtitle").value = s?.subtitle || "";
+  document.getElementById("scDescription").value = s?.description || "";
+  document.getElementById("scStatus").value = s?.status || "draft";
+  document.getElementById("scCurrentPhase").value = s?.current_phase || "";
+  document.getElementById("scStartAt").value = s?.start_at || "";
+}
+function scenarioPhaseClear(){
+  CURRENT_SCENARIO_PHASE_ID = "";
+  document.getElementById("spCode").value = "";
+  document.getElementById("spTitle").value = "";
+  document.getElementById("spDescription").value = "";
+  document.getElementById("spOrder").value = "1";
+  document.getElementById("spDuration").value = "";
+  document.getElementById("spStatus").value = "pending";
+  document.getElementById("scenarioPhaseEditorState").textContent = "NEW PHASE";
+}
+function scenarioPhaseSet(p){
+  CURRENT_SCENARIO_PHASE_ID = p.id || "";
+  document.getElementById("spCode").value = p.phase_code || "";
+  document.getElementById("spTitle").value = p.title || "";
+  document.getElementById("spDescription").value = p.description || "";
+  document.getElementById("spOrder").value = p.sort_order || 1;
+  document.getElementById("spDuration").value = p.duration_min || "";
+  document.getElementById("spStatus").value = p.status || "pending";
+  document.getElementById("scenarioPhaseEditorState").textContent = `EDITING: ${p.phase_code || ""}`;
+}
+async function loadScenarioConfig(){
+  const j = await jget("/api/scenario/manage");
+  const box = document.getElementById("scenarioList");
+  box.innerHTML = "";
+  const current = j.current || null;
+  if(current) scenarioFormSet(current);
+  else scenarioFormSet(null);
+
+  const rows = j.scenarios || [];
+  if(!rows.length){
+    box.innerHTML = '<div class="item"><div class="small">Nessuno scenario configurato.</div></div>';
+    return;
+  }
+  rows.forEach(s=>{
+    const div = document.createElement("div");
+    div.className = "item";
+    div.innerHTML = `<div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <div>
+        <div class="h">${esc(s.name || "")}</div>
+        <div class="small">${esc(s.subtitle || "")}</div>
+        <div class="small" style="margin-top:6px">
+          <span class="pill mono">${esc(s.status || "")}</span>
+          ${s.current_phase ? `<span class="pill mono">${esc(s.current_phase)}</span>` : ""}
+          ${j.currentScenarioId === s.id ? `<span class="pill mono">CURRENT</span>` : ""}
+        </div>
+      </div>
+      <div class="row" style="gap:8px;flex-wrap:wrap">
+        <button class="btn" data-edit>Edit</button>
+        <button class="btn ghost" data-current>Set current</button>
+      </div>
+    </div>`;
+    div.querySelector("[data-edit]").addEventListener("click", ()=>scenarioFormSet(s));
+    div.querySelector("[data-current]").addEventListener("click", async ()=>{
+      await jpost("/api/scenario/manage", { action:"set_current", id:s.id });
+      CURRENT_SCENARIO = s;
+      await loadScenarioConfig();
+      await loadScenarioPhasesAdmin();
+    });
+    box.appendChild(div);
+  });
+}
+async function loadScenarioPhasesAdmin(){
+  const j = await jget("/api/scenario/phases");
+  const box = document.getElementById("scenarioPhasesList");
+  box.innerHTML = "";
+  const rows = j.phases || [];
+  if(!rows.length){
+    box.innerHTML = '<div class="item"><div class="small">Nessuna fase configurata.</div></div>';
+    return;
+  }
+  rows.forEach(p=>{
+    const div = document.createElement("div");
+    div.className = "item";
+    div.innerHTML = `<div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <div>
+        <div class="h">${esc(p.title || "")} <span class="small mono">(${esc(p.phase_code || "")})</span></div>
+        <div class="small">${esc(p.description || "")}</div>
+        <div class="small" style="margin-top:6px">
+          <span class="pill mono">ORDER ${esc(p.sort_order || 0)}</span>
+          ${p.duration_min ? `<span class="pill mono">${esc(p.duration_min)} min</span>` : ""}
+          <span class="pill mono">${esc(p.status || "")}</span>
+        </div>
+      </div>
+      <div class="row" style="gap:8px;flex-wrap:wrap">
+        <button class="btn" data-edit>Edit</button>
+        <button class="btn danger" data-del>Delete</button>
+      </div>
+    </div>`;
+    div.querySelector("[data-edit]").addEventListener("click", ()=>scenarioPhaseSet(p));
+    div.querySelector("[data-del]").addEventListener("click", async ()=>{
+      if(!confirm("Eliminare questa fase?")) return;
+      await jdel(`/api/scenario/phases?id=${encodeURIComponent(p.id)}`);
+      if(CURRENT_SCENARIO_PHASE_ID === p.id) scenarioPhaseClear();
+      await loadScenarioPhasesAdmin();
+    });
+    box.appendChild(div);
+  });
+}
+function bindScenario(){
+  document.getElementById("saveScenarioBtn").addEventListener("click", async ()=>{
+    const payload = {
+      id: CURRENT_SCENARIO?.id,
+      name: document.getElementById("scName").value,
+      subtitle: document.getElementById("scSubtitle").value,
+      description: document.getElementById("scDescription").value,
+      status: document.getElementById("scStatus").value,
+      current_phase: document.getElementById("scCurrentPhase").value,
+      start_at: document.getElementById("scStartAt").value,
+      make_current: 1,
+      actor: "admin"
+    };
+    const res = await jpost("/api/scenario/manage", payload);
+    if(!CURRENT_SCENARIO?.id && res?.id){
+      CURRENT_SCENARIO = { id: res.id, ...payload };
+    }
+    await loadScenarioConfig();
+    await loadScenarioPhasesAdmin();
+    alert("Scenario salvato.");
+  });
+
+  document.getElementById("setCurrentScenarioBtn").addEventListener("click", async ()=>{
+    if(!CURRENT_SCENARIO?.id){ alert("Seleziona prima uno scenario."); return; }
+    await jpost("/api/scenario/manage", { action:"set_current", id: CURRENT_SCENARIO.id });
+    await loadScenarioConfig();
+    await loadScenarioPhasesAdmin();
+    alert("Scenario corrente impostato.");
+  });
+
+  document.getElementById("reloadScenarioBtn").addEventListener("click", async ()=>{
+    await loadScenarioConfig();
+    await loadScenarioPhasesAdmin();
+  });
+
+  document.getElementById("saveScenarioPhaseBtn").addEventListener("click", async ()=>{
+    await jpost("/api/scenario/phases", {
+      id: CURRENT_SCENARIO_PHASE_ID || undefined,
+      phase_code: document.getElementById("spCode").value,
+      title: document.getElementById("spTitle").value,
+      description: document.getElementById("spDescription").value,
+      sort_order: document.getElementById("spOrder").value,
+      duration_min: document.getElementById("spDuration").value,
+      status: document.getElementById("spStatus").value
+    });
+    scenarioPhaseClear();
+    await loadScenarioPhasesAdmin();
+    alert("Fase salvata.");
+  });
+
+  document.getElementById("reloadScenarioPhasesBtn").addEventListener("click", loadScenarioPhasesAdmin);
+}
+
 function bindSystem(){
   document.getElementById("checkHealth").addEventListener("click", async ()=>{
     try{ const j = await jget("/api/health"); document.getElementById("healthResult").textContent = JSON.stringify(j, null, 2); }
@@ -636,9 +903,9 @@ function bindSystem(){
   });
 }
 document.addEventListener("DOMContentLoaded", async ()=>{
-  setActiveTab("setup");
-  bindSetup(); bindRolesTeams(); bindParticipants(); bindSystem();
-  await loadConfig(); await loadRoles(); await loadTeams(); await loadParticipants();
+  setActiveTab(location.hash === "#scenario_phases" ? "scenario" : "setup");
+  bindSetup(); bindRolesTeams(); bindParticipants(); bindScenario(); bindSystem();
+  await loadConfig(); await loadRoles(); await loadTeams(); await loadParticipants(); await loadScenarioConfig(); await loadScenarioPhasesAdmin();
 });
 </script>
 </body>

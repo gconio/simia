@@ -2,178 +2,43 @@
 <html lang="it">
 <head>
 <meta charset="utf-8"/>
+<meta http-equiv="refresh" content="0; url=/admin.html#scenario_phases">
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>SimIA — Exercise / Scenario</title>
+<title>SimIA — Redirect</title>
 <link rel="stylesheet" href="/assets/styles.css"/>
 </head>
-
 <body>
-
 <header class="topbar">
   <div class="brand">
-    <div class="logo">SI</div>
+    <div class="logo" id="brandLogo">SI</div>
     <div>
-      <div class="brand-title">SimIA</div>
-      <div class="brand-sub">Exercise / Scenario</div>
+      <div class="brand-title" id="brandTitle">SimIA</div>
+      <div class="brand-sub" id="brandSub">Redirect</div>
     </div>
   </div>
-
   <div class="session">
+    <a class="btn ghost" href="/index.html">Home</a>
+    <a class="btn ghost" href="/admin.html#scenario_phases">Admin → Scenario & Phases</a>
     <a class="btn ghost" href="/activations_admin.html">Activations</a>
-    <a class="btn ghost" href="/admin.html">Admin</a>
   </div>
 </header>
-
 <main class="layout layout-wide">
-<section class="content">
-
-<div class="grid">
-
-<div class="card span12">
-<div class="card-title">Exercise configuration</div>
-<div class="card-body">
-
-<div class="row" style="gap:10px;flex-wrap:wrap">
-
-<div style="flex:2;min-width:240px">
-<label class="lbl">Exercise name</label>
-<input class="input" id="exName">
-</div>
-
-<div style="flex:2;min-width:240px">
-<label class="lbl">Scenario title</label>
-<input class="input" id="scTitle">
-</div>
-
-<div style="flex:1;min-width:160px">
-<label class="lbl">Status</label>
-<select class="input" id="exStatus">
-<option>draft</option>
-<option>ready</option>
-<option>live</option>
-<option>completed</option>
-</select>
-</div>
-
-</div>
-
-<div style="margin-top:10px">
-<label class="lbl">Background</label>
-<textarea class="input" id="exBackground" style="min-height:120px"></textarea>
-</div>
-
-<div style="margin-top:10px">
-<label class="lbl">Objectives</label>
-<textarea class="input" id="exObjectives" style="min-height:100px"></textarea>
-</div>
-
-<div class="row" style="margin-top:10px;gap:8px">
-<button class="btn primary" id="saveExerciseBtn">Save</button>
-<button class="btn ghost" id="reloadExerciseBtn">Reload</button>
-</div>
-
-</div>
-</div>
-
-
-<div class="card span12">
-<div class="card-title">Phases</div>
-
-<div class="card-body">
-
-<div class="row" style="gap:10px;flex-wrap:wrap">
-
-<div style="flex:1;min-width:160px">
-<label class="lbl">Phase code</label>
-<input class="input mono" id="pCode">
-</div>
-
-<div style="flex:2;min-width:200px">
-<label class="lbl">Title</label>
-<input class="input" id="pTitle">
-</div>
-
-<div style="flex:2;min-width:200px">
-<label class="lbl">Description</label>
-<input class="input" id="pDesc">
-</div>
-
-<div style="flex:1;min-width:120px">
-<label class="lbl">Duration (min)</label>
-<input class="input mono" id="pDuration">
-</div>
-
-<div style="flex:1;min-width:120px">
-<label class="lbl">Order</label>
-<input class="input mono" id="pOrder">
-</div>
-
-</div>
-
-<div class="row" style="margin-top:10px">
-<button class="btn primary" id="savePhaseBtn">Save phase</button>
-</div>
-
-<div class="sep"></div>
-
-<div id="phasesList" class="stack"></div>
-
-</div>
-</div>
-
-
-</div>
-</section>
+  <section class="content">
+    <div class="grid">
+      <div class="card span12">
+        <div class="card-title">Exercise / Scenario moved</div>
+        <div class="card-body">
+          <div class="small">La configurazione di Exercise / Scenario e Phases è stata integrata in Admin, tab “Scenario & Phases”.</div>
+          <div class="row" style="margin-top:12px;gap:10px;flex-wrap:wrap">
+            <a class="btn primary" href="/admin.html#scenario_phases">Apri Scenario & Phases</a>
+            <a class="btn ghost" href="/activations_admin.html">Apri Activations</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 </main>
-
-
-<script>
-async function jget(url){
- const r = await fetch(url,{headers:{Accept:"application/json"}});
- const j = await r.json();
- if(!r.ok) throw new Error(j.error||"error");
- return j;
-}
-
-async function jpost(url,data){
- const r = await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
- const j = await r.json();
- if(!r.ok) throw new Error(j.error||"error");
- return j;
-}
-
-async function loadPhases(){
- const res = await jget("/api/scenario/phases");
- const list = document.getElementById("phasesList");
- list.innerHTML="";
- (res.phases||[]).forEach(p=>{
-   const d=document.createElement("div");
-   d.className="item";
-   d.innerHTML=`
-   <div class="row" style="justify-content:space-between">
-     <div>
-       <div class="h">${p.phase_code} — ${p.title}</div>
-       <div class="small">Duration: ${p.duration_min} min | Order: ${p.sort_order}</div>
-     </div>
-   </div>`;
-   list.appendChild(d);
- });
-}
-
-document.getElementById("savePhaseBtn").addEventListener("click", async ()=>{
- await jpost("/api/scenario/phases",{
-   phase_code:document.getElementById("pCode").value,
-   title:document.getElementById("pTitle").value,
-   description:document.getElementById("pDesc").value,
-   duration_min:document.getElementById("pDuration").value,
-   sort_order:document.getElementById("pOrder").value
- });
- await loadPhases();
- alert("Phase saved");
-});
-
-loadPhases();
-</script>
-
+<script src="/assets/theme.js"></script>
+<script src="/assets/branding.js"></script>
 </body>
 </html>

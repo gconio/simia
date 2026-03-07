@@ -1,7 +1,21 @@
 <!doctype html>
 <html lang="it"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>SimIA — Activations</title><link rel="stylesheet" href="/assets/styles.css"/></head>
 <body>
-<header class="topbar"><div class="brand"><div class="logo" id="brandLogo">SI</div><div><div class="brand-title" id="brandTitle">SimIA</div><div class="brand-sub" id="brandSub">Activations Management</div></div></div><div class="session"><a class="btn ghost" href="/exercise_admin.html">Exercise / Scenario</a><a class="btn ghost" href="/admin.html">Admin</a><a class="btn ghost" href="/outputs_admin.html">Outputs</a></div></header>
+<header class="topbar">
+  <div class="brand">
+    <div class="logo" id="brandLogo">SI</div>
+    <div>
+      <div class="brand-title" id="brandTitle">SimIA</div>
+      <div class="brand-sub" id="brandSub">Activations Management</div>
+    </div>
+  </div>
+  <div class="session">
+    <a class="btn ghost" href="/index.html">Home</a>
+    <a class="btn ghost" href="/admin.html#scenario_phases">Admin</a>
+    <a class="btn ghost" href="/activations_admin.html">Activations</a>
+    <a class="btn ghost" href="/outputs_admin.html">Outputs</a>
+  </div>
+</header>
 <main class="layout layout-wide"><section class="content"><div class="grid">
 <div class="card span12"><div class="card-title">Timeline Board</div><div class="card-body"><div class="notice"><div class="h">Overview by phase</div><div class="small">Le activations sono raggruppate per fase e ordinate automaticamente per T+ minuti. Le azioni White Cell rispettano i limiti della fase.</div></div><div class="sep"></div><div id="timelineBoard" class="row" style="gap:12px;align-items:flex-start;overflow-x:auto;flex-wrap:nowrap"></div></div></div>
 <div class="card span12"><div class="card-title">Activations</div><div class="card-body">

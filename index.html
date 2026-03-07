@@ -1,15 +1,58 @@
 <!doctype html>
 <html lang="it">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SimIA</title></head>
-<body style="font-family:system-ui;padding:24px">
-<h1>SimIA</h1>
-<p><a href="/admin.html">Apri Console amministrativa</a></p>
-<p><a href="/player.html?team=A&role=PLAYER">Apri Player (demo)</a></p>
-<a class="btn ghost" href="/admin.html">Admin</a>
-<a class="btn ghost" href="/exercise_admin.html">Exercise / Scenario</a>
-<a class="btn ghost" href="/activations_admin.html">Activations</a>
-<a class="btn ghost" href="/outputs_admin.html">Outputs</a>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SimIA</title>
+<link rel="stylesheet" href="/assets/styles.css"/>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="logo" id="brandLogo">SI</div>
+    <div>
+      <div class="brand-title" id="brandTitle">SimIA</div>
+      <div class="brand-sub" id="brandSub">Home</div>
+    </div>
+  </div>
+  <div class="session">
+    <a class="btn ghost" href="/index.html">Home</a>
+    <a class="btn ghost" href="/admin.html">Admin</a>
+    <a class="btn ghost" href="/activations_admin.html">Activations</a>
+    <a class="btn ghost" href="/outputs_admin.html">Outputs</a>
+  </div>
+</header>
+
+<main class="layout layout-wide">
+  <section class="content">
+    <div class="grid">
+      <div class="card span12">
+        <div class="card-title">SimIA</div>
+        <div class="card-body">
+          <div class="notice">
+            <div class="h">Console operative</div>
+            <div class="small">Accesso rapido ai moduli principali della piattaforma.</div>
+          </div>
+          <div class="sep"></div>
+          <div class="row" style="gap:10px;flex-wrap:wrap">
+            <a class="btn primary" href="/admin.html">Apri Admin</a>
+            <a class="btn" href="/activations_admin.html">Apri Activations</a>
+            <a class="btn ghost" href="/outputs_admin.html">Apri Outputs</a>
+          </div>
+          <div class="sep"></div>
+          <div class="row" style="gap:10px;flex-wrap:wrap">
+            <a class="btn ghost" href="/player.html?team=A&role=PLAYER">Demo Player</a>
+            <a class="btn ghost" href="/observer.html">Observer</a>
+            <a class="btn ghost" href="/instructor.html">Instructor</a>
+            <a class="btn ghost" href="/access.html">Access</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
 <script src="/assets/theme.js"></script>
 <script src="/assets/branding.js"></script>
-</body></html>
+</body>
+</html>

@@ -1,22 +1,31 @@
-SimIA v2.6 — Timeline shift + phase clamp control
+SimIA v3.0 — Clean modular build
 
-What this update adds
-- New White Cell action:
-  - Shift subsequent +5
-- Existing delay action is now explicit:
-  - Delay only +5
-- Phase boundary control on time changes:
-  - if an activation would fall outside its own phase,
-    it is automatically clamped inside the phase
-  - clamp target:
-    - last activation time already present in that phase
-    - otherwise the last useful minute of the phase
-
-Files included
-- functions/api/scenario/control.js
+Structure
+- index.html
+- admin.html
 - activations_admin.html
-- README.txt
+- outputs_admin.html
+- access.html
+- player.html
+- observer.html
+- instructor.html
+- assets/
+- functions/
 
-Install
-1) Copy files preserving folders
-2) Commit + Push
+Conceptual modules
+- Core platform (admin, roles, teams, participants, branding)
+- Scenario & Phases (inside admin.html tab)
+- Activations (dedicated page)
+- White Cell controls (inside Activations)
+- Outputs (dedicated page)
+
+Notes
+- exercise_admin.html is kept only as a compatibility redirect to admin.html#scenario_phases
+- obsolete test pages and patch fragments removed
+- all operational pages are reachable by menu
+
+Primary pages
+- /index.html
+- /admin.html
+- /activations_admin.html
+- /outputs_admin.html
