@@ -1,20 +1,16 @@
-SimIA UI Update — Phase bar full package
+SimIA v3.6.3 — Alternating activation markers on phase bar
 
 Files included
-- instructor.html
 - activations_admin.html
 - README.txt
 
 What changes
-- Two-line labels inside the phase bar:
-  - line 1: phase code
-  - line 2: phase state
-- Smooth internal fill animation for active phase
-- Same visual model applied to:
-  - Instructor
-  - Activations / Monitoring
-
-Install
-1) Replace instructor.html
-2) Replace activations_admin.html
-3) Commit + Push
+- Adds activation markers on the phase progress bar in Activations / Monitoring
+- Markers are labeled A1, A2, A3...
+- Odd activations are shown above the bar
+- Even activations are shown below the bar
+- Marker colors reflect status:
+  - green = released
+  - neutral = scheduled/queued
+  - red = cancelled
+- Clicking a marker opens the activation detail modal
